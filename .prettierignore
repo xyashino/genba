@@ -1,0 +1,14 @@
+node_modules
+dist
+.turbo
+coverage
+bun.lock
+# Cell-owned worktree metadata (written by the Cell, not hand-formatted)
+.cell
+.tmp
+.mcp.json
+.cursor/mcp.json
+.agents/mcp_config.json
+.agents/settings.json
+.claude/settings.json
+.claude/settings.local.json

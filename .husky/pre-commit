@@ -1,0 +1,2 @@
+bun run ci:format
+bun run ci:verify
