@@ -28,6 +28,7 @@ const buildArgv = (spec: CommandSpec): string[] => [
 export const copilotRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
+  restrictsReadMode: true,
   buildCommand: buildArgv,
   buildHeadlessCommand: buildArgv,
 };

@@ -2,7 +2,13 @@ import { idParams } from '@repo/contract-kit/fields';
 import { errorResponse } from '@repo/contract-kit/reply';
 import type { ZodContract } from '@repo/contract-kit/types';
 import { z } from 'zod';
-import { jobStatusSchema, modelTierSchema } from './enums.ts';
+import {
+  incidentReasonSchema,
+  incidentResolutionSchema,
+  jobStatusSchema,
+  modelTierSchema,
+} from './enums.ts';
+import { orderStepSchema, workOrderSchema } from './orders.contract.ts';
 
 export const jobSchema = z.object({
   id: z.string().min(1),
@@ -26,6 +32,52 @@ export const runnerQuotaSchema = z.object({
   resetsAt: z.string().nullable().default(null),
 });
 
+/** Everything a Cell needs to run one job without reading the database. */
+export const jobAssignmentSchema = z.object({
+  job: jobSchema,
+  order: workOrderSchema,
+  steps: z.array(orderStepSchema),
+  /** parent order branch to stack on; null means the repo base branch */
+  parentBranch: z.string().min(1).nullable(),
+  /** drop the existing worktree and branch before starting */
+  freshWorktree: z.boolean(),
+  /** why the previous attempt failed */
+  feedback: z.string().nullable(),
+  incident: z
+    .object({
+      id: z.string().min(1),
+      reason: incidentReasonSchema,
+      stationId: z.string().nullable(),
+      summary: z.string(),
+      diagnosis: z.string().nullable(),
+    })
+    .nullable(),
+});
+
+export const jobOutcomeSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('passed'),
+    summary: z.string().optional(),
+    prUrl: z.url().optional(),
+    prNumber: z.number().int().positive().optional(),
+  }),
+  z.object({ kind: z.literal('failed'), feedback: z.string().min(1) }),
+  z.object({ kind: z.literal('blocked'), reason: z.string().min(1) }),
+  z.object({ kind: z.literal('env_error'), detail: z.string().min(1) }),
+  z.object({
+    kind: z.literal('resolved'),
+    resolution: incidentResolutionSchema,
+    diagnosis: z.string().min(1),
+    stationId: z.string().min(1).optional(),
+  }),
+  z.object({
+    kind: z.literal('escalated'),
+    issueUrl: z.url().nullable(),
+    draftPrUrl: z.url().nullable(),
+    warning: z.string().nullable(),
+  }),
+]);
+
 export const claimJobContract = {
   in: {
     body: z.object({
@@ -36,7 +88,7 @@ export const claimJobContract = {
   out: {
     200: z.object({
       code: z.literal(200),
-      job: jobSchema.nullable(),
+      assignment: jobAssignmentSchema.nullable(),
       blockedReason: z.enum(['insufficient_usage']).optional(),
     }),
   },
@@ -46,9 +98,12 @@ export const completeJobContract = {
   in: {
     params: idParams,
     body: z.object({
-      status: z.enum(['completed', 'failed', 'cancelled']),
+      cellId: z.string().min(1),
       durationMs: z.number().int().min(0),
-      summary: z.string().optional(),
+      runner: z.string().min(1).optional(),
+      model: z.string().min(1).optional(),
+      tier: modelTierSchema.optional(),
+      outcome: jobOutcomeSchema,
     }),
   },
   out: {
@@ -61,5 +116,7 @@ export const completeJobContract = {
   },
 } satisfies ZodContract;
 
+export type JobAssignment = z.infer<typeof jobAssignmentSchema>;
+export type JobOutcome = z.infer<typeof jobOutcomeSchema>;
 export type RunnerQuota = z.infer<typeof runnerQuotaSchema>;
 export type Job = z.infer<typeof jobSchema>;

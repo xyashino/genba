@@ -1,6 +1,6 @@
 ---
 kind: decision
-priority: high
+priority: medium
 evidence: confirmed
 status: open
 ---
@@ -9,11 +9,10 @@ status: open
 
 ## Problem
 
-- `claude`: edit tools denied, shell can still write
-- `codex`: sandbox
-- `cursor` plan mode and `copilot` `--deny-tool write`: effect and operator access untested
+- `restrictsReadMode` is only yes / no
+- `claude`: edit tools denied, shell can write
+- `codex` sandbox; `cursor` plan mode and `copilot` `--deny-tool write` untested, including operator access
 
 ## Next
 
-- Suggested: adapter reports capability (`canCallOperator`, `fileProtection: sandbox | tool-deny | none`)
-- Cell fails early, `genba doctor` shows it; changed-paths check still runs for every read job
+- Report `canCallOperator` and protection level per adapter, from real runs

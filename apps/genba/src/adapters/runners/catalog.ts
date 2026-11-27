@@ -31,6 +31,7 @@ export const createRunnerCatalog = (
     const adapter = BY_NAME.get(name);
     return adapter !== undefined && (await probe(adapter.binary));
   },
+  restrictsReadMode: (name) => BY_NAME.get(name)?.restrictsReadMode ?? false,
   commandLine: (name, promptFile, options = {}) => {
     const adapter = BY_NAME.get(name);
     if (adapter === undefined) return undefined;

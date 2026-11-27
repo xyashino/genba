@@ -25,7 +25,8 @@ export const operatorVerdictContract = {
   in: {
     body: z.object({
       verdict: operatorVerdictSchema,
-      feedback: z.string().min(1),
+      /** omitted: the Cell uses the audit output */
+      feedback: z.string().min(1).optional(),
     }),
   },
   out: {
@@ -49,7 +50,8 @@ export const operatorIncidentContract = {
   in: {
     body: z.object({
       resolution: incidentResolutionSchema,
-      diagnosis: z.string().min(1),
+      /** omitted: the Cell uses the diagnosis output */
+      diagnosis: z.string().min(1).optional(),
       stepId: z.string().min(1).optional(),
     }),
   },

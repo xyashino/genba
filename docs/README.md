@@ -1,6 +1,6 @@
 # Genba
 
-Injectable autonomous software factory for any git repo. Wraps existing AI CLIs (`claude`, `codex`, `gemini`, `opencode`, `cursor`) into repeatable production lines delivering verified Pull/Merge Requests — zero server required on day 1.
+Injectable autonomous software factory for any git repo. Wraps existing AI CLIs (`claude`, `codex`, `copilot`, `cursor`, `opencode`, `antigravity`) into repeatable production lines delivering verified Pull/Merge Requests — zero server required on day 1.
 
 ## Docs
 
@@ -15,7 +15,7 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 - **Repo-agnostic engine**: Built-in Lines (`fast`, `standard`, `feature`) and `ROLE.md` (`planner`, `builder`, `doctor`, `mechanic`) ship inside the binary.
 - **Lower token waste**: Surgical role context, live `genba operator done` guards, cheap-first retry escalation ladder.
 - **Forge-native**: Opens PR/MR on delivery; pushes WIP Draft PR + `genba:andon` Issue on escalation (`gh` / `glab`).
-- **Provable ROI (`genba stats`)**: Tracks First-Pass Yield, Autonomous Rate, Merge Rate.
+- **Provable ROI (`genba stats`)**: Planned for Phase 4: First-Pass Yield, Autonomous Rate, Merge Rate.
 - **Optional Hub + Web UI**: Local server works standalone; `hub` is opt-in bridge for multi-machine browser visibility.
 
 ## Glossary

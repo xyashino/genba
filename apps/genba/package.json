@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "bun build --compile src/bin.ts --outfile dist/genba",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --max-warnings 0",
     "test": "bun --bun vitest run"
@@ -25,5 +26,8 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "bin": {
+    "genba": "./src/bin.ts"
   }
 }

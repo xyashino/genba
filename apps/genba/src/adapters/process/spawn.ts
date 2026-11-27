@@ -45,8 +45,34 @@ const collect = (
 const isPermissionError = (error: unknown): boolean =>
   error instanceof Error && 'code' in error && error.code === 'EPERM';
 
+const isRunning = (target: number): boolean => {
+  try {
+    process.kill(target, 0);
+    return true;
+  } catch (error) {
+    return isPermissionError(error);
+  }
+};
+
 export const createProcessAdapter = (): ProcessPort => ({
   run: collect,
+  signalGroup: (pid, signal) => {
+    try {
+      process.kill(-pid, signal);
+    } catch {
+      return;
+    }
+  },
+  isGroupAlive: (pid) => isRunning(-pid),
+  commandOf: async (pid) => {
+    const result = await collect(
+      'ps',
+      ['-ww', '-o', 'command=', '-p', String(pid)],
+      process.cwd(),
+      {},
+    );
+    return result.exitCode === 0 ? result.stdout.trim() : null;
+  },
   spawnDetached: async ({ command, args, env, logPath, cwd }: DetachedSpec) => {
     mkdirSync(dirname(logPath), { recursive: true });
     const logFd = openSync(logPath, 'a');
@@ -65,14 +91,7 @@ export const createProcessAdapter = (): ProcessPort => ({
     }
     return child.pid;
   },
-  isAlive: (pid) => {
-    try {
-      process.kill(pid, 0);
-      return true;
-    } catch (error) {
-      return isPermissionError(error);
-    }
-  },
+  isAlive: isRunning,
   parentPid: () => process.ppid,
   terminate: (pid) => {
     try {

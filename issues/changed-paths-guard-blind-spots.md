@@ -5,14 +5,14 @@ evidence: confirmed
 status: open
 ---
 
-# `git status` guard misses some writes
+# Guard misses ignored files and `.git/` writes
 
 ## Problem
 
-- `git status --porcelain` does not report ignored files or writes inside `.git/`
-- Role `forbidPaths: .git/**` cannot trigger from git status
-- Cell collection of `changedPaths` not built yet
+- Guard compares against station start commit, so agent commits are caught
+- Ignored files and writes inside `.git/` stay invisible; `forbidPaths: .git/**` cannot trigger
+- Read stations are reset afterwards, but ignored and `.git/` changes survive
 
 ## Next
 
-- Decide how Cell detects ignored and `.git/` writes before relying on guard as read-only enforcement
+- Decide how Cell detects them before relying on guard as read-only enforcement

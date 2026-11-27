@@ -1,6 +1,26 @@
 # Genba
 
-Injectable autonomous software factory for any git repo. Wraps existing AI CLIs (`claude`, `codex`, `gemini`, `opencode`, `cursor`) into repeatable production lines delivering verified Pull/Merge Requests — zero server required on day 1.
+Injectable autonomous software factory for any git repo. Wraps existing AI CLIs (`claude`, `codex`, `copilot`, `cursor`, `opencode`, `antigravity`) into repeatable production lines delivering verified Pull/Merge Requests — zero server required on day 1.
+
+## Quick start
+
+Needs `git` with an `origin` remote, a logged-in `gh` or `glab`, and `claude` (other runners are unverified, see [issues/](issues/README.md)).
+
+```sh
+bun install && bun run build   # compiles apps/genba/dist/genba
+node scripts/install.mjs       # copies it to ~/.local/bin
+
+cd your-repo
+genba init                     # writes .genba/config.json
+genba doctor
+genba run order.md             # one order, to a pull request
+```
+
+Order file: markdown, optional frontmatter (`title`, `line`, `priority`, `depends_on`). File name is the slug.
+
+Queue mode: `genba import <dir>`, `genba start 3`, `genba watch`, `genba queue`, `genba incident`, `genba stop`. `genba --help` lists all commands.
+
+> Agents run with your user rights and without permission prompts. Use genba only on repos and orders you trust.
 
 ## Docs
 

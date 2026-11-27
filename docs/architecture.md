@@ -21,33 +21,29 @@ Hexagonal core (`domain/`, `builtin/`, `ports/`, `adapters/`) separated from 4 s
 
 ```text
 apps/genba/src/
-├── domain/                  # Pure rules, zero IO (manifest, line, role, order, errors)
+├── domain/                  # Pure rules, zero IO (manifest, line, role, order, schedule, pr-body, detect-project)
 ├── builtin/                 # Embedded lines/*.yml & roles/*/ROLE.md (`with { type: 'text' }`)
-├── ports/                   # Narrow app-owned interfaces (clock, fs, process, git, forge, runner, event-bus)
+├── ports/                   # Narrow app-owned interfaces (clock, fs, process, git, forge, runner, operator, store, loopback-api)
 ├── adapters/                # Concrete implementations (sqlite, fs, git, forge, runners, process, operator-endpoint, operator-client, http)
-├── runtimes/
+├── runtimes/                # each main.ts is that runtime's composition root
 │   ├── daemon/              # `genba __daemon` (127.0.0.1:7072) - only runtime touching adapters/sqlite
-│   │   ├── ports/           # store.port.ts (repository contract decoupling procedures from Drizzle)
-│   │   ├── core/            # procedure.ts (contract-first), error-handling.ts, context.ts
-│   │   ├── procedures/      # One file per use-case (claim-job, complete-job, import-orders, stats...)
-│   │   ├── scheduler.ts     # Queue ordering, retry tier escalation
+│   │   ├── core/            # context.ts, errors.ts
+│   │   ├── procedures/      # One file per use-case (import-orders, claim-job, complete-job, requeue-job...)
 │   │   ├── supervisor.ts    # Spawns/scales/kills Cells (kill-before-requeue invariant)
-│   │   ├── hub-sync.ts      # Optional outbound Hub sync + outbox poller
-│   │   └── server.ts        # Thin Hono HTTP/SSE adapter wiring routes -> procedures
+│   │   ├── events.ts        # In-process bus behind SSE
+│   │   └── server.ts        # `Bun.serve` routes -> procedures, auth
 │   ├── cell/                # `genba __cell` - 1 job, 1 worktree, disposable
-│   │   ├── loop.ts          # Claim -> setup -> station -> report -> exit/next
-│   │   ├── worktree.ts      # Worktree lifecycle & cleanup
-│   │   ├── operator-station.ts
-│   │   ├── inspection-station.ts
-│   │   ├── mechanic-station.ts
-│   │   ├── operator-api.ts  # Loopback `$GENBA_OPERATOR_URL` + live ROLE.md guards
-│   │   └── delivery.ts      # Commit, push, ForgePort PR / Draft PR + Andon Issue
-│   ├── operator/            # `genba operator <verb>` - zero-state loopback client
-│   │   └── main.ts          # Parse verb, single POST to `$GENBA_OPERATOR_URL`
-│   └── cli/                 # Human commands (init, doctor, start, stop, scale, import, status, stats)
-│       ├── commands/
-│       └── output.ts        # Table / JSON formatters
-└── bin.ts                   # Dynamic `await import(...)` dispatch (keeps `genba operator` ~15ms)
+│   │   ├── loop.ts          # Claim -> run -> report
+│   │   ├── worktree.ts      # Worktree lifecycle & setup
+│   │   ├── station-operator.ts     # Agent run + operator verbs
+│   │   ├── station-inspection.ts   # Repo checks
+│   │   ├── station-mechanic.ts     # Triage
+│   │   ├── station-deliver.ts      # PR, or Draft PR + Andon Issue
+│   │   ├── guard-validator.ts      # Live ROLE.md guards
+│   │   └── prompt.ts        # ROLE.md footer: inputs, outputs, verbs
+│   ├── operator/main.ts     # `genba operator <verb>` - zero-state; client injected by bin.ts
+│   └── cli/                 # Human commands (init, doctor, start, scale, stop, run, import, queue, order, incident, watch)
+└── bin.ts                   # Dynamic `await import(...)` dispatch, keeps `genba operator` light
 ```
 
 ### Dependency & Host-Probe Rules
@@ -63,8 +59,9 @@ flowchart LR
 
 - **Execution vs. read-only host probes**:
   - Mutating execution (`spawnRunner`, worktree writes, `publishPr`, `upsertAndonIssue`) -> `runtimes/cell/` only.
-  - Read-only host probes (`probeRunners`, `git.remoteUrl`, `forge.checkAuth`, `forge.getPrStatus`) -> allowed in `runtimes/cli/` (for `init`, `doctor`, `stats --sync-prs`) and `runtimes/cell/`.
-- **Dynamic dispatch**: `bin.ts` uses `switch` + dynamic `await import(...)` so `genba operator` never loads Hono, Drizzle, or SQLite.
+  - Read-only host probes (`probeRunners`, `git.remoteUrl`, `forge.checkAuth`, `forge.getPrStatus`) -> allowed in `runtimes/cli/` (for `init`, `doctor`) and `runtimes/cell/`.
+- **Dynamic dispatch**: `bin.ts` uses `switch` + dynamic `await import(...)` so `genba operator` never loads daemon, Drizzle, or SQLite.
+- **State machine**: scheduling decisions are pure (`domain/schedule.ts`); daemon only persists them. Delivery, Mechanic, and escalation are jobs, so only Cells call `gh` / `glab`.
 - **ESLint-enforced boundaries** (`apps/genba/eslint.config.mjs`):
   - `src/domain/**` forbids `../adapters/**`, `../runtimes/**`
   - `src/runtimes/operator/**` forbids `../../adapters/**`, `../daemon/**`, `../cell/**`

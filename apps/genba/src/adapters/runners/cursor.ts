@@ -25,6 +25,7 @@ const buildArgv = (spec: CommandSpec): string[] => [
 export const cursorRunner: RunnerAdapter = {
   name: 'cursor',
   binary: BINARY,
+  restrictsReadMode: true,
   buildCommand: buildArgv,
   buildHeadlessCommand: buildArgv,
 };

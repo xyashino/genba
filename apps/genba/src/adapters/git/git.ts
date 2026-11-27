@@ -34,7 +34,42 @@ export const createGitAdapter = (process: ProcessPort): GitPort => {
     );
     return baseRefOf(baseBranch, local.exitCode === 0);
   };
+  const lines = (text: string): string[] => text.split('\0').filter(Boolean);
   return {
+    baseRef: startPointOf,
+    mergeBase: async (cwd, ref) =>
+      (await git(['merge-base', 'HEAD', ref], cwd)).trim(),
+    changedPaths: async (cwd, sinceSha) => {
+      const tracked = await git(
+        ['diff', '--name-only', '--no-renames', '-z', sinceSha, '--'],
+        cwd,
+      );
+      const untracked = await git(
+        ['ls-files', '--others', '--exclude-standard', '-z'],
+        cwd,
+      );
+      return [...new Set([...lines(tracked), ...lines(untracked)])].sort();
+    },
+    diffSince: (cwd, sha) => git(['diff', sha, 'HEAD', '--'], cwd),
+    commitCountSince: async (cwd, sha) =>
+      Number((await git(['rev-list', '--count', `${sha}..HEAD`], cwd)).trim()),
+    commitAll: async (cwd, message, allowEmpty = false) => {
+      await git(['add', '--all'], cwd);
+      const flags = allowEmpty ? ['--allow-empty'] : [];
+      await git(['commit', '--no-verify', ...flags, '-m', message], cwd);
+    },
+    branchHead: async (repoRoot, branch) => {
+      const result = await process.run(
+        GIT,
+        ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`],
+        repoRoot,
+      );
+      return result.exitCode === 0 ? result.stdout.trim() : null;
+    },
+    worktreeAttach: async (repoRoot, path, branch) => {
+      await git(['worktree', 'prune'], repoRoot);
+      await git(['worktree', 'add', path, branch], repoRoot);
+    },
     currentBranch: async (cwd) =>
       (await git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd)).trim(),
     isClean: async (cwd) => (await git(['status', '--porcelain'], cwd)) === '',
@@ -70,8 +105,15 @@ export const createGitAdapter = (process: ProcessPort): GitPort => {
       await git(['add', '--', ...paths], cwd);
       await git(['commit', '--no-verify', '-m', message, '--', ...paths], cwd);
     },
-    push: async (cwd, branch) => {
-      await git(['push', '--no-verify', '--set-upstream', REMOTE, branch], cwd);
+    push: async (cwd, branch, replacing) => {
+      const args = ['push', '--no-verify', '--set-upstream', REMOTE, branch];
+      try {
+        await git(args, cwd);
+      } catch (error) {
+        if (replacing === undefined) throw error;
+        const lease = `--force-with-lease=refs/heads/${branch}:${replacing}`;
+        await git([...args, lease], cwd);
+      }
     },
     headSha: async (cwd) => (await git(['rev-parse', 'HEAD'], cwd)).trim(),
     status: (cwd) => git(['status', '--porcelain'], cwd),

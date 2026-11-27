@@ -7,11 +7,12 @@ describe('Repo manifest parser', () => {
     const manifest = parseRepoManifest({ project: 'payments-api' });
 
     expect(manifest.project).toBe('payments-api');
-    expect(manifest.git).toEqual({ provider: 'github' });
+    expect(manifest.git).toEqual({ provider: 'github', baseBranch: 'main' });
     expect(manifest.defaults).toEqual({
       line: 'standard',
       cells: 1,
       minRemainingUsagePct: 10,
+      stationTimeoutMinutes: 30,
     });
     expect(manifest.tiers.fast).toEqual({ runner: 'claude', model: 'haiku' });
     expectTypeOf(manifest).toEqualTypeOf<RepoManifest>();
@@ -35,6 +36,7 @@ describe('Repo manifest parser', () => {
     expect(manifest.git).toEqual({
       provider: 'gitlab',
       host: 'gitlab.company.com',
+      baseBranch: 'main',
     });
     expect(manifest.checks.verify).toEqual(['pytest']);
     expect(manifest.defaults.cells).toBe(3);

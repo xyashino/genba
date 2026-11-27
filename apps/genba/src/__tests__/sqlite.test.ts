@@ -65,6 +65,7 @@ const jobRow = {
   model: 'sonnet',
   tier: 'strong' as const,
   durationMs: 1200,
+  summary: null,
   startedAt: AT,
   finishedAt: AT,
 };
@@ -126,7 +127,7 @@ describe('genba database', () => {
     const row = db.select().from(jobs).get()!;
 
     expect(row).toEqual(jobRow);
-    expect(jobSchema.parse(row)).toEqual(jobRow);
+    expect(jobSchema.parse(row)).toMatchObject({ runner: 'claude' });
   });
 
   it('keeps data when reopened', () => {

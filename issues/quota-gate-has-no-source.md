@@ -5,14 +5,13 @@ evidence: confirmed
 status: open
 ---
 
-# Quota gate has no data source
+# Quota gate is not wired
 
 ## Problem
 
-- `checkRunnerQuota` needs `remainingPct`; no adapter provides it
-- Missing quota allows run
-- `agy` documents `/usage` for quota; not run, print-mode support untested
+- `checkRunnerQuota` and `defaults.minRemainingUsagePct` exist; Cells send no quotas, daemon ignores them
+- `agy` documents `/usage`; print-mode support untested
 
 ## Next
 
-- Add optional quota method only for runners that support it, or remove gate until then
+- Add optional quota method for runners that support it, or remove gate until then

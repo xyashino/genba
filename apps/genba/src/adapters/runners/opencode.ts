@@ -16,6 +16,7 @@ const buildArgv = (spec: CommandSpec): string[] => [
 export const opencodeRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
+  restrictsReadMode: false,
   buildCommand: buildArgv,
   buildHeadlessCommand: buildArgv,
 };

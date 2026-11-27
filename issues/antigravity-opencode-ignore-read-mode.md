@@ -1,18 +1,17 @@
 ---
 kind: bug
-priority: high
+priority: medium
 evidence: confirmed
 status: open
 ---
 
-# `antigravity` and `opencode` ignore read mode
+# `antigravity` and `opencode` have no read mode
 
 ## Problem
 
-- Both adapters build same argv for `read` and `write`
-- `antigravity` passes `--dangerously-skip-permissions`, so read job has no write block
+- Both build same argv for `read` and `write`
+- Cell now refuses them for read roles (`restrictsReadMode: false`), so `standard` and `feature` Lines cannot use them there
 
 ## Next
 
 - Find real restriction flags (`agy --help` lists `--mode plan`, `--sandbox`; untested)
-- Until then reject both for read roles

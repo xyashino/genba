@@ -83,8 +83,9 @@ describe('Unified wire contracts', () => {
     expect(job.tier).toBe('strong');
     expect(
       completeJobContract.in.body.safeParse({
-        status: 'completed',
+        cellId: 'cell-a1',
         durationMs: 1000,
+        outcome: { kind: 'passed' },
       }).success,
     ).toBe(true);
   });
@@ -155,11 +156,22 @@ describe('operator request', () => {
     expect(request.verb).toBe('incident');
   });
 
-  it('rejects an unknown verb and a verdict without feedback', () => {
-    expect(operatorRequestSchema.safeParse({ verb: 'x' }).success).toBe(false);
-    expect(
-      operatorRequestSchema.safeParse({ verb: 'verdict', verdict: 'pass' })
-        .success,
-    ).toBe(false);
+  it('rejects an unknown verb, a missing verdict, and empty feedback', () => {
+    for (const request of [
+      { verb: 'x' },
+      { verb: 'verdict' },
+      { verb: 'verdict', verdict: 'fail', feedback: '' },
+    ]) {
+      expect(operatorRequestSchema.safeParse(request).success).toBe(false);
+    }
+  });
+
+  it('lets the Cell fill verdict feedback and incident diagnosis', () => {
+    for (const request of [
+      { verb: 'verdict', verdict: 'pass' },
+      { verb: 'incident', resolution: 'escalate' },
+    ]) {
+      expect(operatorRequestSchema.safeParse(request).success).toBe(true);
+    }
   });
 });

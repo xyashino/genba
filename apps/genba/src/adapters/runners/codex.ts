@@ -59,6 +59,7 @@ const parseOutput = (log: string): RunnerReport => {
 export const codexRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
+  restrictsReadMode: true,
   buildCommand: buildArgv,
   buildHeadlessCommand: buildArgv,
   parseOutput,

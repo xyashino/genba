@@ -24,5 +24,10 @@ export type ProcessPort = {
   parentPid(): number;
   terminate(pid: number): void;
   forceKill(pid: number): void;
+  /** signals the whole process group led by `pid` */
+  signalGroup(pid: number, signal: 'SIGTERM' | 'SIGKILL'): void;
+  isGroupAlive(pid: number): boolean;
+  /** the command line of a live process, else null; used to detect pid reuse */
+  commandOf(pid: number): Promise<string | null>;
   probeUrl(url: string): Promise<boolean>;
 };
