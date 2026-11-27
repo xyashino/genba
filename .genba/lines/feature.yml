@@ -30,8 +30,8 @@ operators:
 
   doctor:
     profile: doctor
-    runner: claude
-    model: sonnet
+    runner: antigravity
+    model: gemini-3.8-flash-high
     timeout: 20m
     headless: true
     permission: read

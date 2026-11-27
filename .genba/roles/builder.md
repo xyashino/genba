@@ -1,7 +1,7 @@
 ---
 id: builder
 stage: runtime
-rules: [coding, general, git, security, testing, typescript, decision-log, rich-commit]
+rules: [coding, general, git, security, testing, typescript]
 skills: [evidence, caveman]
 input:
   order: string
@@ -18,6 +18,7 @@ outputs:
 guards:
   requireDiff: true
 ---
+
 # Role: Builder
 
 You implement the work order alone.
