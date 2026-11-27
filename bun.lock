@@ -15,10 +15,46 @@
         "typescript": "catalog:",
       },
     },
+    "apps/genba": {
+      "name": "@repo/genba",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contract-kit": "workspace:*",
+        "@repo/contracts": "workspace:*",
+        "@repo/prompt": "workspace:*",
+        "yaml": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
     "packages/contract-kit": {
       "name": "@repo/contract-kit",
       "version": "0.0.0",
       "dependencies": {
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/contracts": {
+      "name": "@repo/contracts",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contract-kit": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -204,7 +240,11 @@
 
     "@repo/contract-kit": ["@repo/contract-kit@workspace:packages/contract-kit"],
 
+    "@repo/contracts": ["@repo/contracts@workspace:packages/contracts"],
+
     "@repo/eslint-config": ["@repo/eslint-config@workspace:packages/eslint-config"],
+
+    "@repo/genba": ["@repo/genba@workspace:apps/genba"],
 
     "@repo/nitpick": ["@repo/nitpick@workspace:packages/nitpick"],
 

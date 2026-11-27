@@ -94,7 +94,7 @@ export default config({
     general: {
       'decision-log': decisionLog({
         scopes: [
-          /^(repo|genba|hub|obeya|prompt|nitpick|contract-kit|sqlite-kit|eslint-config|typescript-config|docs|ci)(\/[a-z][a-z0-9-]*)?$/,
+          /^(repo|genba|hub|obeya|contracts|prompt|nitpick|contract-kit|sqlite-kit|eslint-config|typescript-config|docs|ci)(\/[a-z][a-z0-9-]*)?$/,
         ],
       }),
       'general-minimal-text': md('A', 'general/general-minimal-text'),

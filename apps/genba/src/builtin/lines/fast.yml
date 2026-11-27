@@ -1,0 +1,19 @@
+name: fast
+description: Direct build with deterministic quality gate and delivery
+stations:
+  - id: build
+    kind: operator
+    role: builder
+    tier: fast
+    escalate: [fast, strong]
+    inputs: []
+  - id: quality-gate
+    kind: inspection
+    hook: checks.verify
+    onFail:
+      retry: build
+      max: 3
+deliver:
+  commit: build.commit
+  report: build.report
+  to: pr
