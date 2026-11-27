@@ -5,6 +5,7 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 ## Docs
 
 - [docs/README.md](docs/README.md) — Overview, core value, glossary
+- [docs/architecture.md](docs/architecture.md) — Monorepo layout, runtime boundaries, import rules
 - [docs/boundaries.md](docs/boundaries.md) — Runtime ownership matrix, topology, invariants
 - [docs/lines-and-roles.md](docs/lines-and-roles.md) — Repo-agnostic Lines, `ROLE.md` guards, Forge Andon
 - [docs/migration.md](docs/migration.md) — Phased migration plan from `software-factory`
