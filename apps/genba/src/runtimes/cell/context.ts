@@ -1,18 +1,19 @@
 import { join } from 'node:path';
-import { BUILTIN_LINES, BUILTIN_ROLES } from '../../builtin/registry.ts';
-import type {
-  BuiltinLineName,
-  BuiltinRoleName,
-} from '../../builtin/registry.ts';
 import { parseLine } from '../../domain/line.ts';
 import type { LineDefinition } from '../../domain/line.ts';
 import { parseRepoManifest } from '../../domain/manifest.ts';
 import type { RepoManifest } from '../../domain/manifest.ts';
 import { parseRole } from '../../domain/role.ts';
 import type { RoleDefinition } from '../../domain/role.ts';
-import { CELL_DIR, MANIFEST_PATH } from '../../domain/runtime-paths.ts';
+import {
+  CELL_DIR,
+  MANIFEST_PATH,
+  isAssetName,
+  linePathOf,
+  rolePathOf,
+} from '../../domain/runtime-paths.ts';
 import type { ForgePort } from '../../ports/forge.port.ts';
-import type { FsPort } from '../../ports/fs.port.ts';
+import type { FsPort, LockPort } from '../../ports/fs.port.ts';
 import type { GitPort } from '../../ports/git.port.ts';
 import type { OperatorEndpointPort } from '../../ports/operator.port.ts';
 import type {
@@ -33,6 +34,8 @@ export type CellDeps = {
   runner: RunnerPort;
   catalog: RunnerCatalogPort;
   operator: OperatorEndpointPort;
+  /** one `changeover.root` at a time across Cells */
+  rootLock: LockPort;
   forgeOf: (manifest: RepoManifest) => ForgePort;
   /** tells the daemon which process group to kill if this Cell dies */
   trackRunner: (
@@ -106,16 +109,6 @@ export const loadManifest = async (
     JSON.parse(await fs.readText(join(repoRoot, MANIFEST_PATH))),
   );
 
-export const lineOf = (name: string): LineDefinition =>
-  parseLine(BUILTIN_LINES[name as BuiltinLineName]);
-
-export const roleOf = (name: string): RoleDefinition => {
-  if (!Object.hasOwn(BUILTIN_ROLES, name)) {
-    throw new Error(`unknown role "${name}"`);
-  }
-  return parseRole(BUILTIN_ROLES[name as BuiltinRoleName]);
-};
-
 export const stationDirOf = (workspace: Workspace, stationId: string): string =>
   join(workspace.path, CELL_DIR, stationId);
 
@@ -153,3 +146,30 @@ export const runTracked = async (
   await sweep();
   return end;
 };
+
+// Read from the repo root, never a worktree: an agent must not edit its own guards.
+const readAsset = async (
+  fs: FsPort,
+  repoRoot: string,
+  name: string,
+  pathOf: (name: string) => string,
+): Promise<string> => {
+  if (!isAssetName(name)) throw new Error(`invalid name "${name}"`);
+  const path = pathOf(name);
+  const text = await readIfPresent(fs, join(repoRoot, path));
+  if (text === undefined) throw new Error(`missing ${path}`);
+  return text;
+};
+
+export const loadLine = async (
+  fs: FsPort,
+  repoRoot: string,
+  name: string,
+): Promise<LineDefinition> =>
+  parseLine(await readAsset(fs, repoRoot, name, linePathOf));
+
+export const roleOf = async (
+  { fs, repoRoot }: Pick<CellDeps, 'fs' | 'repoRoot'>,
+  name: string,
+): Promise<RoleDefinition> =>
+  parseRole(await readAsset(fs, repoRoot, name, rolePathOf));

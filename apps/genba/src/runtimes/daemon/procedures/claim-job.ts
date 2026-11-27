@@ -8,7 +8,7 @@ import {
 } from '../../../domain/schedule.ts';
 import type { StoredOrder } from '../../../ports/store.port.ts';
 import type { DaemonContext } from '../core/context.ts';
-import { lineOf, nowOf } from '../core/context.ts';
+import { nowOf } from '../core/context.ts';
 
 const runnableOf = (
   context: DaemonContext,
@@ -29,7 +29,7 @@ const runnableOf = (
   );
   for (const candidate of ranked) {
     const stationId = nextStationId(
-      lineOf(candidate.line),
+      context.lineOf(candidate.line),
       context.store.stepsOf(candidate.id),
     );
     if (stationId !== null) {

@@ -1,3 +1,10 @@
+import { join } from 'node:path';
+import { resolveGuidance } from '../../../domain/guidance.ts';
+import type { GuidanceEntry } from '../../../domain/guidance.ts';
+import { agentsOf, checksOfLine, parseLine } from '../../../domain/line.ts';
+import type { AgentDefinition, LineDefinition } from '../../../domain/line.ts';
+import { guidanceOf, parseRole } from '../../../domain/role.ts';
+import { LINES_DIR, rolePathOf } from '../../../domain/runtime-paths.ts';
 import type { RepoManifest } from '../../../domain/manifest.ts';
 import type { CliDeps } from '../context.ts';
 import { manifestOf, repoRootOf } from '../context.ts';
@@ -7,13 +14,14 @@ type Level = 'ok' | 'warn' | 'fail';
 
 type Check = { level: Level; name: string; detail: string };
 
+const messageOf = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
 const runnerChecks = async (
   deps: CliDeps,
-  manifest: RepoManifest,
+  agents: readonly AgentDefinition[],
 ): Promise<Check[]> => {
-  const names = [
-    ...new Set(Object.values(manifest.tiers).map((tier) => tier.runner)),
-  ];
+  const names = [...new Set(agents.map((agent) => agent.runner))];
   return Promise.all(
     names.map(async (name): Promise<Check> => {
       const check = (level: Level, detail: string): Check => ({
@@ -24,7 +32,10 @@ const runnerChecks = async (
       if (!(await deps.catalog.isInstalled(name))) {
         return check('fail', 'not installed');
       }
-      if (!deps.catalog.restrictsReadMode(name)) {
+      const reads = agents.some(
+        (agent) => agent.runner === name && agent.permission === 'read',
+      );
+      if (reads && !deps.catalog.restrictsReadMode(name)) {
         return check('fail', 'cannot run read-only roles (no read mode)');
       }
       return name === 'claude'
@@ -35,6 +46,79 @@ const runnerChecks = async (
           );
     }),
   );
+};
+
+// Line files, the roles they name, and what their agents and gates need.
+const lineChecks = async (
+  deps: CliDeps,
+  root: string,
+  manifest: RepoManifest,
+): Promise<Check[]> => {
+  const check = (level: Level, detail: string): Check => ({
+    level,
+    name: 'lines and roles',
+    detail,
+  });
+  const read = (path: string): Promise<string> =>
+    deps.fs.readText(join(root, path));
+  const files = (await deps.fs.list(join(root, LINES_DIR))).filter((file) =>
+    file.endsWith('.yml'),
+  );
+  if (files.length === 0) {
+    return [check('fail', `no line files in ${LINES_DIR}`)];
+  }
+  const problems: string[] = [];
+  const guidance = new Map<string, GuidanceEntry>();
+  const lines: LineDefinition[] = [];
+  for (const file of files) {
+    try {
+      lines.push(parseLine(await read(`${LINES_DIR}/${file}`)));
+    } catch (error) {
+      problems.push(`${file}: ${messageOf(error)}`);
+    }
+  }
+  const agents = lines.flatMap(agentsOf);
+  const roles = [...new Set(agents.map((agent) => agent.profile))];
+  for (const role of roles) {
+    try {
+      const parsed = parseRole(await read(rolePathOf(role)));
+      const { rules, skills } = guidanceOf(parsed, manifest);
+      for (const entry of [...rules, ...skills]) {
+        guidance.set(entry.join(), entry);
+      }
+    } catch (error) {
+      problems.push(`role ${role}: ${messageOf(error)}`);
+    }
+  }
+  const { files: present, missing } = await resolveGuidance(deps.fs, root, [
+    ...guidance.values(),
+  ]);
+  const unverified = lines
+    .filter((line) => checksOfLine(line).length === 0)
+    .map((line) => line.name);
+  return [
+    problems.length === 0
+      ? check('ok', `${files.length} lines, ${roles.length} roles`)
+      : check('fail', problems.join('; ')),
+    {
+      // A warning: `changeover.worktree` may generate them in each worktree.
+      level: missing.length === 0 ? 'ok' : 'warn',
+      name: 'rules and skills',
+      detail:
+        missing.length === 0
+          ? `${present.length} files present`
+          : `missing here: ${missing.join(', ')}`,
+    },
+    {
+      level: unverified.length === 0 ? 'ok' : 'warn',
+      name: 'quality gates',
+      detail:
+        unverified.length === 0
+          ? 'every line runs checks'
+          : `no checks in: ${unverified.join(', ')}`,
+    },
+    ...(await runnerChecks(deps, agents)),
+  ];
 };
 
 const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
@@ -60,11 +144,6 @@ const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
   return [
     { level: 'ok', name: 'config', detail: manifest.project },
     {
-      level: manifest.checks.verify.length > 0 ? 'ok' : 'warn',
-      name: 'verify checks',
-      detail: manifest.checks.verify.join(' && ') || 'none configured',
-    },
-    {
       level: origin === null ? 'fail' : 'ok',
       name: 'origin remote',
       detail: origin === null ? 'missing' : 'present',
@@ -74,7 +153,7 @@ const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
       name: `${manifest.git.provider} login`,
       detail: authenticated ? 'authenticated' : 'not authenticated',
     },
-    ...(await runnerChecks(deps, manifest)),
+    ...(await lineChecks(deps, root, manifest)),
   ];
 };
 

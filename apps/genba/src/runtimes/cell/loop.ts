@@ -12,13 +12,13 @@ import {
 } from '../../ports/loopback-api.port.ts';
 import type { LoopbackApiPort } from '../../ports/loopback-api.port.ts';
 import type { CellDeps, JobContext } from './context.ts';
-import { CellStopped, lineOf, loadManifest } from './context.ts';
+import { CellStopped, loadLine, loadManifest } from './context.ts';
 import { runDeliverStation, runEscalation } from './station-deliver.ts';
 import { runInspectionStation } from './station-inspection.ts';
 import { runMechanicStation } from './station-mechanic.ts';
 import { runOperatorStation } from './station-operator.ts';
 import type { StationRun } from './station-operator.ts';
-import { ensureWorktree, runSetup } from './worktree.ts';
+import { ensureWorktree, runWorktreeHook } from './worktree.ts';
 
 const IDLE_MS = 500;
 const MAX_UNREACHABLE = 10;
@@ -37,15 +37,11 @@ class ReportLost extends Error {}
 const runStation = async (job: JobContext): Promise<StationRun> => {
   const { stationId } = job.assignment.job;
   if (stationId === ESCALATE_STATION) return runEscalation(job);
-  const workspace = await ensureWorktree(job);
   if (stationId === MECHANIC_STATION) {
-    return runMechanicStation(job, workspace);
+    return runMechanicStation(job, await ensureWorktree(job));
   }
-  const failure = await runSetup(
-    job,
-    workspace,
-    job.manifest.defaults.stationTimeoutMinutes * 60_000,
-  );
+  const workspace = await ensureWorktree(job, { changeover: true });
+  const failure = await runWorktreeHook(job, workspace);
   if (failure !== null) {
     return { outcome: { kind: 'env_error', detail: failure } };
   }
@@ -92,7 +88,7 @@ const runJob = async (
       ...deps,
       assignment,
       manifest: await loadManifest(deps.fs, deps.repoRoot),
-      line: lineOf(order.line),
+      line: await loadLine(deps.fs, deps.repoRoot, order.line),
     });
   } catch (error) {
     // A stopping Cell reports nothing: the daemon requeues the job once this process is gone.
@@ -108,9 +104,8 @@ const runJob = async (
   await report(deps, job.id, {
     cellId: deps.cellId,
     durationMs: Math.max(deps.clock.now() - started, 0),
-    runner: run.model?.runner,
-    model: run.model?.model,
-    tier: run.model?.tier,
+    runner: run.agent?.runner,
+    model: run.agent?.model,
     outcome: run.outcome,
   });
 };

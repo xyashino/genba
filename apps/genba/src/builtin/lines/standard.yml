@@ -1,27 +1,57 @@
 name: standard
 description: Build behind quality gate, then independent doctor audit
+
+operators:
+  builder:
+    profile: builder
+    runner: claude
+    model: haiku
+    timeout: 60m
+    headless: true
+    permission: write
+  doctor:
+    profile: doctor
+    runner: claude
+    model: haiku
+    timeout: 20m
+    headless: true
+    permission: read
+
+mechanic:
+  profile: mechanic
+  runner: claude
+  model: sonnet
+  timeout: 20m
+  headless: true
+  permission: read
+
 stations:
   - id: build
     kind: operator
-    role: builder
-    tier: fast
-    escalate: [fast, strong, top]
+    operator: builder
     inputs: []
+
   - id: quality-gate
     kind: inspection
-    hook: checks.verify
+    timeout: 30m
+    exec: []
     onFail:
       retry: build
       max: 3
+
   - id: audit
     kind: operator
-    role: doctor
-    tier: fast
-    inputs: [build.report, build.commit, quality-gate.gate]
+    operator: doctor
+    inputs:
+      - build.report
+      - build.commit
+      - quality-gate.gate
     onFail:
       retry: build
       max: 2
+
 deliver:
   commit: build.commit
   report: build.report
-  to: pr
+  to: new-pr
+  requireAdr: false

@@ -18,6 +18,9 @@
     "apps/genba": {
       "name": "@repo/genba",
       "version": "0.0.0",
+      "bin": {
+        "genba": "./src/bin.ts",
+      },
       "dependencies": {
         "@repo/contract-kit": "workspace:*",
         "@repo/contracts": "workspace:*",

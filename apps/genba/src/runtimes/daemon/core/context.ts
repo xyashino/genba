@@ -1,10 +1,6 @@
-import type { BuiltinLineName } from '../../../builtin/registry.ts';
-import { BUILTIN_LINES } from '../../../builtin/registry.ts';
-import { parseLine } from '../../../domain/line.ts';
 import type { LineDefinition } from '../../../domain/line.ts';
 import type { ClockPort } from '../../../ports/clock.port.ts';
 import type { StorePort } from '../../../ports/store.port.ts';
-import { DaemonError } from './errors.ts';
 
 export type DaemonEvent = {
   type:
@@ -26,18 +22,8 @@ export type DaemonContext = {
   clock: ClockPort;
   newId: (prefix: string) => string;
   publish: (event: DaemonEvent) => void;
+  lineOf: (name: string) => LineDefinition;
 };
 
 export const nowOf = (context: DaemonContext): string =>
   new Date(context.clock.now()).toISOString();
-
-export const lineOf = (name: string): LineDefinition => {
-  if (!Object.hasOwn(BUILTIN_LINES, name)) {
-    throw new DaemonError(
-      422,
-      'invalid_order_graph',
-      `unknown line "${name}", expected one of ${Object.keys(BUILTIN_LINES).join(', ')}`,
-    );
-  }
-  return parseLine(BUILTIN_LINES[name as BuiltinLineName]);
-};

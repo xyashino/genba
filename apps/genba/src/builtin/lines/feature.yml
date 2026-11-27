@@ -1,32 +1,71 @@
 name: feature
 description: Plan, build behind quality gate, then independent doctor audit
+
+operators:
+  planner:
+    profile: planner
+    runner: claude
+    model: sonnet
+    timeout: 20m
+    headless: true
+    permission: read
+  builder:
+    profile: builder
+    runner: claude
+    model: haiku
+    timeout: 60m
+    headless: true
+    permission: write
+  doctor:
+    profile: doctor
+    runner: claude
+    model: sonnet
+    timeout: 20m
+    headless: true
+    permission: read
+
+mechanic:
+  profile: mechanic
+  runner: claude
+  model: sonnet
+  timeout: 20m
+  headless: true
+  permission: read
+
 stations:
   - id: plan
     kind: operator
-    role: planner
-    tier: strong
+    operator: planner
     inputs: []
+
   - id: build
     kind: operator
-    role: builder
-    tier: fast
-    escalate: [fast, strong, top]
-    inputs: [plan.plan]
+    operator: builder
+    inputs:
+      - plan.plan
+
   - id: quality-gate
     kind: inspection
-    hook: checks.verify
+    timeout: 30m
+    exec: []
     onFail:
       retry: build
       max: 3
+
   - id: audit
     kind: operator
-    role: doctor
-    tier: strong
-    inputs: [plan.plan, build.report, build.commit, quality-gate.gate]
+    operator: doctor
+    inputs:
+      - plan.plan
+      - build.report
+      - build.commit
+      - quality-gate.gate
     onFail:
       retry: build
       max: 2
+
 deliver:
   commit: build.commit
   report: build.report
-  to: pr
+  to: new-pr
+  requireAdr: false

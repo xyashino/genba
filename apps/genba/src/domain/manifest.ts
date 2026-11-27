@@ -1,16 +1,26 @@
-import { forgeProviderSchema, modelTierSchema } from '@repo/contracts/enums';
+import { forgeProviderSchema } from '@repo/contracts/enums';
 import { z } from 'zod';
+import { DEFAULT_GUIDANCE_DIRS } from './runtime-paths.ts';
 
 const nonEmptyTrimmed = z.string().trim().min(1);
 
-export const tierTargetSchema = z.object({
-  runner: nonEmptyTrimmed,
-  /** omitted: the CLI uses its own default */
-  model: nonEmptyTrimmed.optional(),
-});
+// Agents read these inside their worktree, so the folder must be part of the repo.
+const repoDir = (fallback: string) =>
+  nonEmptyTrimmed
+    .transform((dir) => dir.replace(/^(\.\/)+/, '').replace(/\/+$/, ''))
+    .refine(
+      (dir) =>
+        dir !== '' && !dir.startsWith('/') && !dir.split('/').includes('..'),
+      'use a folder inside the repo',
+    )
+    .default(fallback);
 
 export const repoManifestSchema = z.object({
   project: nonEmptyTrimmed,
+  /** folder holding the `<name>.md` files that roles list under `rules` */
+  rules: repoDir(DEFAULT_GUIDANCE_DIRS.rules),
+  /** folder holding the `<name>/SKILL.md` files that roles list under `skills` */
+  skills: repoDir(DEFAULT_GUIDANCE_DIRS.skills),
   git: z
     .object({
       provider: forgeProviderSchema.default('github'),
@@ -18,44 +28,19 @@ export const repoManifestSchema = z.object({
       baseBranch: nonEmptyTrimmed.default('main'),
     })
     .default({ provider: 'github', baseBranch: 'main' }),
-  workspace: z
-    .object({
-      setup: z.array(nonEmptyTrimmed).default([]),
-    })
-    .default({ setup: [] }),
-  checks: z
-    .object({
-      quick: z.array(nonEmptyTrimmed).default([]),
-      verify: z.array(nonEmptyTrimmed).default([]),
-    })
-    .default({ quick: [], verify: [] }),
-  context: z
-    .object({
-      rules: z.array(nonEmptyTrimmed).default([]),
-      conventions: z.array(nonEmptyTrimmed).default([]),
-    })
-    .default({ rules: [], conventions: [] }),
   defaults: z
     .object({
       line: nonEmptyTrimmed.default('standard'),
       cells: z.number().int().min(1).max(32).default(1),
       minRemainingUsagePct: z.number().min(0).max(100).default(10),
-      stationTimeoutMinutes: z.number().positive().default(30),
     })
     .default({
       line: 'standard',
       cells: 1,
       minRemainingUsagePct: 10,
-      stationTimeoutMinutes: 30,
     }),
-  tiers: z.record(modelTierSchema, tierTargetSchema).default({
-    fast: { runner: 'claude', model: 'haiku' },
-    strong: { runner: 'claude', model: 'sonnet' },
-    top: { runner: 'claude', model: 'opus' },
-  }),
 });
 
-export type TierTarget = z.infer<typeof tierTargetSchema>;
 export type RepoManifest = z.infer<typeof repoManifestSchema>;
 
 export const parseRepoManifest = (raw: unknown): RepoManifest =>

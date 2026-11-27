@@ -86,7 +86,7 @@ export type Candidate = {
 const maxAttemptsOf = (station: StationDefinition): number => {
   if (station.onFail !== undefined) return station.onFail.max;
   if (station.kind === 'inspection') return 1;
-  return Math.max(station.escalate?.length ?? 1, MIN_OPERATOR_ATTEMPTS);
+  return MIN_OPERATOR_ATTEMPTS;
 };
 
 const freshStep = (stationId: string, maxAttempts: number): ScheduledStep => ({
@@ -277,7 +277,7 @@ export const applyResolution = (
       if (stationId === null || !sequence.includes(stationId)) {
         return { error: `${resolution} needs a station of line ${line.name}` };
       }
-      // A retry grants exactly one more attempt, so it keeps the last model tier.
+      // A retry grants exactly one more attempt, so it grants no more than that.
       const attemptsFor = (id: string): number =>
         resolution === 'retry_step' && id === stationId
           ? Math.max(stepOf(steps, id).maxAttempts - 1, 0)

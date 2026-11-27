@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { createNodeFs } from '../../adapters/fs/node-fs.ts';
 import { createPidFile } from '../../adapters/fs/pid-file.ts';
@@ -16,6 +16,7 @@ import {
   portOf,
 } from '../../domain/runtime-paths.ts';
 import type { DaemonContext } from './core/context.ts';
+import { createLineLoader } from './core/lines.ts';
 import { createEventBus } from './events.ts';
 import { createDaemonServer } from './server.ts';
 import { createSupervisor } from './supervisor.ts';
@@ -43,6 +44,10 @@ export const runDaemon = async (repoRoot: string): Promise<number> => {
     clock: createSystemClock(),
     newId: (prefix) => `${prefix}-${randomBytes(4).toString('hex')}`,
     publish: events.publish,
+    lineOf: createLineLoader((path) => {
+      const full = join(root, path);
+      return existsSync(full) ? readFileSync(full, 'utf8') : undefined;
+    }),
   };
   const cliToken = newToken();
   const supervisor = createSupervisor({

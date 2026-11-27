@@ -1,0 +1,81 @@
+name: feature
+description: Plan, build behind quality gate, then independent doctor audit
+
+changeover:
+  root:
+    timeout: 4m
+    exec:
+      - git fetch origin
+  worktree:
+    timeout: 10m
+    exec:
+      - bun install --frozen-lockfile
+
+operators:
+  planner:
+    profile: planner
+    runner: claude
+    model: sonnet
+    timeout: 20m
+    headless: true
+    permission: read
+
+  builder:
+    profile: builder
+    runner: claude
+    model: haiku
+    timeout: 60m
+    headless: true
+    permission: write
+
+  doctor:
+    profile: doctor
+    runner: claude
+    model: sonnet
+    timeout: 20m
+    headless: true
+    permission: read
+
+mechanic:
+  profile: mechanic
+  runner: claude
+  model: sonnet
+  timeout: 20m
+  headless: true
+  permission: read
+
+stations:
+  - id: plan
+    kind: operator
+    operator: planner
+    inputs: []
+  - id: build
+    kind: operator
+    operator: builder
+    inputs:
+      - plan.plan
+  - id: quality-gate
+    kind: inspection
+    timeout: 30m
+    exec:
+      - bun run ci:verify
+    onFail:
+      retry: build
+      max: 3
+  - id: audit
+    kind: operator
+    operator: doctor
+    inputs:
+      - plan.plan
+      - build.report
+      - build.commit
+      - quality-gate.gate
+    onFail:
+      retry: build
+      max: 2
+
+deliver:
+  commit: build.commit
+  report: build.report
+  to: new-pr
+  requireAdr: true

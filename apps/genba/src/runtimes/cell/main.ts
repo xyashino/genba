@@ -1,4 +1,5 @@
 import { createForgeRouter } from '../../adapters/forge/router.ts';
+import { createFileLock } from '../../adapters/fs/lock.ts';
 import { createNodeFs } from '../../adapters/fs/node-fs.ts';
 import { createGitAdapter } from '../../adapters/git/git.ts';
 import { createLoopbackApi } from '../../adapters/http/loopback-api.ts';
@@ -36,6 +37,7 @@ export const runCell = async (cellId: string): Promise<number> => {
     repoRoot,
     api,
     git,
+    rootLock: createFileLock('changeover.lock'),
     selfCommand: selfCommand(),
     fs: createNodeFs(),
     clock: createSystemClock(),

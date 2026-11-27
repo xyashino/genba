@@ -22,11 +22,13 @@ export type GitPort = {
   push(cwd: string, branch: string, replacing?: string): Promise<void>;
   resetHard(cwd: string, sha: string): Promise<void>;
   discardChanges(cwd: string): Promise<void>;
-  /** local branch ref when it exists, else the origin one */
+  /** the origin branch ref when it exists, else the local one */
   baseRef(cwd: string, baseBranch: string): Promise<string>;
   mergeBase(cwd: string, ref: string): Promise<string>;
   /** tracked changes since `sinceSha` (committed or not) plus untracked files */
   changedPaths(cwd: string, sinceSha: string): Promise<string[]>;
+  /** files committed since `sinceSha` that did not exist then, under `dir` */
+  addedPaths(cwd: string, sinceSha: string, dir: string): Promise<string[]>;
   diffSince(cwd: string, sha: string): Promise<string>;
   commitCountSince(cwd: string, sha: string): Promise<number>;
   commitAll(cwd: string, message: string, allowEmpty?: boolean): Promise<void>;

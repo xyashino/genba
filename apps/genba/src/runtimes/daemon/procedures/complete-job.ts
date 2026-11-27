@@ -6,7 +6,7 @@ import {
 } from '../../../domain/schedule.ts';
 import type { StoredJob } from '../../../ports/store.port.ts';
 import type { DaemonContext } from '../core/context.ts';
-import { lineOf, nowOf } from '../core/context.ts';
+import { nowOf } from '../core/context.ts';
 import { DaemonError } from '../core/errors.ts';
 import { applyDecision } from './apply-decision.ts';
 
@@ -79,7 +79,7 @@ export const settleJob = (
     context,
     order,
     decideAfterJob({
-      line: lineOf(order.line),
+      line: context.lineOf(order.line),
       steps,
       stationId: job.stationId,
       outcome,

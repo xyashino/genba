@@ -5,8 +5,7 @@ import { readIfPresent, stationDirOf, tailOf } from './context.ts';
 import { runAgent } from './station-operator.ts';
 import type { AgentTask, StationRun } from './station-operator.ts';
 
-const ROLE = 'mechanic';
-const MECHANIC_TIER = 'strong';
+const STATION_ID = 'mechanic';
 const LOG_FILES = ['gate.log', 'step.log'];
 
 const logsOf = async (
@@ -44,22 +43,12 @@ export const runMechanicStation = async (
   job: JobContext,
   workspace: Workspace,
 ): Promise<StationRun> => {
-  const target = job.manifest.tiers[MECHANIC_TIER];
-  if (target === undefined) {
-    return {
-      outcome: {
-        kind: 'env_error',
-        detail: `tier "${MECHANIC_TIER}" is not configured`,
-      },
-    };
-  }
-  const model = { tier: MECHANIC_TIER, ...target } as const;
+  const agent = job.line.mechanic;
   const { order, incident } = job.assignment;
   const outcome = await runAgent(job, {
     workspace,
-    stationId: ROLE,
-    roleName: ROLE,
-    model,
+    stationId: STATION_ID,
+    agent,
     inputs: {
       order: `# ${order.title}\n\n${order.body}`,
       failure: `Station \`${incident?.stationId ?? 'unknown'}\` (${incident?.reason ?? 'unknown'}):\n\n${incident?.summary ?? ''}`,
@@ -73,5 +62,5 @@ export const runMechanicStation = async (
     ],
     accept,
   });
-  return { outcome, model };
+  return { outcome, agent };
 };

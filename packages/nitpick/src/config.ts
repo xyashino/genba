@@ -133,7 +133,7 @@ export const config = <
   refs?: F;
   output?: Output[];
 }): Config => {
-  const result = value as unknown as Config;
+  const result = value as Config;
   const plugins = new Set<string>();
   for (const { id } of result.plugins ?? []) {
     if (plugins.has(id)) throw new Error(`Duplicate plugin "${id}"`);

@@ -1,0 +1,9 @@
+{
+  "project": "genba",
+  "rules": "./.nitpick/rules",
+  "skills": "./.nitpick/skills",
+  "git": {
+    "provider": "github",
+    "baseBranch": "main"
+  }
+}

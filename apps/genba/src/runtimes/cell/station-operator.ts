@@ -1,9 +1,12 @@
 import { join, relative } from 'node:path';
 import type { JobOutcome } from '@repo/contracts/jobs.contract';
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
-import { resolveAttemptModel } from '../../domain/line.ts';
-import type { OperatorStation, ResolvedModel } from '../../domain/line.ts';
-import { renderRole } from '../../domain/role.ts';
+import { checksOfLine, operatorOf } from '../../domain/line.ts';
+import type { AgentDefinition, OperatorStation } from '../../domain/line.ts';
+import { resolveGuidance } from '../../domain/guidance.ts';
+import { RULE_FILES } from '../../domain/detect-project.ts';
+import { guidanceOf, renderRole } from '../../domain/role.ts';
+import { DECISIONS_DIR } from '../../domain/runtime-paths.ts';
 import type { OperatorResponse } from '../../ports/operator.port.ts';
 import type { JobContext, ProcessEnd, Workspace } from './context.ts';
 import {
@@ -31,17 +34,18 @@ const SPAWN_FAILED_EXIT = 127;
 const GATE_OUTPUT = 'gate';
 const GATE_FILE = 'gate.log';
 const CHECKPOINT_PREFIX = 'chore(genba):';
+const JUDGE_PROFILE = 'doctor';
 
 export type StationRun = {
   outcome: JobOutcome;
-  model?: ResolvedModel;
+  agent?: AgentDefinition;
 };
 
 export type AgentTask = {
   workspace: Workspace;
   stationId: string;
-  roleName: string;
-  model: ResolvedModel;
+  /** runner, model, permission and timeout; `profile` names the role */
+  agent: AgentDefinition;
   /** values for the ROLE.md inputs, without `operatorCommand` */
   inputs: Record<string, string>;
   stationInputs: readonly StationInput[];
@@ -53,6 +57,11 @@ export type AgentTask = {
     outputs: Readonly<Record<string, string | undefined>>,
   ) => JobOutcome | { refusal: string } | null;
 };
+
+const adrNoteOf = (job: JobContext, permission: 'read' | 'write'): string =>
+  job.line.deliver.requireAdr && permission === 'write'
+    ? `\n\n## Decision Record\n\nDelivery needs exactly one new file in \`${DECISIONS_DIR}/\` for the whole order. Add it, or update the one an earlier attempt added.`
+    : '';
 
 const refused = (message: string): OperatorResponse => ({
   code: 409,
@@ -92,7 +101,8 @@ const stationInputsOf = async (
       const source = job.line.stations.find((entry) => entry.id === stationId);
       const file =
         source?.kind === 'operator'
-          ? roleOf(source.role).config.outputs[output]?.file
+          ? (await roleOf(job, operatorOf(job.line, source).profile)).config
+              .outputs[output]?.file
           : output === GATE_OUTPUT
             ? GATE_FILE
             : undefined;
@@ -106,6 +116,19 @@ const stationInputsOf = async (
       return { name, content: tailOf(content ?? '') };
     }),
   );
+
+const presentIn = async (
+  job: JobContext,
+  workspace: Workspace,
+  paths: readonly string[],
+): Promise<string[]> => {
+  const found = await Promise.all(
+    paths.map(async (path) =>
+      (await job.fs.exists(join(workspace.path, path))) ? path : null,
+    ),
+  );
+  return found.filter((path) => path !== null);
+};
 
 const readAll = async (
   job: JobContext,
@@ -127,15 +150,14 @@ const roleInputsOf = async (
   roleName: string,
 ): Promise<Record<string, string>> => {
   const { order, feedback } = job.assignment;
-  const { context, checks } = job.manifest;
-  const role = roleOf(roleName);
+  const role = await roleOf(job, roleName);
   const gate = job.line.stations.find((entry) => entry.kind === 'inspection');
   const values: Record<string, () => Promise<string>> = {
     order: async () => `# ${order.title}\n\n${order.body}`,
-    rules: () =>
-      readAll(job, workspace, [...context.rules, ...context.conventions]),
     checks: async () =>
-      checks.verify.map((check) => `- \`${check}\``).join('\n'),
+      checksOfLine(job.line)
+        .map((check) => `- \`${check}\``)
+        .join('\n'),
     feedback: async () => feedback ?? '',
     lessons: () => readAll(job, workspace, [`.genba/lessons/${roleName}.md`]),
     diff: () => job.git.diffSince(workspace.path, workspace.baseSha),
@@ -185,7 +207,7 @@ const checkpoint = async (
   stationDir: string,
 ): Promise<void> => {
   if (await job.git.isClean(workspace.path)) return;
-  const commit = roleOf(roleName).config.outputs['commit'];
+  const commit = (await roleOf(job, roleName)).config.outputs['commit'];
   const message =
     commit === undefined
       ? undefined
@@ -201,21 +223,37 @@ export const runAgent = async (
   job: JobContext,
   task: AgentTask,
 ): Promise<JobOutcome> => {
-  const { workspace, stationId, model } = task;
-  const role = roleOf(task.roleName);
-  const { mode } = role.config;
-  if (!(await job.catalog.isInstalled(model.runner))) {
+  const { workspace, stationId, agent } = task;
+  const { profile, permission } = agent;
+  const role = await roleOf(job, profile);
+  if (!(await job.catalog.isInstalled(agent.runner))) {
     return {
       kind: 'env_error',
-      detail: `runner "${model.runner}" is not installed`,
+      detail: `runner "${agent.runner}" is not installed`,
     };
   }
-  if (mode === 'read' && !job.catalog.restrictsReadMode(model.runner)) {
+  if (permission === 'read' && !job.catalog.restrictsReadMode(agent.runner)) {
     return {
       kind: 'env_error',
-      detail: `runner "${model.runner}" cannot be restricted to read mode, so it cannot run role "${task.roleName}"`,
+      detail: `runner "${agent.runner}" cannot be restricted to read mode, so it cannot run role "${profile}"`,
     };
   }
+  // Checked in the worktree, after `changeover.worktree` had its chance to generate them.
+  const listed = guidanceOf(role, job.manifest);
+  const rules = await resolveGuidance(job.fs, workspace.path, listed.rules);
+  const skills = await resolveGuidance(job.fs, workspace.path, listed.skills);
+  const missing = [...rules.missing, ...skills.missing];
+  if (missing.length > 0) {
+    return {
+      kind: 'env_error',
+      detail: `role "${profile}" requires missing files: ${missing.join(', ')}`,
+    };
+  }
+  const guidance = {
+    rules: rules.files,
+    skills: skills.files,
+    fallback: await presentIn(job, workspace, RULE_FILES),
+  };
   const stationDir = stationDirOf(workspace, stationId);
   // An output left by an earlier attempt must not satisfy this one.
   for (const { file } of Object.values(role.config.outputs)) {
@@ -227,6 +265,7 @@ export const runAgent = async (
     operatorCommand,
   })}\n\n${promptFooter(
     {
+      guidance,
       role,
       workspace,
       stationDir,
@@ -234,13 +273,14 @@ export const runAgent = async (
       inputs: task.stationInputs,
     },
     task.verbs,
-  )}\n`;
+  )}${adrNoteOf(job, permission)}\n`;
   const promptPath = join(stationDir, PROMPT_FILE);
   await job.fs.writeText(promptPath, prompt);
   const target: GuardTarget = {
     role,
     workspace,
     stationDir,
+    permission,
     startSha: await job.git.headSha(workspace.path),
   };
   const reported = Promise.withResolvers<JobOutcome>();
@@ -256,7 +296,7 @@ export const runAgent = async (
     if (accepted !== undefined) return refused('a report was already accepted');
     const outcome = task.accept(request, await readOutputs(job, target));
     if (outcome === null) {
-      return refused(`role "${task.roleName}" cannot use "${request.verb}"`);
+      return refused(`role "${profile}" cannot use "${request.verb}"`);
     }
     if ('refusal' in outcome) return guardFailed([outcome.refusal]);
     // A blocked agent may be unable to satisfy any guard.
@@ -274,14 +314,14 @@ export const runAgent = async (
   let end: ProcessEnd;
   try {
     const line = job.catalog.commandLine(
-      model.runner,
+      agent.runner,
       relative(workspace.path, promptPath),
-      { model: model.model, permission: mode },
+      { model: agent.model, permission },
     )!;
     end = await runTracked(
       job,
       { ...line, cwd: workspace.path, env: session.env, logPath },
-      job.manifest.defaults.stationTimeoutMinutes * 60_000,
+      agent.timeoutMs,
       reported.promise,
     );
   } finally {
@@ -299,7 +339,7 @@ export const runAgent = async (
       };
     }
   }
-  if (mode === 'read') await restoreWorktree(job, target);
+  if (permission === 'read') await restoreWorktree(job, target);
   return outcome;
 };
 
@@ -308,19 +348,13 @@ export const runOperatorStation = async (
   workspace: Workspace,
   station: OperatorStation,
 ): Promise<StationRun> => {
-  const model = resolveAttemptModel(
-    station,
-    job.assignment.job.attempt,
-    job.manifest,
-  );
-  const role = roleOf(station.role);
-  const isJudge = station.role === 'doctor';
+  const agent = operatorOf(job.line, station);
+  const isJudge = agent.profile === JUDGE_PROFILE;
   const outcome = await runAgent(job, {
     workspace,
     stationId: station.id,
-    roleName: station.role,
-    model,
-    inputs: await roleInputsOf(job, workspace, station.role),
+    agent,
+    inputs: await roleInputsOf(job, workspace, agent.profile),
     stationInputs: await stationInputsOf(job, workspace, station),
     verbs: isJudge
       ? [
@@ -331,13 +365,13 @@ export const runOperatorStation = async (
       : ['done', 'block "<reason>"'],
     accept: buildAccept(isJudge),
   });
-  if (outcome.kind === 'passed' && role.config.mode === 'write') {
+  if (outcome.kind === 'passed' && agent.permission === 'write') {
     await checkpoint(
       job,
       workspace,
-      station.role,
+      agent.profile,
       stationDirOf(workspace, station.id),
     );
   }
-  return { outcome, model };
+  return { outcome, agent };
 };

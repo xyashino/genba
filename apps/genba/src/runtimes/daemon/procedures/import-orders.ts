@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import { resolveOrderDag } from '../../../domain/order.ts';
 import { initialSteps } from '../../../domain/schedule.ts';
 import type { DaemonContext } from '../core/context.ts';
-import { lineOf, nowOf } from '../core/context.ts';
+import { nowOf } from '../core/context.ts';
 import { DaemonError } from '../core/errors.ts';
 
 type ImportInput = z.output<typeof importOrdersContract.in.body>;
@@ -42,7 +42,7 @@ export const importOrders = (
   const incoming = orders.filter((order) => !known.has(order.slug));
   const ordered = orderedOf(incoming, known).map((order) => ({
     order,
-    steps: initialSteps(lineOf(order.line)),
+    steps: initialSteps(context.lineOf(order.line)),
   }));
   const at = nowOf(context);
   context.store.transaction(() => {

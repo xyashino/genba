@@ -22,7 +22,7 @@ Hexagonal core (`domain/`, `builtin/`, `ports/`, `adapters/`) separated from 4 s
 ```text
 apps/genba/src/
 ├── domain/                  # Pure rules, zero IO (manifest, line, role, order, schedule, pr-body, detect-project)
-├── builtin/                 # Embedded lines/*.yml & roles/*/ROLE.md (`with { type: 'text' }`)
+├── builtin/                 # Embedded init templates: lines/*.yml & roles/*/ROLE.md (`with { type: 'text' }`)
 ├── ports/                   # Narrow app-owned interfaces (clock, fs, process, git, forge, runner, operator, store, loopback-api)
 ├── adapters/                # Concrete implementations (sqlite, fs, git, forge, runners, process, operator-endpoint, operator-client, http)
 ├── runtimes/                # each main.ts is that runtime's composition root

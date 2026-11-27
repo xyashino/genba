@@ -1,1 +1,1 @@
-Yield and stop everything when any personal or sensitive data detected
+Yield and stop everything when any personal or sensitive data detected.

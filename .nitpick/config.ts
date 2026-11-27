@@ -109,7 +109,6 @@ export default config({
       'coding-minimal-code': md('A', 'coding/coding-minimal-code'),
       'coding-minimal-comments': md('A', 'coding/coding-minimal-comments'),
       'coding-export-order': md('A', 'coding/coding-export-order'),
-      'coding-no-barrel-export': md('A', 'coding/coding-no-barrel-export'),
     },
     security: {
       'security-sensitive-data': md('A', 'security/security-sensitive-data'),
@@ -117,7 +116,6 @@ export default config({
     typescript: {
       'ts-strict': md('A', 'typescript/ts-strict'),
       'ts-exhaustive': md('I', 'typescript/ts-exhaustive'),
-      'ts-unknown-as': md('I', 'typescript/ts-unknown-as'),
     },
   },
 });

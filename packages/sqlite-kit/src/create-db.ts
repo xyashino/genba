@@ -35,6 +35,11 @@ type InternalMigrator = {
   session: Parameters<SQLiteSyncDialect['migrate']>[1];
 };
 
+const hasInternalMigrator = <S extends BunSqliteSchema>(
+  db: BunSqliteDb<S>,
+): db is BunSqliteDb<S> & InternalMigrator =>
+  'dialect' in db && 'session' in db;
+
 export const createDb = <S extends BunSqliteSchema>(
   sqlitePath: string,
   { schema, migrations, fileMode = DEFAULT_FILE_MODE }: CreateDbOptions<S>,
@@ -43,7 +48,8 @@ export const createDb = <S extends BunSqliteSchema>(
   if (sqlitePath !== MEMORY_PATH) chmodSync(sqlitePath, fileMode);
   for (const pragma of PRAGMAS) sqlite.exec(pragma);
   const db = drizzle(sqlite, { schema });
-  const { dialect, session } = db as unknown as InternalMigrator;
-  dialect.migrate(migrations, session);
+  if (!hasInternalMigrator(db))
+    throw new Error('drizzle internals changed: dialect/session missing');
+  db.dialect.migrate(migrations, db.session);
   return db;
 };

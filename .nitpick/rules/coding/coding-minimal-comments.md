@@ -1,1 +1,1 @@
-Minimal comments: only the non-obvious why (constraint, workaround, invariant), never what the code already says. No commented-out code, no changelog or task references in comments.
+Omit comments by default; write self-explanatory code instead. Add a comment only to explain the *why* behind non-obvious logic, hidden constraints, or platform workarounds, never what the code already says. No commented-out code, no changelog or task references in comments.

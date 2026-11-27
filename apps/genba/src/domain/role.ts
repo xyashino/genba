@@ -1,5 +1,7 @@
 import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
 import { z } from 'zod';
+import type { GuidanceEntry } from './guidance.ts';
+import { isAssetName, rulePathsOf, skillPathOf } from './runtime-paths.ts';
 
 const CONVENTIONAL_SUBJECT =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\([^()\s]+\)!?: \S.*$/;
@@ -10,8 +12,26 @@ const outputSpecSchema = z.object({
   format: z.enum(['conventional']).optional(),
 });
 
+// Names become file paths, so they must not escape their folder.
+const assetNames = z
+  .array(z.string().refine(isAssetName, 'use a plain file name'))
+  .default([]);
+
+const rulePaths = z
+  .array(
+    z
+      .string()
+      .refine(
+        (path) =>
+          path.split('/').every((part) => /^[a-z0-9][a-z0-9_.-]*$/i.test(part)),
+        'use a file or folder inside the rules folder',
+      ),
+  )
+  .default([]);
+
 const roleConfigSchema = z.object({
-  mode: z.enum(['read', 'write']).default('read'),
+  rules: rulePaths,
+  skills: assetNames,
   outputs: z.record(z.string(), outputSpecSchema).default({}),
   guards: z
     .object({
@@ -57,6 +77,15 @@ export const parseRole = (markdown: string): RoleDefinition => {
   return { prompt, config };
 };
 
+/** Repo files this role must read, relative to the repo root. */
+export const guidanceOf = (
+  { config }: RoleDefinition,
+  dirs: { rules: string; skills: string },
+): { rules: GuidanceEntry[]; skills: GuidanceEntry[] } => ({
+  rules: config.rules.map((name) => rulePathsOf(dirs.rules, name)),
+  skills: config.skills.map((name) => [skillPathOf(dirs.skills, name)]),
+});
+
 export const renderRole = (
   role: RoleDefinition,
   inputs: Record<string, unknown>,
@@ -65,11 +94,12 @@ export const renderRole = (
 export const validateRoleGuards = (
   role: RoleDefinition,
   snapshot: RoleGuardSnapshot,
+  permission: 'read' | 'write',
 ): string[] => {
   const violations: string[] = [];
-  const { mode, guards, outputs } = role.config;
+  const { guards, outputs } = role.config;
 
-  if (mode === 'read' && snapshot.changedPaths.length > 0) {
+  if (permission === 'read' && snapshot.changedPaths.length > 0) {
     violations.push(
       `read-only role "${role.prompt.id}" modified repository files: ${snapshot.changedPaths.join(', ')}`,
     );

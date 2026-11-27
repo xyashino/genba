@@ -12,8 +12,8 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 ## Core Value
 
 - **60-second injection**: `genba init` auto-detects stack, verify checks, rules, runners, and git forge -> writes one `.genba/config.json`.
-- **Repo-agnostic engine**: Built-in Lines (`fast`, `standard`, `feature`) and `ROLE.md` (`planner`, `builder`, `doctor`, `mechanic`) ship inside the binary.
-- **Lower token waste**: Surgical role context, live `genba operator done` guards, cheap-first retry escalation ladder.
+- **Repo-agnostic engine**: binary ships templates for Lines (`fast`, `standard`, `feature`) and roles (`planner`, `builder`, `doctor`, `mechanic`); each repo owns its copies in `.genba/`.
+- **Lower token waste**: Surgical role context, live `genba operator done` guards.
 - **Forge-native**: Opens PR/MR on delivery; pushes WIP Draft PR + `genba:andon` Issue on escalation (`gh` / `glab`).
 - **Provable ROI (`genba stats`)**: Planned for Phase 4: First-Pass Yield, Autonomous Rate, Merge Rate.
 - **Optional Hub + Web UI**: Local server works standalone; `hub` is opt-in bridge for multi-machine browser visibility.
@@ -24,8 +24,8 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 | :--- | :--- |
 | **Genba** | Single binary: CLI + local loopback server (`127.0.0.1:7072`) owning SQLite, queue, telemetry, and Cells |
 | **Cell** | Disposable worker process: 1 Job, 1 git worktree, 1 runner or inspection command |
-| **Line** | Built-in repo-agnostic workflow (`fast`, `standard`, `feature`) binding repo `setup` and `checks.verify` |
-| **Role (`ROLE.md`)** | Executable agent contract (`mode`, `outputs`, `guards`) compiled via `@repo/prompt` (`stage: runtime`) |
+| **Line** | Workflow in `.genba/lines/` declaring changeover, agents, stations, delivery |
+| **Role (`ROLE.md`)** | Executable agent contract (`rules`, `skills`, `outputs`, `guards`) compiled via `@repo/prompt` (`stage: runtime`) |
 | **Andon / Incident** | Escalated blocker: opens WIP Draft PR + `genba:andon` Issue on GitHub/GitLab and frees Cell |
 | **Mechanic** | Read-only AI triager attempting self-heal before escalating to human |
 | **Hub** | Optional thin Web UI bridge: outbound Genba registry, read cache, command outbox (zero execution logic) |

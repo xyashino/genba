@@ -7,7 +7,15 @@ const PLAIN_ARG = /^[A-Za-z0-9_./:=-]+$/;
 
 export type StationInput = { name: string; content: string };
 
+export type Guidance = {
+  rules: readonly string[];
+  skills: readonly string[];
+  /** instruction files the repo has, used when the role lists no rules */
+  fallback: readonly string[];
+};
+
 export type PromptFooter = {
+  guidance: Guidance;
   role: RoleDefinition;
   workspace: Workspace;
   stationDir: string;
@@ -24,7 +32,15 @@ export const operatorCommandOf = (selfCommand: readonly string[]): string =>
 export const orNone = (value: string | null | undefined): string =>
   value === null || value === undefined || value.trim() === '' ? NONE : value;
 
-/** What the Cell adds to every ROLE.md: inputs, where outputs go, and how to report. */
+const readSection = (title: string, paths: readonly string[]): string[] =>
+  paths.length === 0
+    ? []
+    : [
+        `## ${title}`,
+        `Read each file in full before you start, including every file it links as a rule. They are mandatory:\n\n${paths.map((path) => `- \`${path}\``).join('\n')}`,
+      ];
+
+/** What the Cell adds to every role: rules, inputs, where outputs go, and how to report. */
 export const promptFooter = (
   footer: PromptFooter,
   verbs: readonly string[],
@@ -39,7 +55,10 @@ export const promptFooter = (
       : '';
     return `- \`${dir}/${spec.file}\`${headings}${format}`;
   });
+  const { rules, skills, fallback } = footer.guidance;
   return [
+    ...readSection('Rules', rules.length > 0 ? rules : fallback),
+    ...readSection('Skills', skills),
     ...(footer.inputs.length === 0
       ? []
       : [

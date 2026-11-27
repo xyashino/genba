@@ -11,7 +11,7 @@ bun install && bun run build   # compiles apps/genba/dist/genba
 node scripts/install.mjs       # copies it to ~/.local/bin
 
 cd your-repo
-genba init                     # writes .genba/config.json
+genba init                     # writes .genba/ config, lines and roles
 genba doctor
 genba run order.md             # one order, to a pull request
 ```

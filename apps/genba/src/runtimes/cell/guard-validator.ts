@@ -8,6 +8,7 @@ export type GuardTarget = {
   role: RoleDefinition;
   workspace: Workspace;
   stationDir: string;
+  permission: 'read' | 'write';
   /** HEAD when the station started: changes are measured from here */
   startSha: string;
 };
@@ -32,10 +33,14 @@ export const guardViolations = async (
 ): Promise<string[]> => {
   const { workspace, startSha, role } = target;
   const branch = await job.git.currentBranch(workspace.path);
-  const violations = validateRoleGuards(role, {
-    changedPaths: await job.git.changedPaths(workspace.path, startSha),
-    outputs: await readOutputs(job, target),
-  });
+  const violations = validateRoleGuards(
+    role,
+    {
+      changedPaths: await job.git.changedPaths(workspace.path, startSha),
+      outputs: await readOutputs(job, target),
+    },
+    target.permission,
+  );
   return branch === workspace.branch
     ? violations
     : [

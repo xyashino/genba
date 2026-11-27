@@ -2,7 +2,6 @@ import type { IncidentResolution } from '@repo/contracts/enums';
 import type { Incident } from '@repo/contracts/incidents.contract';
 import { applyResolution } from '../../../domain/schedule.ts';
 import type { DaemonContext } from '../core/context.ts';
-import { lineOf } from '../core/context.ts';
 import { DaemonError } from '../core/errors.ts';
 import { applyDecision } from './apply-decision.ts';
 
@@ -36,7 +35,7 @@ export const resolveIncident = (
     }
     const steps = context.store.stepsOf(order.id);
     const decision = applyResolution(
-      lineOf(order.line),
+      context.lineOf(order.line),
       steps,
       resolution,
       stepId ??

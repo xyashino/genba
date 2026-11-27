@@ -15,7 +15,6 @@ describe('project detection', () => {
       setup: ['pnpm install --frozen-lockfile'],
       quick: ['pnpm run lint'],
       verify: ['pnpm run ci:verify'],
-      rules: ['AGENTS.md'],
     });
   });
 

@@ -1,4 +1,4 @@
-const RULE_FILES = [
+export const RULE_FILES: readonly string[] = [
   'AGENTS.md',
   'CLAUDE.md',
   'CONTRIBUTING.md',
@@ -23,7 +23,6 @@ const MAKE_ALL_TARGETS = ['ci', 'verify', 'check'];
 const MAKE_PARTS = ['lint', 'test'];
 
 export const DETECTION_FILES: readonly string[] = [
-  ...RULE_FILES,
   ...NODE_MANAGERS.map((manager) => manager.lock),
   'package.json',
   'Cargo.toml',
@@ -44,10 +43,7 @@ export type DetectedProject = {
   setup: string[];
   quick: string[];
   verify: string[];
-  rules: string[];
 };
-
-type Hooks = Omit<DetectedProject, 'rules'>;
 
 const has = (files: ProjectFiles, name: string): boolean =>
   files[name] !== undefined;
@@ -61,7 +57,7 @@ const scriptsOf = (packageJson: string): string[] => {
   }
 };
 
-const nodeHooks = (files: ProjectFiles): Hooks | null => {
+const nodeHooks = (files: ProjectFiles): DetectedProject | null => {
   const packageJson = files['package.json'];
   if (packageJson === undefined) return null;
   const manager = NODE_MANAGERS.find((entry) => has(files, entry.lock));
@@ -79,7 +75,7 @@ const nodeHooks = (files: ProjectFiles): Hooks | null => {
   };
 };
 
-const makeHooks = (files: ProjectFiles): Hooks | null => {
+const makeHooks = (files: ProjectFiles): DetectedProject | null => {
   const makefile = files['Makefile'];
   if (makefile === undefined) return null;
   const targets = [...makefile.matchAll(/^([A-Za-z0-9_.-]+)\s*:(?!=)/gm)].map(
@@ -100,11 +96,11 @@ const makeHooks = (files: ProjectFiles): Hooks | null => {
 const fixedHooks = (
   files: ProjectFiles,
   markers: string[],
-  hooks: Hooks,
-): Hooks | null =>
+  hooks: DetectedProject,
+): DetectedProject | null =>
   markers.some((marker) => has(files, marker)) ? hooks : null;
 
-const pythonHooks = (files: ProjectFiles): Hooks | null => {
+const pythonHooks = (files: ProjectFiles): DetectedProject | null => {
   const sources = `${files['pyproject.toml'] ?? ''}${files['requirements.txt'] ?? ''}`;
   if (!has(files, 'pyproject.toml') && !has(files, 'requirements.txt')) {
     return null;
@@ -119,7 +115,7 @@ const pythonHooks = (files: ProjectFiles): Hooks | null => {
   };
 };
 
-/** Stack, hooks, and rule files guessed from the repo root. A Makefile wins only when no stack gave checks. */
+/** Stack and hooks guessed from the repo root. A Makefile wins only when no stack gave checks. */
 export const detectProject = (files: ProjectFiles): DetectedProject => {
   const stacks = [
     nodeHooks(files),
@@ -164,6 +160,5 @@ export const detectProject = (files: ProjectFiles): DetectedProject => {
     setup: all.flatMap((hooks) => hooks.setup),
     quick: all.flatMap((hooks) => hooks.quick),
     verify: all.flatMap((hooks) => hooks.verify),
-    rules: RULE_FILES.filter((name) => has(files, name)),
   };
 };

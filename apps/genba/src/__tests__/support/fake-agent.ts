@@ -42,6 +42,11 @@ const model = process.argv[process.argv.indexOf('--model') + 1];
 record({
   event: 'start',
   model,
+  rules: [
+    ...(/## Rules\n\n[^\n]*\n\n((?:- .*\n?)+)/.exec(text)?.[1] ?? '').matchAll(
+      /`([^`]+)`/g,
+    ),
+  ].map((match) => match[1]),
   genbaEnv: Object.keys(process.env)
     .filter((key) => key.startsWith('GENBA_'))
     .sort(),

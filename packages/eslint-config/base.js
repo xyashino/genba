@@ -22,6 +22,28 @@ export const config = [
     },
   },
   {
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportAllDeclaration',
+          message: 'Barrel exports are not allowed: import from the module.',
+        },
+        {
+          selector: 'ExportNamedDeclaration[source]',
+          message: 'Barrel exports are not allowed: import from the module.',
+        },
+        {
+          selector:
+            'TSAsExpression[expression.typeAnnotation.type="TSUnknownKeyword"]',
+          message: 'Avoid `as unknown as`: narrow the type instead.',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  {
     plugins: {
       onlyWarn,
     },

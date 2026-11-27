@@ -118,7 +118,7 @@ describe('order scheduling', () => {
     expect(decision).toMatchObject({
       orderStatus: 'queued',
       steps: expect.arrayContaining([
-        expect.objectContaining({ stationId: 'build', attemptsUsed: 2 }),
+        expect.objectContaining({ stationId: 'build', attemptsUsed: 1 }),
       ]),
     });
   });

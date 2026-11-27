@@ -1,14 +1,20 @@
 import { basename, join } from 'node:path';
+import {
+  templateAssets,
+  templateGuidancePaths,
+} from '../../../builtin/assets.ts';
 import { detectForgeRemote } from '../../../adapters/forge/detect.ts';
 import {
   DETECTION_FILES,
   detectProject,
 } from '../../../domain/detect-project.ts';
 import { parseRepoManifest } from '../../../domain/manifest.ts';
-import type { TierTarget } from '../../../domain/manifest.ts';
 import {
   DATA_DIR,
+  DEFAULT_GUIDANCE_DIRS,
+  LINES_DIR,
   MANIFEST_PATH,
+  ROLES_DIR,
   WORKTREES_DIR,
 } from '../../../domain/runtime-paths.ts';
 import type { CliDeps } from '../context.ts';
@@ -16,17 +22,7 @@ import { CliError, repoRootOf } from '../context.ts';
 
 // Only CLIs whose read mode restricts something can run the planner, doctor, and mechanic.
 const RUNNER_PREFERENCE = ['claude', 'codex', 'cursor', 'copilot'];
-const CLAUDE_TIERS = {
-  fast: { runner: 'claude', model: 'haiku' },
-  strong: { runner: 'claude', model: 'sonnet' },
-  top: { runner: 'claude', model: 'opus' },
-};
 const REMOTE_HEAD = 'refs/remotes/origin/HEAD';
-
-const tiersFor = (runner: string): Record<string, TierTarget> =>
-  runner === 'claude'
-    ? CLAUDE_TIERS
-    : { fast: { runner }, strong: { runner }, top: { runner } };
 
 const installedRunners = async (deps: CliDeps): Promise<string[]> => {
   const found = await Promise.all(
@@ -56,7 +52,7 @@ const baseBranchOf = async (deps: CliDeps, root: string): Promise<string> => {
   return current.exitCode === 0 ? current.stdout.trim() : 'main';
 };
 
-/** Detects the repo and writes the one config file genba needs. */
+/** Detects the repo and writes its config, lines, and roles. */
 export const runInit = async (
   deps: CliDeps,
   { force }: { force: boolean },
@@ -85,39 +81,55 @@ export const runInit = async (
   const remote = url === null ? null : detectForgeRemote(url);
   const installed = await installedRunners(deps);
   const runner = RUNNER_PREFERENCE.find((name) => installed.includes(name));
+  const guidance = new Set<string>();
+  for (const path of templateGuidancePaths()) {
+    if (await deps.fs.exists(join(root, path))) guidance.add(path);
+  }
   const manifest = {
     project: basename(root),
+    rules: `./${DEFAULT_GUIDANCE_DIRS.rules}`,
+    skills: `./${DEFAULT_GUIDANCE_DIRS.skills}`,
     git: {
       provider: remote?.provider ?? 'github',
       baseBranch: await baseBranchOf(deps, root),
     },
-    workspace: { setup: project.setup },
-    checks: { quick: project.quick, verify: project.verify },
-    context: { rules: project.rules, conventions: [] },
-    tiers: tiersFor(runner ?? 'claude'),
   };
   parseRepoManifest(manifest);
   await deps.fs.writeText(configPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  for (const asset of templateAssets({
+    project,
+    runner: runner ?? 'claude',
+    hasOrigin: url !== null,
+    has: (path) => guidance.has(path),
+  })) {
+    const path = join(root, asset.path);
+    if (force || !(await deps.fs.exists(path))) {
+      await deps.fs.writeText(path, asset.text);
+    }
+  }
   await deps.git.excludeLocally(root, `${DATA_DIR}/`);
   await deps.git.excludeLocally(root, `${WORKTREES_DIR}/`);
   deps.out(
     [
       `wrote ${MANIFEST_PATH}`,
+      `  assets:  ${LINES_DIR}, ${ROLES_DIR}`,
       `  stack:   ${project.stack.join(', ') || 'unknown'}`,
       `  setup:   ${project.setup.join(' && ') || 'none'}`,
       `  verify:  ${project.verify.join(' && ') || 'none'}`,
-      `  rules:   ${project.rules.join(', ') || 'none'}`,
+      `  rules:   ${guidance.size} rule and skill files listed in roles`,
       `  forge:   ${manifest.git.provider} (base ${manifest.git.baseBranch})`,
       `  runners: ${installed.join(', ') || 'none found'}`,
     ].join('\n'),
   );
   const warnings = [
     ...(project.verify.length === 0
-      ? ['no verify checks found: add checks.verify, or nothing is verified']
+      ? [
+          'no verify checks found: add commands to the quality-gate exec in each line, or nothing is verified',
+        ]
       : []),
     ...(runner === undefined
       ? [
-          `none of ${RUNNER_PREFERENCE.join(', ')} is installed: edit tiers before \`genba start\``,
+          `none of ${RUNNER_PREFERENCE.join(', ')} is installed: edit the runners in each line before \`genba start\``,
         ]
       : []),
     ...(runner !== undefined && runner !== 'claude'

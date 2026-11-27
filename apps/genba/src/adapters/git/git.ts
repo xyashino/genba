@@ -27,12 +27,17 @@ export const createGitAdapter = (process: ProcessPort): GitPort => {
     cwd: string,
     baseBranch: string,
   ): Promise<string> => {
-    const local = await process.run(
+    const remote = await process.run(
       GIT,
-      ['rev-parse', '--verify', '--quiet', `refs/heads/${baseBranch}`],
+      [
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        `refs/remotes/${REMOTE}/${baseBranch}`,
+      ],
       cwd,
     );
-    return baseRefOf(baseBranch, local.exitCode === 0);
+    return baseRefOf(baseBranch, remote.exitCode === 0);
   };
   const lines = (text: string): string[] => text.split('\0').filter(Boolean);
   return {
@@ -50,6 +55,23 @@ export const createGitAdapter = (process: ProcessPort): GitPort => {
       );
       return [...new Set([...lines(tracked), ...lines(untracked)])].sort();
     },
+    addedPaths: async (cwd, sinceSha, dir) =>
+      lines(
+        await git(
+          [
+            'diff',
+            '--name-only',
+            '--diff-filter=A',
+            '--no-renames',
+            '-z',
+            sinceSha,
+            'HEAD',
+            '--',
+            dir,
+          ],
+          cwd,
+        ),
+      ),
     diffSince: (cwd, sha) => git(['diff', sha, 'HEAD', '--'], cwd),
     commitCountSince: async (cwd, sha) =>
       Number((await git(['rev-list', '--count', `${sha}..HEAD`], cwd)).trim()),

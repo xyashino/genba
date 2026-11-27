@@ -6,7 +6,7 @@ Strict ownership across `genba` runtimes. Terms: [README.md](./README.md#glossar
 
 | Runtime | Owns (Source of Truth) | Never Owns | Talks To | Auth / Trust |
 | :--- | :--- | :--- | :--- | :--- |
-| **Repo Manifest** (`.genba/config.json`) | Repo-unique hooks: `project`, `git`, `workspace.setup`, `checks`, `context`, optional `tiers` | Lines, `ROLE.md`, secrets, runtime state | Read by CLI & Cell | Committed in git (no secrets) |
+| **Repo Manifest** (`.genba/config.json`) | Project settings: `project`, `rules` / `skills` folders, `git`, `defaults`; hooks and agents live in `.genba/lines/` | Lines, roles, secrets, runtime state | Read by CLI & Cell | Committed in git (no secrets) |
 | **Genba Local Server** (`genba __daemon`, `127.0.0.1:7072`) | Local SQLite DB, scheduling, retries, model escalation, Cell supervision/scaling, SSE stream, optional Hub sync | Running LLM CLIs in-process, mutating worktrees, calling `gh`/`glab` | Loopback HTTP/SSE; optional outbound HTTPS to `hub` | CLI bearer in `.genba-local/cli-token` (0600); ephemeral bearer per Cell; rejects `Origin` and foreign `Host` |
 | **Genba Cell** (`genba __cell`) | 1 active Job, 1 worktree (`.worktrees/<slug>/`), `.cell/<step>/`, spawning 1 runner/inspection, live `ROLE.md` guards, `git` + `ForgePort` (`gh`/`glab`) | SQLite writes, `hub` credentials, queue ordering, multi-job concurrency | Local Server loopback; child runner; git/forge | Ephemeral `cell-<hex>` + in-memory bearer |
 | **Operator Client** (`genba operator`) | Agent verb parsing (`done`, `verdict`, `block`, `context`, `read`, `incident`), single POST to Cell loopback | State transitions, DB/Hub/Forge calls | Cell loopback (`$GENBA_OPERATOR_URL`) | Per-job `$GENBA_CYCLE_TOKEN` |
@@ -33,7 +33,7 @@ flowchart TD
 ## Prompt & Standards Split
 
 - **`packages/prompt`** (`stage: runtime` / `stage: sync`): single Handlebars + typed frontmatter compiler.
-  - `apps/genba` renders built-in `.md` `ROLE.md` files (`stage: runtime`) embedded via `with { type: 'text' }`.
+  - `apps/genba` renders role `.md` files (`stage: runtime`) from `.genba/roles/`; templates embedded via `with { type: 'text' }`.
   - Optional `packages/nitpick` renders parameterized `rules/*.md` docs & fix hints (`stage: sync`); plain user docs stay untouched.
 - `apps/genba` **never** depends on `packages/nitpick`.
 

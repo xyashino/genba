@@ -247,11 +247,12 @@ describe('Rule docs work when', () => {
     const { problems } = await build({
       rules: {
         g: {
+          // @ts-expect-error -- run without fix is rejected by the type; the runtime check still must report it
           a: { importance: A, doc: 'a', run: () => {} },
           b: { importance: A, doc: 'b', run: () => {}, fix: 'f' },
         },
       },
-    } as unknown as Config);
+    });
     expect(problems).toEqual(['Rule "a": fix is required when run is defined']);
   });
 

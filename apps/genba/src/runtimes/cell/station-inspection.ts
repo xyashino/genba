@@ -7,14 +7,6 @@ import type { StationRun } from './station-operator.ts';
 const LOG_FILE = 'gate.log';
 const WIP_MESSAGE = 'chore(genba): work in progress';
 
-export const checksOf = (
-  job: JobContext,
-  station: InspectionStation,
-): string[] =>
-  station.hook === 'checks.quick'
-    ? job.manifest.checks.quick
-    : job.manifest.checks.verify;
-
 export const runInspectionStation = async (
   job: JobContext,
   workspace: Workspace,
@@ -28,7 +20,7 @@ export const runInspectionStation = async (
   if (!(await job.git.isClean(workspace.path))) {
     await job.git.commitAll(workspace.path, WIP_MESSAGE);
   }
-  const commands = checksOf(job, station);
+  const commands = station.exec;
   try {
     for (const command of commands) {
       await job.fs.appendText(logPath, `$ ${command}\n`);
@@ -41,7 +33,7 @@ export const runInspectionStation = async (
           env: {},
           logPath,
         },
-        job.manifest.defaults.stationTimeoutMinutes * 60_000,
+        station.timeoutMs,
       );
       if (end.kind !== 'exited' || end.exitCode !== 0) {
         const cause =

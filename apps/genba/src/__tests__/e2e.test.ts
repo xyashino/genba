@@ -20,6 +20,7 @@ const origin = join(work, 'origin.git');
 const forgeState = join(work, 'forge.json');
 const agentLog = join(work, 'agent.log');
 const agentFixed = join(work, 'agent.fixed');
+const hookLog = join(work, 'hooks.log');
 let env: Record<string, string | undefined> = {};
 
 const git = (cwd: string, ...args: string[]): string =>
@@ -80,9 +81,9 @@ const freePort = async (): Promise<number> => {
   return port!;
 };
 
-const addOrder = (slug: string, body: string): string => {
+const addOrder = (slug: string, body: string, line = 'standard'): string => {
   const path = join(work, `${slug}.md`);
-  writeFileSync(path, `---\ntitle: ${slug}\n---\n${body}\n`);
+  writeFileSync(path, `---\ntitle: ${slug}\nline: ${line}\n---\n${body}\n`);
   return path;
 };
 
@@ -135,18 +136,20 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     if (existsSync(binary)) genba('stop');
   }, SETTLE_MS);
 
-  it('writes one config file from what the repo contains', () => {
+  it('writes config, lines and roles for the repo', () => {
     genba('init');
 
     const config = JSON.parse(
       readFileSync(join(repo, '.genba', 'config.json'), 'utf8'),
     );
+    for (const asset of ['lines/standard.yml', 'roles/builder.md']) {
+      expect(existsSync(join(repo, '.genba', asset))).toBe(true);
+    }
     expect(config).toMatchObject({
+      rules: './.agents/rules',
+      skills: './.agents/skills',
       project: 'shop',
       git: { provider: 'github', baseBranch: 'main' },
-      checks: { verify: ['make test'] },
-      context: { rules: ['AGENTS.md'] },
-      tiers: { fast: { runner: 'claude', model: 'haiku' } },
     });
     expect(git(repo, 'status', '--porcelain')).toBe('?? .genba/');
   });
@@ -211,9 +214,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       const { order, steps, jobs } = await settled('break-build');
 
       expect(order.status).toBe('blocked');
-      expect(
-        jobs.filter((job) => job.stationId === 'build').map((job) => job.tier),
-      ).toEqual(['fast', 'strong', 'top']);
+      expect(jobs.filter((job) => job.stationId === 'build')).toHaveLength(3);
       expect(steps.find((s) => s.stationId === 'quality-gate')).toMatchObject({
         status: 'failed',
         attemptsUsed: 3,
@@ -392,4 +393,100 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     expect(existsSync(join(repo, '.genba-local', 'daemon.pid'))).toBe(false);
     expect(() => genba('queue')).toThrow();
   });
+
+  it(
+    'runs each changeover hook once for an order, in its own directory',
+    () => {
+      const path = join(repo, '.genba', 'lines', 'fast.yml');
+      const original = readFileSync(path, 'utf8');
+      const counted = original.replace(
+        /changeover:[\s\S]*?(?=operators:)/,
+        [
+          'changeover:',
+          '  root:',
+          '    exec:',
+          '      - git fetch origin',
+          `      - basename "$PWD" >> ${hookLog}`,
+          '  worktree:',
+          '    exec:',
+          `      - basename "$PWD" >> ${hookLog}`,
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(path, counted);
+      const order = join(work, 'changeover.md');
+      writeFileSync(order, '---\ntitle: changeover\nline: fast\n---\nAdd.\n');
+
+      const output = genba('run', order);
+
+      expect(output).toContain('changeover: delivered');
+      expect(readFileSync(hookLog, 'utf8').trim().split('\n')).toEqual([
+        'shop',
+        'changeover',
+      ]);
+      genba('stop');
+      writeFileSync(path, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
+    'creates no worktree when changeover.root fails, and refuses a missing ADR',
+    async () => {
+      const path = join(repo, '.genba', 'lines', 'fast.yml');
+      const original = readFileSync(path, 'utf8');
+      writeFileSync(path, original.replace('git fetch origin', 'exit 3'));
+      genba('import', addOrder('bad-root', 'Add.', 'fast'));
+      genba('start', '1');
+
+      const failed = await settled('bad-root');
+
+      expect(failed.order.status).toBe('blocked');
+      expect(failed.jobs[0]).toMatchObject({ stationId: 'build' });
+      expect(JSON.parse(genba('incident', '--json'))[0]).toMatchObject({
+        reason: 'env_error',
+        summary: expect.stringContaining('changeover.root command `exit 3`'),
+      });
+      const [first] = JSON.parse(genba('incident', '--json'));
+      genba('incident', 'resolve', first.id, 'cancel');
+
+      writeFileSync(
+        path,
+        original.replace('requireAdr: false', 'requireAdr: true'),
+      );
+      genba('import', addOrder('no-adr', 'Add.', 'fast'));
+      const undocumented = await settled('no-adr');
+
+      expect(undocumented.order.status).toBe('blocked');
+      const [second] = JSON.parse(genba('incident', '--json'));
+      expect(second.summary).toContain('requireAdr needs exactly one new');
+      genba('incident', 'resolve', second.id, 'cancel');
+      genba('stop');
+      writeFileSync(path, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
+    'tells the agent what to read, and stops when a listed rule is missing',
+    async () => {
+      const prompt = agentEvents().find((e) => e['event'] === 'start');
+      expect(prompt!['rules']).toEqual(['AGENTS.md']);
+      const path = join(repo, '.genba', 'roles', 'builder.md');
+      const original = readFileSync(path, 'utf8');
+      writeFileSync(path, original.replace('rules: []', 'rules: [ghost]'));
+      genba('import', addOrder('no-rule', 'Add.', 'fast'));
+      genba('start', '1');
+
+      const { order } = await settled('no-rule');
+
+      expect(order.status).toBe('blocked');
+      const [incident] = JSON.parse(genba('incident', '--json'));
+      expect(incident.summary).toContain('.agents/rules/ghost.md');
+      genba('incident', 'resolve', incident.id, 'cancel');
+      genba('stop');
+      writeFileSync(path, original);
+    },
+    SETTLE_MS,
+  );
 });

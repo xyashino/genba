@@ -5,10 +5,11 @@ import {
   renderEscalationBody,
   renderPrBody,
 } from '../../domain/pr-body.ts';
+import { checksOfLine, operatorOf } from '../../domain/line.ts';
+import { DECISIONS_DIR } from '../../domain/runtime-paths.ts';
 import { isSideStation } from '../../domain/schedule.ts';
 import type { JobContext, Workspace } from './context.ts';
 import { readIfPresent, roleOf, stationDirOf } from './context.ts';
-import { checksOf } from './station-inspection.ts';
 import type { StationRun } from './station-operator.ts';
 import { ensureWorktree, removeWorktree, replacedBy } from './worktree.ts';
 
@@ -25,7 +26,8 @@ const sourceOf = async (
   const station = job.line.stations.find((entry) => entry.id === stationId);
   const file =
     station?.kind === 'operator'
-      ? roleOf(station.role).config.outputs[output]?.file
+      ? (await roleOf(job, operatorOf(job.line, station).profile)).config
+          .outputs[output]?.file
       : undefined;
   if (file === undefined) return '';
   const path = join(stationDirOf(workspace, stationId), file);
@@ -55,9 +57,24 @@ export const runDeliverStation = async (
       outcome: { kind: 'failed', feedback: 'there is no commit to deliver' },
     };
   }
+  if (job.line.deliver.requireAdr) {
+    const added = await job.git.addedPaths(
+      workspace.path,
+      workspace.baseSha,
+      DECISIONS_DIR,
+    );
+    if (added.length !== 1) {
+      return {
+        outcome: {
+          kind: 'failed',
+          feedback: `requireAdr needs exactly one new ${DECISIONS_DIR}/ entry, found ${added.length}`,
+        },
+      };
+    }
+  }
   await pushBranch(job, workspace);
   let published: { url: string; number: number } | undefined;
-  if (job.line.deliver.to === 'pr') {
+  if (job.line.deliver.to === 'new-pr') {
     published = await job.forgeOf(job.manifest).publishPr({
       cwd: workspace.path,
       branch: workspace.branch,
@@ -71,9 +88,7 @@ export const runDeliverStation = async (
         title: order.title,
         objective: order.body,
         report: await sourceOf(job, workspace, job.line.deliver.report),
-        checks: job.line.stations.flatMap((station) =>
-          station.kind === 'inspection' ? checksOf(job, station) : [],
-        ),
+        checks: checksOfLine(job.line),
         steps: steps.filter(
           (step) =>
             step.attemptsUsed > 0 &&

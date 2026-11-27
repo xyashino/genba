@@ -5,7 +5,18 @@ export type FsPort = {
   remove(path: string): Promise<void>;
   exists(path: string): Promise<boolean>;
   list(dir: string): Promise<string[]>;
+  /** a file gives itself, a folder every file under it (sorted, no dotfiles), a missing path nothing */
+  filesAt(path: string): Promise<string[]>;
   readStdin(): Promise<string>;
+};
+
+export type LockPort = {
+  /** runs `work` while no other process holds the lock; `signal` stops the wait */
+  withLock<T>(
+    dataDir: string,
+    signal: AbortSignal,
+    work: () => Promise<T>,
+  ): Promise<T>;
 };
 
 export type PidFilePort = {

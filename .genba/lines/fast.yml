@@ -1,0 +1,50 @@
+name: fast
+description: Direct build with deterministic quality gate and delivery
+
+changeover:
+  root:
+    timeout: 2m
+    exec:
+      - git fetch origin
+  worktree:
+    timeout: 10m
+    exec:
+      - bun install --frozen-lockfile
+
+operators:
+  builder:
+    profile: builder
+    runner: claude
+    model: haiku
+    timeout: 60m
+    headless: true
+    permission: write
+
+mechanic:
+  profile: mechanic
+  runner: claude
+  model: sonnet
+  timeout: 20m
+  headless: true
+  permission: read
+
+stations:
+  - id: build
+    kind: operator
+    operator: builder
+    inputs: []
+
+  - id: quality-gate
+    kind: inspection
+    timeout: 30m
+    exec:
+      - bun run ci:verify
+    onFail:
+      retry: build
+      max: 3
+
+deliver:
+  commit: build.commit
+  report: build.report
+  to: new-pr
+  requireAdr: false

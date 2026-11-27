@@ -12,25 +12,15 @@ describe('Repo manifest parser', () => {
       line: 'standard',
       cells: 1,
       minRemainingUsagePct: 10,
-      stationTimeoutMinutes: 30,
     });
-    expect(manifest.tiers.fast).toEqual({ runner: 'claude', model: 'haiku' });
     expectTypeOf(manifest).toEqualTypeOf<RepoManifest>();
   });
 
-  it('parses custom gitlab host, verify checks, and tiers', () => {
+  it('parses custom gitlab host, and defaults', () => {
     const manifest = parseRepoManifest({
       project: 'core-service',
       git: { provider: 'gitlab', host: 'gitlab.company.com' },
-      workspace: { setup: ['uv sync --frozen'] },
-      checks: { quick: ['ruff check .'], verify: ['pytest'] },
-      context: { rules: ['AGENTS.md'], conventions: ['Add OpenAPI diff'] },
       defaults: { line: 'feature', cells: 3 },
-      tiers: {
-        fast: { runner: 'antigravity', model: 'gemini-3.8-flash-medium' },
-        strong: { runner: 'claude', model: 'sonnet' },
-        top: { runner: 'claude', model: 'opus' },
-      },
     });
 
     expect(manifest.git).toEqual({
@@ -38,8 +28,20 @@ describe('Repo manifest parser', () => {
       host: 'gitlab.company.com',
       baseBranch: 'main',
     });
-    expect(manifest.checks.verify).toEqual(['pytest']);
     expect(manifest.defaults.cells).toBe(3);
+  });
+
+  it('reads rule and skill folders from inside the repo only', () => {
+    expect(parseRepoManifest({ project: 'demo' })).toMatchObject({
+      rules: '.agents/rules',
+      skills: '.agents/skills',
+    });
+    expect(
+      parseRepoManifest({ project: 'demo', rules: './docs/rules/' }).rules,
+    ).toBe('docs/rules');
+    for (const rules of ['/etc', '../shared', './']) {
+      expect(() => parseRepoManifest({ project: 'demo', rules })).toThrow();
+    }
   });
 
   it('rejects empty project names and invalid cell counts', () => {
