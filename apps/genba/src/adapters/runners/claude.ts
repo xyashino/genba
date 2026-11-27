@@ -55,6 +55,7 @@ const parseOutput = (log: string): RunnerReport => {
 export const claudeRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
+  restrictsReadMode: true,
   // The prompt goes first: variadic `--disallowedTools` would swallow a trailing one.
   buildCommand: (spec) => [
     BINARY,

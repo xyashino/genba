@@ -38,6 +38,9 @@ export const orders = sqliteTable(
     startedAt: text('started_at'),
     deliveredAt: text('delivered_at'),
     mergedAt: text('merged_at'),
+    resetWorktree: integer('reset_worktree', { mode: 'boolean' })
+      .notNull()
+      .default(false),
   },
   (table) => [
     uniqueIndex('orders_slug_unique').on(table.slug),
@@ -56,6 +59,7 @@ export const orderSteps = sqliteTable(
     status: text('status', { enum: STEP_STATUSES }).notNull(),
     attemptsUsed: integer('attempts_used').notNull().default(0),
     maxAttempts: integer('max_attempts').notNull(),
+    feedback: text('feedback'),
     startedAt: text('started_at'),
     finishedAt: text('finished_at'),
   },
@@ -80,6 +84,7 @@ export const jobs = sqliteTable(
     model: text('model'),
     tier: text('tier', { enum: MODEL_TIERS }),
     durationMs: integer('duration_ms'),
+    summary: text('summary'),
     startedAt: text('started_at').notNull(),
     finishedAt: text('finished_at'),
   },

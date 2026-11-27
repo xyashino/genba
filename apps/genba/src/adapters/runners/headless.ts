@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { closeSync, mkdirSync, openSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { childEnvOf } from '../process/child-env.ts';
 import type {
   RunHandle,
   RunnerPort,
@@ -24,7 +25,7 @@ const spawnHeadless = (spec: RunSpec): HeadlessRun => {
   // Own process group, so the signal reaches the agent's children too.
   const child = spawn(spec.command, spec.args, {
     cwd: spec.cwd,
-    env: { ...process.env, ...spec.env },
+    env: childEnvOf(spec.env),
     stdio: ['ignore', log, log],
     detached: !IS_WINDOWS,
   });
@@ -58,7 +59,11 @@ const spawnHeadless = (spec: RunSpec): HeadlessRun => {
   return {
     exit,
     stop: async () => {
-      if (exited) return true;
+      if (exited) {
+        // The leader is gone, but a process it left in the background could still edit files.
+        if (!IS_WINDOWS) signalTree('SIGKILL');
+        return true;
+      }
       signalTree('SIGTERM');
       if (await exitWithin(KILL_AFTER_MS)) return true;
       signalTree('SIGKILL');
@@ -79,13 +84,18 @@ export const createHeadlessRunner = (): RunnerPort => {
       runs.set(id, run);
       return { id, pid: run.pid };
     },
-    abort: async (handle) => runs.get(handle.id)?.stop() ?? true,
+    // `abort` releases the run, so call it after `wait` too: it sweeps leftover processes.
+    abort: async (handle) => {
+      const run = runs.get(handle.id);
+      if (run === undefined) return true;
+      const stopped = await run.stop();
+      if (stopped) runs.delete(handle.id);
+      return stopped;
+    },
     wait: async (handle): Promise<RunOutcome> => {
       const run = runs.get(handle.id);
       if (run === undefined) throw new Error(`unknown run ${handle.id}`);
-      const exitCode = await run.exit;
-      runs.delete(handle.id);
-      return { exitCode };
+      return { exitCode: await run.exit };
     },
   };
 };

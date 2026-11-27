@@ -1,0 +1,45 @@
+// Every branch imports lazily, so `genba operator` never loads the daemon, SQLite, or the CLI.
+const runOperatorVerb = async (args: string[]): Promise<number> => {
+  const [{ runOperator }, { createOperatorClient }, exits, port] =
+    await Promise.all([
+      import('./runtimes/operator/main.ts'),
+      import('./adapters/operator-client/client.ts'),
+      import('./adapters/operator-client/exit-map.ts'),
+      import('./ports/operator.port.ts'),
+    ]);
+  const url = process.env[port.OPERATOR_URL_ENV];
+  const token = process.env[port.CYCLE_TOKEN_ENV];
+  if (!url || !token) {
+    console.error('genba operator only works inside a station run by a Cell');
+    return 3;
+  }
+  return runOperator(args, {
+    client: createOperatorClient({ url, token }),
+    exitCodeFor: exits.exitCodeFor,
+    errorLineFor: exits.errorLineFor,
+    out: (text) => console.log(text),
+    err: (text) => console.error(text),
+  });
+};
+
+const dispatch = async (argv: string[]): Promise<number> => {
+  const [command, ...rest] = argv;
+  switch (command) {
+    case 'operator':
+      return runOperatorVerb(rest);
+    case '__daemon': {
+      const { runDaemon } = await import('./runtimes/daemon/main.ts');
+      return runDaemon(process.cwd());
+    }
+    case '__cell': {
+      const { runCell } = await import('./runtimes/cell/main.ts');
+      return runCell(rest[0] ?? '');
+    }
+    default: {
+      const { runCli } = await import('./runtimes/cli/main.ts');
+      return runCli(argv);
+    }
+  }
+};
+
+process.exit(await dispatch(process.argv.slice(2)));

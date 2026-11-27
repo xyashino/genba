@@ -5,7 +5,8 @@ const nonEmptyTrimmed = z.string().trim().min(1);
 
 export const tierTargetSchema = z.object({
   runner: nonEmptyTrimmed,
-  model: nonEmptyTrimmed,
+  /** omitted: the CLI uses its own default */
+  model: nonEmptyTrimmed.optional(),
 });
 
 export const repoManifestSchema = z.object({
@@ -14,8 +15,9 @@ export const repoManifestSchema = z.object({
     .object({
       provider: forgeProviderSchema.default('github'),
       host: nonEmptyTrimmed.optional(),
+      baseBranch: nonEmptyTrimmed.default('main'),
     })
-    .default({ provider: 'github' }),
+    .default({ provider: 'github', baseBranch: 'main' }),
   workspace: z
     .object({
       setup: z.array(nonEmptyTrimmed).default([]),
@@ -38,8 +40,14 @@ export const repoManifestSchema = z.object({
       line: nonEmptyTrimmed.default('standard'),
       cells: z.number().int().min(1).max(32).default(1),
       minRemainingUsagePct: z.number().min(0).max(100).default(10),
+      stationTimeoutMinutes: z.number().positive().default(30),
     })
-    .default({ line: 'standard', cells: 1, minRemainingUsagePct: 10 }),
+    .default({
+      line: 'standard',
+      cells: 1,
+      minRemainingUsagePct: 10,
+      stationTimeoutMinutes: 30,
+    }),
   tiers: z.record(modelTierSchema, tierTargetSchema).default({
     fast: { runner: 'claude', model: 'haiku' },
     strong: { runner: 'claude', model: 'sonnet' },

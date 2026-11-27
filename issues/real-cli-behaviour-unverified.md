@@ -5,15 +5,16 @@ evidence: untested
 status: open
 ---
 
-# Adapters never ran against real tools
+# Never ran against real tools
 
 ## Problem
 
-- Tests use fake runner and fake `gh` / `glab`
-- Unchecked: headless runs, interactive `claude` / `antigravity`, Claude heredoc guidance
-- Unchecked: `claude` / `codex` usage formats, `glab` JSON and create output (`glab` not installed)
-- `opencode run` has no `--auto`; may block on approval
+- E2E uses fake `claude` and fake `gh`; no real model, GitHub, or GitLab call was made
+- Unchecked: headless runs, whether `claude` finishes a station through `genba operator`, interactive argv, Claude heredoc guidance
+- Unchecked: usage formats, `gh` live output, `glab` JSON (`glab` not installed), `opencode run` without `--auto`
+- Install scripts ran on Linux x64 only
 
 ## Next
 
-- Run each in throwaway repo; mark runner supported only after pass
+- First: one real `claude` order on a throwaway repo
+- Then each other runner; mark supported only after pass

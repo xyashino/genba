@@ -9,6 +9,7 @@ const modelArgs = ({ model }: CommandSpec): string[] =>
 export const antigravityRunner: RunnerAdapter = {
   name: 'antigravity',
   binary: BINARY,
+  restrictsReadMode: false,
   buildCommand: (spec) => [
     BINARY,
     '--mode',

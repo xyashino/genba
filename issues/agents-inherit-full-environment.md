@@ -5,13 +5,13 @@ evidence: confirmed
 status: open
 ---
 
-# Agents inherit full parent environment
+# Agents inherit most of parent environment
 
 ## Problem
 
-- `adapters/runners/headless.ts` spawns with `{ ...process.env, ...spec.env }`
-- Conflicts with `docs/boundaries.md` invariant 1: agents only see operator URL and cycle token
+- Fixed: `GENBA_*` stripped from agents, setup, and checks
+- Still inherited: everything else, including forge and cloud tokens in your shell
 
 ## Next
 
-- Pass allowlisted env to agents, or change invariant to say what is really isolated
+- Decide allowlist per runner (CLI auth variables differ) or document as accepted risk

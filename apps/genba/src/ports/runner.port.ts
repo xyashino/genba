@@ -17,7 +17,7 @@ export type RunOutcome = {
 
 export type RunnerPort = {
   start(spec: RunSpec): Promise<RunHandle>;
-  /** Resolves once the run's processes are gone; false when they outlive the adapter's limit. */
+  /** Resolves once the run's processes are gone, including ones left behind after exit; false when they outlive the adapter's limit. */
   abort(handle: RunHandle): Promise<boolean>;
   wait(handle: RunHandle): Promise<RunOutcome>;
 };
@@ -50,6 +50,8 @@ export type RunnerReport = {
 export type RunnerCatalogPort = {
   names(): readonly string[];
   isInstalled(name: string): Promise<boolean>;
+  /** false when `read` permission adds no restriction for this CLI */
+  restrictsReadMode(name: string): boolean;
   commandLine(
     name: string,
     promptFile: string,

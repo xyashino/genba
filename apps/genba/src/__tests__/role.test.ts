@@ -64,4 +64,17 @@ describe('Built-in ROLE.md contracts and live guards', () => {
       'path ".git/config" is forbidden by pattern ".git/**"',
     ]);
   });
+
+  it('blocks changed files that match a forbidPaths glob', () => {
+    const role = parseRole(
+      '---\nid: x\nstage: runtime\nmode: write\nguards:\n  forbidPaths: ["*.env", "**/*.pem", "secrets/*"]\n---\nbody\n',
+    );
+
+    const violations = validateRoleGuards(role, {
+      changedPaths: ['prod.env', 'a/key.pem', 'secrets/x', 'src/app.ts'],
+      outputs: {},
+    });
+
+    expect(violations).toHaveLength(3);
+  });
 });

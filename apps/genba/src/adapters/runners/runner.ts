@@ -10,6 +10,8 @@ export type CommandSpec = CommandOptions & {
 export type RunnerAdapter = {
   name: string;
   binary: string;
+  /** false when `read` builds the same argv as `write` */
+  restrictsReadMode: boolean;
   /** argv, binary first */
   buildCommand(spec: CommandSpec): string[];
   /** argv for a headless run; the same as buildCommand for most CLIs */

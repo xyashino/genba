@@ -15,21 +15,20 @@ Open bugs, decisions, questions. Task specs go to `todos/`; made choices go to `
 
 | Issue | Kind | Priority | Evidence |
 | :--- | :--- | :--- | :--- |
+| [Agents can read daemon and forge credentials](./agents-can-reach-daemon-token.md) | decision | high | confirmed |
+| [Agents inherit most of parent environment](./agents-inherit-full-environment.md) | bug | high | confirmed |
+| [Guard misses ignored files and `.git/` writes](./changed-paths-guard-blind-spots.md) | bug | high | confirmed |
 | [Codex read mode blocks operator calls](./codex-read-only-blocks-operator.md) | bug | high | likely |
 | [Read roles must write output files](./read-roles-cannot-write-outputs.md) | decision | high | confirmed |
-| [`antigravity` and `opencode` ignore read mode](./antigravity-opencode-ignore-read-mode.md) | bug | high | confirmed |
-| [Same `read` permission, different guarantees](./read-mode-guarantee-differs-per-runner.md) | decision | high | confirmed |
-| [`git status` guard misses some writes](./changed-paths-guard-blind-spots.md) | bug | high | confirmed |
-| [Agents inherit full parent environment](./agents-inherit-full-environment.md) | bug | high | confirmed |
-| [Role commands do not satisfy operator contracts](./operator-verbs-miss-required-fields.md) | bug | high | confirmed |
-| [Adapters never ran against real tools](./real-cli-behaviour-unverified.md) | verify | high | untested |
-| [`forbidPaths` silently ignores most globs](./forbid-paths-ignores-glob-patterns.md) | bug | medium | confirmed |
-| [Operator runtime cannot import its client](./operator-client-lint-boundary.md) | decision | medium | confirmed |
-| [Push after rollback likely rejected](./push-after-rollback-rejected.md) | decision | medium | likely |
+| [Never ran against real tools](./real-cli-behaviour-unverified.md) | verify | high | untested |
+| [`antigravity` and `opencode` have no read mode](./antigravity-opencode-ignore-read-mode.md) | bug | medium | confirmed |
+| [Quota gate is not wired](./quota-gate-has-no-source.md) | question | medium | confirmed |
+| [Same `read` permission, different guarantees](./read-mode-guarantee-differs-per-runner.md) | decision | medium | confirmed |
+| [No release publishes binaries](./release-binaries-not-published.md) | task | medium | confirmed |
 | [New worktree can start from stale base](./worktree-base-can-be-stale.md) | decision | medium | confirmed |
-| [Checkpoint rules not ported](./checkpoint-policy-not-ported.md) | task | medium | confirmed |
-| [Quota gate has no data source](./quota-gate-has-no-source.md) | question | medium | confirmed |
+| [Child waits forever on cancelled or blocked parent](./child-order-waits-on-dead-parent.md) | decision | low | confirmed |
 | [Do we need interactive runs?](./interactive-mode-has-no-runner.md) | question | low | confirmed |
-| [Usage storage and cost deferred](./usage-storage-and-cost-deferred.md) | question | low | confirmed |
-| [Docs list unsupported `gemini` runner](./readme-lists-unsupported-gemini.md) | bug | low | confirmed |
+| [Runner can escape if Cell dies right after start](./runner-pid-tracking-window.md) | bug | low | likely |
+| [Station logs vanish after delivery](./station-logs-lost-after-delivery.md) | task | low | confirmed |
 | [`.ts` import rule not enforced](./ts-import-paths-not-linted.md) | task | low | confirmed |
+| [Usage storage and cost deferred](./usage-storage-and-cost-deferred.md) | question | low | confirmed |

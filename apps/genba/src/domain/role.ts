@@ -34,14 +34,8 @@ export type RoleGuardSnapshot = {
   outputs: Readonly<Record<string, string | undefined>>;
 };
 
-const matchesForbidPattern = (filePath: string, pattern: string): boolean => {
-  const normalized = filePath.replaceAll('\\', '/');
-  if (pattern.endsWith('/**')) {
-    const prefix = pattern.slice(0, -2);
-    return normalized.startsWith(prefix);
-  }
-  return normalized === pattern;
-};
+const matchesForbidPattern = (filePath: string, pattern: string): boolean =>
+  new Bun.Glob(pattern).match(filePath.replaceAll('\\', '/'));
 
 const hasHeading = (markdown: string, heading: string): boolean => {
   const target = heading.trim().toLowerCase();

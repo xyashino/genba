@@ -10,8 +10,8 @@ status: open
 ## Problem
 
 - `worktreeAdd` fetches, then prefers local base branch over `origin/<base>`
-- Behaviour copied from `sf`
+- Local `main` behind remote means agents build on old code and PR may conflict
 
 ## Next
 
-- Decide when `origin/<base>` wins, keeping parent-branch stacking working
+- Prefer `origin/<base>` for repo base branch; keep local branch for parent stacking

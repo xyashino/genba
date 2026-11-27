@@ -1,11 +1,28 @@
 // Stands in for `gh` and `glab`. Unknown subcommands and flags fail, as in the real CLIs.
-import { readFileSync, writeFileSync } from 'node:fs';
+import {
+  closeSync,
+  openSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { FORGE_STATE_ENV } from './forge-state.ts';
 import type { FakeForgeState, FakeItem } from './forge-state.ts';
 
 const [CLI, ...args] = process.argv.slice(2) as ['gh' | 'glab', ...string[]];
 const command = args.slice(0, 2).join(' ');
 const statePath = process.env[FORGE_STATE_ENV]!;
+// Parallel Cells call the stub at once: one process owns the state file until it exits.
+const lockPath = `${statePath}.lock`;
+for (;;) {
+  try {
+    closeSync(openSync(lockPath, 'wx'));
+    break;
+  } catch {
+    Bun.sleepSync(5);
+  }
+}
+process.on('exit', () => unlinkSync(lockPath));
 const state = JSON.parse(readFileSync(statePath, 'utf8')) as FakeForgeState;
 
 const SPECS: Record<'gh' | 'glab', Record<string, string[]>> = {
