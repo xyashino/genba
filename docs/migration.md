@@ -1,0 +1,15 @@
+# Migration Plan from `software-factory`
+
+Phased port order into `genba` — copy battle-tested adapters/packages, rewrite only the repo-first local engine and thin Hub bridge.
+
+## Phases
+
+| Phase | Scope | Source / Action |
+| :--- | :--- | :--- |
+| **Phase 0: Core Monorepo** | Turborepo, Bun catalog, `packages/prompt`, `packages/nitpick`, `packages/eslint-config`, `packages/typescript-config`, `.nitpick/` | **Done** — ported from `software-factory`; `@repo/prompt` wired into `@repo/nitpick` (`stage: sync`) |
+| **Phase 1: Core Contracts & DB** | `packages/bun-sqlite-kit`, `packages/zod-contract-kit`, `packages/genba-contracts` | Port SQLite & Zod kits; define lean local-first schemas (orders, jobs, incidents, telemetry) |
+| **Phase 2: `apps/genba` Built-ins & Adapters** | `builtin/{lines,roles}` (`with { type: 'text' }`), runner adapters (`claude`, `codex`, `copilot`, `cursor`, `opencode`, `antigravity`), `git`, `ForgePort` (`gh` + `glab`) | Port runner/git/loopback adapters; add `glab`, Draft PR, `genba:andon` Issue, and PR URL return |
+| **Phase 3: Local Engine & CLI** | Local daemon (`127.0.0.1:7072`), Cell runtime, live `ROLE.md` guards, `genba init` auto-detect, `genba start/scale/import/stats` | Build local-first execution loop (zero HQ required); remove Fat-HQ step/lease coupling |
+| **Phase 4: Yield & Cost Controls** | Per-job usage/cost extraction, PR merge sync, `genba stats` (OEE), retry model escalation ladder, order/daily budget caps | New high-value features baked into local SQLite |
+| **Phase 5: Optional Thin Hub** | `apps/hub` (outbound Genba registry, read projections, SSE fan-out, command outbox) | Slim bridge for remote Web UI — zero step/retry/Mechanic logic |
+| **Phase 6: Optional Web UI** | `apps/web` (fleet, orders, Andon issues with forge links, OEE dashboard) | Port RxJS EDA shell from `software-factory/apps/web` targeting Hub or local loopback |
