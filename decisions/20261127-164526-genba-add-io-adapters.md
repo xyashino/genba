@@ -22,3 +22,5 @@ date: 2026-11-27
 - Rename the lint boundary from `adapters/db` to `**/adapters/sqlite/**`
 - Test forge and runners with executable stubs; `glab` flags checked against docs, not a live CLI
 - Relative imports use the real `.ts` path repo-wide; `rewriteRelativeImportExtensions` keeps emitted `nitpick` and `prompt` output on `.js`
+- Add `issues/` with one file per open bug, decision, or question, tagged by priority and evidence
+  - Visible folder next to `decisions/`, linked from `.nitpick/entry.md`
