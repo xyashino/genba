@@ -20,6 +20,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --coverage.reporter=text"
   },
+  "dependencies": {
+    "@repo/prompt": "workspace:*"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

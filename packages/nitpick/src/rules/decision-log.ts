@@ -1,4 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
 import type { RuleUnit } from '../config.js';
 
 type Options = { scopes: RegExp[] };
@@ -121,18 +123,9 @@ const VERBS = [
   'wait',
   'wire',
 ];
-const TEMPLATE = `decisions/20261011-120000-parka-add-dashboard-tiles.md
----
-scope: parka/dashboard
-summary: Tiles ordered by priority
-why: Total + budget answer "am I OK?" first
-date: 2026-10-11
-supersedes: 20261009-093000-parka-order-tiles
----
-
-- Order: hero, limits, expenses, categories, chart
-  - \`DashboardSkeleton\` mirrors the same order
-- From \`xl\`: explicit \`xl:col-start\`/\`xl:row-start\``;
+const FIX_PROMPT = parsePrompt(
+  readFileSync(new URL('decision-log-fix.md', import.meta.url), 'utf8'),
+);
 
 const isDate = (value: string): boolean =>
   DATE.test(value) &&
@@ -418,50 +411,69 @@ export const validateDecisionLog = (
   return problems.map((problem) => `${file}: ${problem}`);
 };
 
-export const decisionLog = (options: Options): RuleUnit => ({
-  importance: 'A',
-  fix: `Add exactly one new file to the commit and stage it (a commit that only moves or edits files in decisions/ needs none). Template:\n${TEMPLATE}\nSummary ${SUMMARY.min}-${SUMMARY.max} chars, why ${WHY.min}-${WHY.max} chars, slug ${SLUG.min}-${SLUG.max} chars, ${BULLETS.min}-${BULLETS.max} bullets of max ${LINE_MAX} chars. Allowed scopes: ${options.scopes.map(String).join(' ')}`,
-  doc: {
-    file: fileURLToPath(new URL('decision-log.md', import.meta.url)),
-  },
-  run: async ({ files, git, readText, report }) => {
-    for (const file of git.stagedAddedFiles.filter((item) =>
-      WRONG_LOCATION.test(item),
-    ))
-      report(
-        `${file}: decisions live in "${DIR}" at repo root, not in "__log__/"`,
-      );
-    const decisions = files.filter((file) => file.startsWith(DIR));
-    const entries = [
-      ...new Set([...git.stagedAddedFiles, ...(git.committedAddedFiles ?? [])]),
-    ].filter((file) => file.startsWith(DIR));
-    const decisionsOnly =
-      git.stagedFiles.length > 0 &&
-      git.stagedFiles.every(
-        (file) => file.startsWith(DIR) || WRONG_LOCATION.test(file),
-      );
-    if (entries.length === 0 && !decisionsOnly)
-      report(
-        `No new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry staged in this commit`,
-      );
-    if (entries.length > 1)
-      report(
-        `Exactly one new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry per commit, found ${entries.length}: ${entries.join(', ')}`,
-      );
-    const existing = decisions.filter((file) => !entries.includes(file));
-    for (const file of entries)
-      for (const problem of validateDecisionLog(
-        file,
-        await readText(file),
-        existing,
-        options,
+export const decisionLog = (options: Options): RuleUnit => {
+  const docInputs = {
+    dir: DIR,
+    scopes: options.scopes.map(String).join(' '),
+    slugMin: SLUG.min,
+    slugMax: SLUG.max,
+    summaryMin: SUMMARY.min,
+    summaryMax: SUMMARY.max,
+    whyMin: WHY.min,
+    whyMax: WHY.max,
+    bulletsMin: BULLETS.min,
+    bulletsMax: BULLETS.max,
+    lineMax: LINE_MAX,
+  };
+  return {
+    importance: 'A',
+    fix: renderPrompt(FIX_PROMPT, { inputs: docInputs }).trim(),
+    doc: {
+      file: fileURLToPath(new URL('decision-log.md', import.meta.url)),
+      inputs: docInputs,
+    },
+    run: async ({ files, git, readText, report }) => {
+      for (const file of git.stagedAddedFiles.filter((item) =>
+        WRONG_LOCATION.test(item),
       ))
-        report(problem);
-    for (const file of existing)
-      for (const problem of nameProblems(
-        file,
-        existing.filter((other) => other !== file),
-      ))
-        report(`${file}: ${problem}`);
-  },
-});
+        report(
+          `${file}: decisions live in "${DIR}" at repo root, not in "__log__/"`,
+        );
+      const decisions = files.filter((file) => file.startsWith(DIR));
+      const entries = [
+        ...new Set([
+          ...git.stagedAddedFiles,
+          ...(git.committedAddedFiles ?? []),
+        ]),
+      ].filter((file) => file.startsWith(DIR));
+      const decisionsOnly =
+        git.stagedFiles.length > 0 &&
+        git.stagedFiles.every(
+          (file) => file.startsWith(DIR) || WRONG_LOCATION.test(file),
+        );
+      if (entries.length === 0 && !decisionsOnly)
+        report(
+          `No new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry staged in this commit`,
+        );
+      if (entries.length > 1)
+        report(
+          `Exactly one new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry per commit, found ${entries.length}: ${entries.join(', ')}`,
+        );
+      const existing = decisions.filter((file) => !entries.includes(file));
+      for (const file of entries)
+        for (const problem of validateDecisionLog(
+          file,
+          await readText(file),
+          existing,
+          options,
+        ))
+          report(problem);
+      for (const file of existing)
+        for (const problem of nameProblems(
+          file,
+          existing.filter((other) => other !== file),
+        ))
+          report(`${file}: ${problem}`);
+    },
+  };
+};
