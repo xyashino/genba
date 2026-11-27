@@ -7,7 +7,7 @@ Phased port order into `genba` — copy battle-tested adapters/packages, rewrite
 | Phase | Scope | Source / Action |
 | :--- | :--- | :--- |
 | **Phase 0: Core Monorepo** | Turborepo, Bun catalog, `pr-ci.yml`, `packages/contract-kit`, `packages/sqlite-kit`, `packages/prompt`, `packages/nitpick`, `packages/eslint-config`, `packages/typescript-config`, `.nitpick/` | **Done** — ported from `software-factory`; `@repo/prompt` wired into `@repo/nitpick` (`stage: sync`) |
-| **Phase 1: Core Contracts** | `packages/genba-contracts` | Define lean local-first schemas (orders, jobs, incidents, telemetry) |
+| **Phase 1: Unified Contracts & Domain Core** | `packages/contracts`, `apps/genba/src/builtin/`, `apps/genba/src/domain/` | **Done** — unified wire schemas, repo manifest, built-in Lines & `ROLE.md`, DAG, escalation |
 | **Phase 2: `apps/genba` Built-ins & Adapters** | `builtin/{lines,roles}` (`with { type: 'text' }`), runner adapters (`claude`, `codex`, `copilot`, `cursor`, `opencode`, `antigravity`), `git`, `ForgePort` (`gh` + `glab`) | Port runner/git/loopback adapters; add `glab`, Draft PR, `genba:andon` Issue, and PR URL return |
 | **Phase 3: Local Engine & CLI** | Local daemon (`127.0.0.1:7072`), Cell runtime, live `ROLE.md` guards, `genba init` auto-detect, `genba start/scale/import/stats` | Build local-first execution loop (zero HQ required); remove Fat-HQ step/lease coupling |
 | **Phase 4: Yield & Cost Controls** | Per-job usage/cost extraction, PR merge sync, `genba stats` (OEE), retry model escalation ladder, order/daily budget caps | New high-value features baked into local SQLite |

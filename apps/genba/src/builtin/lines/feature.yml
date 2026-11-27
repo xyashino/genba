@@ -1,0 +1,32 @@
+name: feature
+description: Plan, build behind quality gate, then independent doctor audit
+stations:
+  - id: plan
+    kind: operator
+    role: planner
+    tier: strong
+    inputs: []
+  - id: build
+    kind: operator
+    role: builder
+    tier: fast
+    escalate: [fast, strong, top]
+    inputs: [plan.plan]
+  - id: quality-gate
+    kind: inspection
+    hook: checks.verify
+    onFail:
+      retry: build
+      max: 3
+  - id: audit
+    kind: operator
+    role: doctor
+    tier: strong
+    inputs: [plan.plan, build.report, build.commit, quality-gate.gate]
+    onFail:
+      retry: build
+      max: 2
+deliver:
+  commit: build.commit
+  report: build.report
+  to: pr
