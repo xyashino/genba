@@ -13,9 +13,9 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 
 - **60-second injection**: `genba init` auto-detects stack, verify checks, rules, runners, and git forge -> writes one `.genba/config.json`.
 - **Repo-agnostic engine**: Built-in Lines (`fast`, `standard`, `feature`) and `ROLE.md` (`planner`, `builder`, `doctor`, `mechanic`) ship inside the binary.
-- **Lower token waste**: Surgical role context, live `genba operator done` guards, cheap-first retry escalation ladder, hard budget caps.
+- **Lower token waste**: Surgical role context, live `genba operator done` guards, cheap-first retry escalation ladder.
 - **Forge-native**: Opens PR/MR on delivery; pushes WIP Draft PR + `genba:andon` Issue on escalation (`gh` / `glab`).
-- **Provable ROI (`genba stats`)**: Tracks per-job tokens/cost, First-Pass Yield, Autonomous Rate, Merge Rate, Waste Rate, Cost per Merged PR.
+- **Provable ROI (`genba stats`)**: Tracks First-Pass Yield, Autonomous Rate, Merge Rate.
 - **Optional Hub + Web UI**: Local server works standalone; `hub` is opt-in bridge for multi-machine browser visibility.
 
 ## Glossary

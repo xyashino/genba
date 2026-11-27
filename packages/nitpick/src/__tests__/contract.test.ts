@@ -2,8 +2,8 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { config } from '../config.js';
-import { buildDocs } from '../docs.js';
+import { config } from '../config.ts';
+import { buildDocs } from '../docs.ts';
 
 const build = async (value: ReturnType<typeof config>) => {
   const root = await mkdtemp(join(tmpdir(), 'nitpick-'));

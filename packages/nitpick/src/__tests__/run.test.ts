@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { run } from '../run.js';
+import { run } from '../run.ts';
 
 const configPath = join(import.meta.dirname, '..', 'config.ts')
   .split(String.fromCharCode(92))

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
-import type { RuleUnit } from '../config.js';
+import type { RuleUnit } from '../config.ts';
 
 export const COMMIT_TYPES = [
   'feat',

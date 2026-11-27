@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { errorResponse, parseReply } from '../reply';
-import type { ZodContract } from '../types';
+import { errorResponse, parseReply } from '../reply.ts';
+import type { ZodContract } from '../types.ts';
 
 const contract = {
   out: {

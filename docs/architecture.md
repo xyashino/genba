@@ -21,16 +21,16 @@ Hexagonal core (`domain/`, `builtin/`, `ports/`, `adapters/`) separated from 4 s
 
 ```text
 apps/genba/src/
-├── domain/                  # Pure rules, zero IO (manifest, line, role, order, budget, errors)
+├── domain/                  # Pure rules, zero IO (manifest, line, role, order, errors)
 ├── builtin/                 # Embedded lines/*.yml & roles/*/ROLE.md (`with { type: 'text' }`)
 ├── ports/                   # Narrow app-owned interfaces (clock, fs, process, git, forge, runner, event-bus)
-├── adapters/                # Concrete implementations (db, fs, git, forge, runners, process, http)
+├── adapters/                # Concrete implementations (sqlite, fs, git, forge, runners, process, operator-endpoint, operator-client, http)
 ├── runtimes/
-│   ├── daemon/              # `genba __daemon` (127.0.0.1:7072) - only runtime touching adapters/db
+│   ├── daemon/              # `genba __daemon` (127.0.0.1:7072) - only runtime touching adapters/sqlite
 │   │   ├── ports/           # store.port.ts (repository contract decoupling procedures from Drizzle)
 │   │   ├── core/            # procedure.ts (contract-first), error-handling.ts, context.ts
 │   │   ├── procedures/      # One file per use-case (claim-job, complete-job, import-orders, stats...)
-│   │   ├── scheduler.ts     # Queue ordering, retry tier escalation, budget caps
+│   │   ├── scheduler.ts     # Queue ordering, retry tier escalation
 │   │   ├── supervisor.ts    # Spawns/scales/kills Cells (kill-before-requeue invariant)
 │   │   ├── hub-sync.ts      # Optional outbound Hub sync + outbox poller
 │   │   └── server.ts        # Thin Hono HTTP/SSE adapter wiring routes -> procedures
@@ -68,8 +68,8 @@ flowchart LR
 - **ESLint-enforced boundaries** (`apps/genba/eslint.config.mjs`):
   - `src/domain/**` forbids `../adapters/**`, `../runtimes/**`
   - `src/runtimes/operator/**` forbids `../../adapters/**`, `../daemon/**`, `../cell/**`
-  - `src/runtimes/cell/**` forbids `../../adapters/db/**`, `../daemon/**`
-  - `src/runtimes/cli/**` forbids `../../adapters/db/**`
+  - `src/runtimes/cell/**` forbids `**/adapters/sqlite/**`, `../daemon/**`
+  - `src/runtimes/cli/**` forbids `**/adapters/sqlite/**`
 
 ## Inside `apps/hub` (Phase 5 - Optional)
 

@@ -2,7 +2,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
 import { describe, expect, it } from 'vitest';
-import { idText, jsonColumn, timestamps } from '../columns';
+import { idText, jsonColumn, timestamps } from '../columns.ts';
 
 const records = sqliteTable('records', {
   id: integer('id').primaryKey(),

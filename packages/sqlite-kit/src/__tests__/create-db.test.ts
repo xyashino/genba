@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createDb } from '../create-db';
-import { items, migrations, schema } from './fixture';
+import { createDb } from '../create-db.ts';
+import { items, migrations, schema } from './fixture.ts';
 
 const scratch: string[] = [];
 

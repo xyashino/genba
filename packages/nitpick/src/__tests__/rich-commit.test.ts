@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { richCommit } from '../rules/rich-commit.js';
+import { richCommit } from '../rules/rich-commit.ts';
 
 const run = async (rule: typeof richCommit, message: string) => {
   const reports: string[] = [];

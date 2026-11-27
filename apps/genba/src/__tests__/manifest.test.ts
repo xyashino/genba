@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { parseRepoManifest } from '../domain/manifest.js';
-import type { RepoManifest } from '../domain/manifest.js';
+import { parseRepoManifest } from '../domain/manifest.ts';
+import type { RepoManifest } from '../domain/manifest.ts';
 
 describe('Repo manifest parser', () => {
   it('fills sensible defaults when only project name is supplied', () => {

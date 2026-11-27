@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 const textAssetPlugin = {
   name: 'genba-text-assets',
   load(id: string) {
-    if (!id.endsWith('.md') && !id.endsWith('.yml')) return null;
+    if (!/\.(md|yml|sql)$/.test(id)) return null;
     return `export default ${JSON.stringify(readFileSync(id, 'utf8'))};`;
   },
 };

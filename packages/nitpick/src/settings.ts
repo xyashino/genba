@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { McpServer, Settings } from './config.js';
+import type { McpServer, Settings } from './config.ts';
 
 export type SettingsSource = { from: string; settings: Settings };
 

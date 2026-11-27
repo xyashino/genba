@@ -1,6 +1,6 @@
-import { contextUsage } from './statusline-context.js';
-import type { ContextInput } from './statusline-context.js';
-import type { Spend, Usage } from './statusline-usage.js';
+import { contextUsage } from './statusline-context.ts';
+import type { ContextInput } from './statusline-context.ts';
+import type { Spend, Usage } from './statusline-usage.ts';
 
 export type SessionInput = {
   model?: { display_name?: string };

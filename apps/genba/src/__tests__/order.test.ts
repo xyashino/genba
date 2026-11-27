@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseOrderMarkdown, resolveOrderDag } from '../domain/order.js';
+import { parseOrderMarkdown, resolveOrderDag } from '../domain/order.ts';
 
 describe('Order markdown parser and single-parent DAG', () => {
   it('parses frontmatter, heading title, depends_on, and default line', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_LINES } from '../builtin/registry.js';
-import { bindLine, parseLine, resolveAttemptModel } from '../domain/line.js';
-import { parseRepoManifest } from '../domain/manifest.js';
+import { BUILTIN_LINES } from '../builtin/registry.ts';
+import { bindLine, parseLine, resolveAttemptModel } from '../domain/line.ts';
+import { parseRepoManifest } from '../domain/manifest.ts';
 
 describe('Built-in lines and retry escalation', () => {
   const manifest = parseRepoManifest({

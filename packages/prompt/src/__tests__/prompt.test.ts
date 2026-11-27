@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parsePrompt, renderPrompt } from '../prompt';
+import { parsePrompt, renderPrompt } from '../prompt.ts';
 
 const file = (frontmatter: string, body: string): string =>
   `---\n${frontmatter}\n---\n${body}`;

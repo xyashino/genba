@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { matchesGlob, resolve } from 'node:path';
 import { promisify } from 'node:util';
-import type { CheckContext } from './config.js';
+import type { CheckContext } from './config.ts';
 
 type Options = { commitMsgFile?: string; range?: string };
 

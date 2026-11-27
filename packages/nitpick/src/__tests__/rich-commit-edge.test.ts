@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { richCommit } from '../rules/rich-commit.js';
+import { richCommit } from '../rules/rich-commit.ts';
 
 const check = async (...messages: string[]) => {
   const reports: string[] = [];

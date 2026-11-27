@@ -2,7 +2,7 @@ import { modelTierSchema } from '@repo/contracts/enums';
 import type { ModelTier } from '@repo/contracts/enums';
 import { parse } from 'yaml';
 import { z } from 'zod';
-import type { RepoManifest, TierTarget } from './manifest.js';
+import type { RepoManifest, TierTarget } from './manifest.ts';
 
 const onFailSchema = z.object({
   retry: z.string().min(1),

@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, appendFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { readUsage } from '../plugins/statusline-usage.js';
+import { readUsage } from '../plugins/statusline-usage.ts';
 
 // "now" is 2026-11-03 15:00 local. daysAgo 0 = today, 6 = oldest day in the week.
 const NOW = new Date(2026, 10, 3, 15);

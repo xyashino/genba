@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contextUsage } from '../plugins/statusline-context.js';
+import { contextUsage } from '../plugins/statusline-context.ts';
 
 describe('Context usage works when', () => {
   it('is unknown without a window size', () => {

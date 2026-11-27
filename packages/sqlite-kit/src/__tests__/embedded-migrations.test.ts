@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { embeddedMigrationsOf } from '../embedded-migrations';
+import { embeddedMigrationsOf } from '../embedded-migrations.ts';
 
 const QUERY =
   'CREATE TABLE a (id);\n--> statement-breakpoint\nCREATE TABLE b (id);';

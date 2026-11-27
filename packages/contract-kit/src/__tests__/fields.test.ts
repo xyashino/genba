@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { pageOut, paginationIn } from '../fields';
+import { pageOut, paginationIn } from '../fields.ts';
 
 describe('paginationIn', () => {
   it('applies the default limit when the query omits it', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderStatusLine } from '../plugins/statusline-render.js';
+import { renderStatusLine } from '../plugins/statusline-render.ts';
 
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';

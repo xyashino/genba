@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkRunnerQuota } from '../domain/quota.js';
+import { checkRunnerQuota } from '../domain/quota.ts';
 
 describe('Cell runner usage quota gate', () => {
   it('allows execution when remaining usage meets threshold or is unknown', () => {

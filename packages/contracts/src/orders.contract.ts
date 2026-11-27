@@ -13,7 +13,7 @@ import {
   orderStatusSchema,
   prOutcomeSchema,
   stepStatusSchema,
-} from './enums.js';
+} from './enums.ts';
 
 export const orderStepSchema = z.object({
   id: z.string().min(1),

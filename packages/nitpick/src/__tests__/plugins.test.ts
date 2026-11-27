@@ -2,10 +2,10 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { config } from '../config.js';
-import type { Config } from '../config.js';
-import { buildDocs } from '../docs.js';
-import { statusLine } from '../plugins/statusline.js';
+import { config } from '../config.ts';
+import type { Config } from '../config.ts';
+import { buildDocs } from '../docs.ts';
+import { statusLine } from '../plugins/statusline.ts';
 
 const rules = { g: { r: { importance: 'A' as const, doc: 'do r' } } };
 

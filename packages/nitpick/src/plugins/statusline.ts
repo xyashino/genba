@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import type { Plugin } from '../config.js';
+import type { Plugin } from '../config.ts';
 
 export type StatusLineOptions = {
   limits?: { daily?: number; weekly?: number };

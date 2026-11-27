@@ -12,6 +12,8 @@
     "@repo/contract-kit": "workspace:*",
     "@repo/contracts": "workspace:*",
     "@repo/prompt": "workspace:*",
+    "@repo/sqlite-kit": "workspace:*",
+    "drizzle-orm": "catalog:",
     "yaml": "catalog:",
     "zod": "catalog:"
   },
