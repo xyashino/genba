@@ -89,6 +89,7 @@ export const runInit = async (
     project: basename(root),
     rules: `./${DEFAULT_GUIDANCE_DIRS.rules}`,
     skills: `./${DEFAULT_GUIDANCE_DIRS.skills}`,
+    herdr: false,
     git: {
       provider: remote?.provider ?? 'github',
       baseBranch: await baseBranchOf(deps, root),

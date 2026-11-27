@@ -53,7 +53,7 @@ describe('Line files', () => {
   });
 
   it.each([
-    ['headless: true', 'headless: false', 'headless only'],
+    ['permission: write', 'headless: false', 'headless'],
     ['operator: builder', 'operator: ghost', 'unknown operator'],
     ['retry: build', 'retry: audit', 'earlier station'],
     ['id: quality-gate', 'id: deliver', 'reserved'],

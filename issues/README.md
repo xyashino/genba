@@ -27,7 +27,6 @@ Open bugs, decisions, questions. Task specs go to `todos/`; made choices go to `
 | [No release publishes binaries](./release-binaries-not-published.md) | task | medium | confirmed |
 | [New worktree can start from stale base](./worktree-base-can-be-stale.md) | decision | medium | confirmed |
 | [Child waits forever on cancelled or blocked parent](./child-order-waits-on-dead-parent.md) | decision | low | confirmed |
-| [Do we need interactive runs?](./interactive-mode-has-no-runner.md) | question | low | confirmed |
 | [Runner can escape if Cell dies right after start](./runner-pid-tracking-window.md) | bug | low | likely |
 | [Station logs vanish after delivery](./station-logs-lost-after-delivery.md) | task | low | confirmed |
 | [`.ts` import rule not enforced](./ts-import-paths-not-linted.md) | task | low | confirmed |

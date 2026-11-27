@@ -17,14 +17,12 @@ operators:
     runner: claude
     model: haiku
     timeout: 60m
-    headless: true
     permission: write
   doctor:
     profile: doctor
     runner: antigravity
     model: gemini-3.8-flash-high
     timeout: 20m
-    headless: true
     permission: read
 
 mechanic:
@@ -32,7 +30,6 @@ mechanic:
   runner: claude
   model: sonnet
   timeout: 20m
-  headless: true
   permission: read
 
 stations:

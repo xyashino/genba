@@ -79,7 +79,10 @@ const raceEnd = async (
   deps.signal.addEventListener('abort', onStop, { once: true });
   try {
     if (handle.pid !== undefined) {
-      await deps.trackRunner({ pid: handle.pid, command });
+      await deps.trackRunner({
+        pid: handle.pid,
+        command: handle.marker ?? command,
+      });
     }
     const end = await Promise.race([
       deps.runner

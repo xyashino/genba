@@ -316,11 +316,24 @@ export const runAgent = async (
     const line = job.catalog.commandLine(
       agent.runner,
       relative(workspace.path, promptPath),
-      { model: agent.model, permission },
+      { model: agent.model, permission, headless: !job.manifest.herdr },
     )!;
     end = await runTracked(
       job,
-      { ...line, cwd: workspace.path, env: session.env, logPath },
+      {
+        ...line,
+        cwd: workspace.path,
+        env: session.env,
+        logPath,
+        ...(job.manifest.herdr
+          ? {
+              pane: {
+                workspace: `genba:${job.manifest.project}`,
+                tab: `${job.assignment.order.slug}:${stationId}`,
+              },
+            }
+          : {}),
+      },
       agent.timeoutMs,
       reported.promise,
     );

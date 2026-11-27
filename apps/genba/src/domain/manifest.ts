@@ -21,6 +21,8 @@ export const repoManifestSchema = z.object({
   rules: repoDir(DEFAULT_GUIDANCE_DIRS.rules),
   /** folder holding the `<name>/SKILL.md` files that roles list under `skills` */
   skills: repoDir(DEFAULT_GUIDANCE_DIRS.skills),
+  /** run agents interactively in herdr panes instead of headless */
+  herdr: z.boolean().default(false),
   git: z
     .object({
       provider: forgeProviderSchema.default('github'),

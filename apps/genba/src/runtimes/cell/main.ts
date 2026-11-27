@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { createForgeRouter } from '../../adapters/forge/router.ts';
 import { createFileLock } from '../../adapters/fs/lock.ts';
 import { createNodeFs } from '../../adapters/fs/node-fs.ts';
@@ -9,8 +10,11 @@ import { createProcessAdapter } from '../../adapters/process/spawn.ts';
 import { createSystemClock } from '../../adapters/process/system-clock.ts';
 import { createRunnerCatalog } from '../../adapters/runners/catalog.ts';
 import { createHeadlessRunner } from '../../adapters/runners/headless.ts';
+import { createHerdrRunner } from '../../adapters/runners/herdr.ts';
+import { createRoutingRunner } from '../../adapters/runners/routing.ts';
 import {
   CELL_TOKEN_ENV,
+  DATA_DIR,
   DAEMON_URL_ENV,
   REPO_ROOT_ENV,
 } from '../../domain/runtime-paths.ts';
@@ -41,7 +45,14 @@ export const runCell = async (cellId: string): Promise<number> => {
     selfCommand: selfCommand(),
     fs: createNodeFs(),
     clock: createSystemClock(),
-    runner: createHeadlessRunner(),
+    runner: createRoutingRunner(
+      createHeadlessRunner(),
+      createHerdrRunner({
+        process: processes,
+        lock: createFileLock('herdr.lock'),
+        dataDir: join(repoRoot, DATA_DIR),
+      }),
+    ),
     catalog: createRunnerCatalog(),
     operator: createLoopbackEndpoint(),
     forgeOf: (manifest) =>

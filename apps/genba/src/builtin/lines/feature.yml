@@ -7,21 +7,18 @@ operators:
     runner: claude
     model: sonnet
     timeout: 20m
-    headless: true
     permission: read
   builder:
     profile: builder
     runner: claude
     model: haiku
     timeout: 60m
-    headless: true
     permission: write
   doctor:
     profile: doctor
     runner: claude
     model: sonnet
     timeout: 20m
-    headless: true
     permission: read
 
 mechanic:
@@ -29,7 +26,6 @@ mechanic:
   runner: claude
   model: sonnet
   timeout: 20m
-  headless: true
   permission: read
 
 stations:

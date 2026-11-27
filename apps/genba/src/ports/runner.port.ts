@@ -4,11 +4,15 @@ export type RunSpec = {
   cwd: string;
   env: Readonly<Record<string, string>>;
   logPath: string;
+  /** set for an interactive run the user can watch */
+  pane?: { workspace: string; tab: string };
 };
 
 export type RunHandle = {
   id: string;
   pid?: number;
+  /** text in the pid's command line, when it is not the spec's command */
+  marker?: string;
 };
 
 export type RunOutcome = {

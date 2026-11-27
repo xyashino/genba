@@ -7,7 +7,6 @@ operators:
     runner: claude
     model: haiku
     timeout: 60m
-    headless: true
     permission: write
 
 mechanic:
@@ -15,7 +14,6 @@ mechanic:
   runner: claude
   model: sonnet
   timeout: 20m
-  headless: true
   permission: read
 
 stations:

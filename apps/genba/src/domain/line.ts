@@ -38,10 +38,6 @@ const agentSchema = z
     /** omitted: the CLI uses its own default */
     model: text.optional(),
     timeout: timeoutMs,
-    headless: z
-      .boolean()
-      .default(true)
-      .refine((value) => value, 'genba runs headless only: set headless: true'),
     permission: z.enum(['read', 'write']),
   })
   .transform(({ timeout, ...agent }) => ({

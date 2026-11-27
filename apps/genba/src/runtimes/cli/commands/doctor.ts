@@ -121,6 +121,19 @@ const lineChecks = async (
   ];
 };
 
+const herdrCheck = async (deps: CliDeps, root: string): Promise<Check> => {
+  const status = await deps.process.run('herdr', ['status', 'server'], root);
+  const running =
+    status.exitCode === 0 && /^status: running$/m.test(status.stdout);
+  return {
+    level: running ? 'ok' : 'fail',
+    name: 'herdr',
+    detail: running
+      ? 'server running'
+      : 'config sets herdr: true, but no herdr server is running',
+  };
+};
+
 const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
   let manifest: RepoManifest;
   try {
@@ -154,6 +167,7 @@ const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
       detail: authenticated ? 'authenticated' : 'not authenticated',
     },
     ...(await lineChecks(deps, root, manifest)),
+    ...(manifest.herdr ? [await herdrCheck(deps, root)] : []),
   ];
 };
 

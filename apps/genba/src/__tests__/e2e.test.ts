@@ -21,6 +21,7 @@ const forgeState = join(work, 'forge.json');
 const agentLog = join(work, 'agent.log');
 const agentFixed = join(work, 'agent.fixed');
 const hookLog = join(work, 'hooks.log');
+const herdrLog = join(work, 'herdr.log');
 let env: Record<string, string | undefined> = {};
 
 const git = (cwd: string, ...args: string[]): string =>
@@ -121,6 +122,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     const stubs = [
       installStub('./fake-agent.ts', 'claude'),
       installStub('./fake-forge.ts', 'gh'),
+      installStub('./fake-herdr.ts', 'herdr'),
     ];
     env = {
       ...process.env,
@@ -129,6 +131,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       [FORGE_STATE_ENV]: forgeState,
       [AGENT_LOG_ENV]: agentLog,
       [AGENT_FIXED_ENV]: agentFixed,
+      FAKE_HERDR_LOG: herdrLog,
     };
   }, SETTLE_MS);
 
@@ -461,6 +464,39 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       const [second] = JSON.parse(genba('incident', '--json'));
       expect(second.summary).toContain('requireAdr needs exactly one new');
       genba('incident', 'resolve', second.id, 'cancel');
+      genba('stop');
+      writeFileSync(path, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
+    'runs agents in herdr panes when the config asks for it',
+    async () => {
+      const path = join(repo, '.genba', 'config.json');
+      const original = readFileSync(path, 'utf8');
+      writeFileSync(
+        path,
+        JSON.stringify({ ...JSON.parse(original), herdr: true }),
+      );
+      writeFileSync(agentLog, '');
+      genba('import', addOrder('in-a-pane', 'Add a greeting.'));
+      genba('start', '1');
+
+      const { order } = await settled('in-a-pane');
+
+      expect(order.status).toBe('delivered');
+      const calls = readFileSync(herdrLog, 'utf8');
+      expect(calls).toContain('--label in-a-pane:build');
+      expect(calls).toContain('--label in-a-pane:audit');
+      expect(calls.match(/^tab close/gm)).toHaveLength(2);
+      expect(calls).not.toContain('--label in-a-pane:quality-gate');
+      const starts = agentEvents().filter((e) => e['event'] === 'start');
+      expect(starts.map((e) => e['interactive'])).toEqual([true, true]);
+      expect(starts[0]!['genbaEnv']).toEqual([
+        'GENBA_CYCLE_TOKEN',
+        'GENBA_OPERATOR_URL',
+      ]);
       genba('stop');
       writeFileSync(path, original);
     },

@@ -41,6 +41,7 @@ const report = (verb: string): { exitCode: number; stderr: string } => {
 const model = process.argv[process.argv.indexOf('--model') + 1];
 record({
   event: 'start',
+  interactive: !process.argv.includes('-p'),
   model,
   rules: [
     ...(/## Rules\n\n[^\n]*\n\n((?:- .*\n?)+)/.exec(text)?.[1] ?? '').matchAll(

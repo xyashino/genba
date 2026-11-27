@@ -2,6 +2,7 @@
   "project": "genba",
   "rules": "./.nitpick/rules",
   "skills": "./.nitpick/skills",
+  "herdr": true,
   "git": {
     "provider": "github",
     "baseBranch": "main"
