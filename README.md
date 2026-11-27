@@ -12,6 +12,8 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 ## Workspace
 
 - `apps/`: applications
+- `packages/contract-kit`: shared Zod contract field/reply helpers
+- `packages/sqlite-kit`: Bun SQLite + Drizzle DB & migration helpers
 - `packages/prompt`: typed frontmatter + Handlebars template renderer (`stage: sync` and `stage: runtime`)
 - `packages/nitpick`: AI rules/skills/docs generator & checker
 - `packages/eslint-config`: shared ESLint configs
