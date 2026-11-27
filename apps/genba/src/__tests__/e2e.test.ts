@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { delimiter, join } from 'node:path';
@@ -539,6 +540,61 @@ describe('standalone genba on a fresh non-Bun repo', () => {
   );
 
   it(
+    'runs one order without a daemon and closes its temporary workspace',
+    () => {
+      const config = join(repo, '.genba', 'config.json');
+      const original = readFileSync(config, 'utf8');
+      writeFileSync(
+        config,
+        JSON.stringify({ ...JSON.parse(original), herdr: true }),
+      );
+      writeFileSync(herdrLog, '');
+      const path = addOrder('solo', 'Add a greeting.');
+
+      const output = genba('run', path, '--once');
+
+      expect(output).toContain('solo: delivered https://');
+      expect(output).toContain('agent start');
+      expect(existsSync(join(repo, '.genba-local', 'daemon.pid'))).toBe(false);
+      expect(() => genba('queue')).toThrow();
+      const calls = readFileSync(herdrLog, 'utf8');
+      expect(calls).toMatch(
+        /^workspace create --label genba:shop-\w{6}:once-[0-9a-f]{8} /m,
+      );
+      expect(calls).toMatch(/^workspace close /m);
+      expect(readdirSync(join(repo, '.genba-local', 'cells'))).toEqual([]);
+      expect(() => genba('run', path, '--once')).toThrow(/earlier run/);
+      writeFileSync(config, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
+    'keeps the temporary workspace when a one-off order is blocked',
+    () => {
+      const config = join(repo, '.genba', 'config.json');
+      const original = readFileSync(config, 'utf8');
+      writeFileSync(
+        config,
+        JSON.stringify({ ...JSON.parse(original), herdr: true }),
+      );
+      const role = join(repo, '.genba', 'roles', 'builder.md');
+      const builder = readFileSync(role, 'utf8');
+      writeFileSync(role, builder.replace('rules: []', 'rules: [ghost]'));
+      writeFileSync(herdrLog, '');
+
+      expect(() =>
+        genba('run', addOrder('stuck-solo', 'Add.', 'fast'), '--once'),
+      ).toThrow(/is kept so you can look/);
+
+      expect(readFileSync(herdrLog, 'utf8')).not.toMatch(/^workspace close /m);
+      writeFileSync(role, builder);
+      writeFileSync(config, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
     'names cells by slot and removes what a stopped cell left',
     () => {
       const cellsDir = join(repo, '.genba-local', 'cells');
@@ -547,6 +603,10 @@ describe('standalone genba on a fresh non-Bun repo', () => {
           .map((cell) => cell.cellId)
           .sort();
 
+      // A blocked one-off order keeps its Cell folder; the daemon leaves it alone.
+      for (const name of readdirSync(cellsDir)) {
+        rmSync(join(cellsDir, name), { recursive: true });
+      }
       genba('start', '2');
       expect(names()).toEqual(['cell-1', 'cell-2']);
       expect(readdirSync(cellsDir).sort()).toEqual(['cell-1', 'cell-2']);

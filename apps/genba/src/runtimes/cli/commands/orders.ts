@@ -43,7 +43,7 @@ const filesOf = async (deps: CliDeps, path: string): Promise<string[]> => {
     .map((name) => join(full, name));
 };
 
-const readOrders = async (
+export const readOrders = async (
   deps: CliDeps,
   paths: readonly string[],
 ): Promise<ParsedOrder[]> => {

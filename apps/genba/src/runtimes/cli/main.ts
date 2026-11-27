@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { createForgeRouter } from '../../adapters/forge/router.ts';
 import { createNodeFs } from '../../adapters/fs/node-fs.ts';
@@ -23,6 +24,7 @@ import {
 } from './commands/orders.ts';
 import { runScale, runStart, runStop, runWatch } from './commands/daemon.ts';
 import { runWatchFull } from './commands/watch-full.ts';
+import { runOnce } from '../standalone/main.ts';
 import type { CliDeps } from './context.ts';
 import { CliError } from './context.ts';
 
@@ -34,6 +36,7 @@ const USAGE = `usage: genba <command>
   stop                         stop cells and the daemon
   import <file|dir>...         queue order markdown files
   run <order.md>               queue one order and follow it to the end
+  run <order.md> --once        run it here: no daemon, no queue
   queue [--json]               list orders
   order <slug> [--json]        show one order
   order cancel <slug>          cancel an order
@@ -52,6 +55,7 @@ const parse = (argv: readonly string[]) =>
       force: { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
       full: { type: 'boolean', default: false },
+      once: { type: 'boolean', default: false },
       cell: { type: 'string' },
       order: { type: 'string' },
       all: { type: 'boolean', default: false },
@@ -69,6 +73,8 @@ const depsOf = (): CliDeps => {
     port: portOf(process.env[PORT_ENV]),
     selfCommand: selfCommand(),
     fs: createNodeFs(),
+    readTextIfPresent: (path) =>
+      existsSync(path) ? readFileSync(path, 'utf8') : undefined,
     git,
     process: processes,
     catalog: createRunnerCatalog(),
@@ -103,7 +109,8 @@ const route = (
     case 'import':
       return first === undefined ? null : runImport(deps, positionals.slice(1));
     case 'run':
-      return first === undefined ? null : runRun(deps, first);
+      if (first === undefined) return null;
+      return values.once ? runOnce(deps, first) : runRun(deps, first);
     case 'queue':
       return runQueue(deps, { json });
     case 'order':

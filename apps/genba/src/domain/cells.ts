@@ -4,6 +4,7 @@ import { DATA_DIR } from './runtime-paths.ts';
 export const CELLS_DIR = `${DATA_DIR}/cells`;
 export const RUNS_DIR = `${DATA_DIR}/runs`;
 const CELL_ID = /^cell-([1-9]\d*)$/;
+const ONCE_ID = /^once-[0-9a-f]+$/;
 const PLAIN_ARG = /^[A-Za-z0-9_./:=-]+$/;
 const HASH_CHARS = 6;
 
@@ -14,6 +15,12 @@ export const slotOf = (cellId: string): number | null => {
   const slot = CELL_ID.exec(cellId)?.[1];
   return slot === undefined ? null : Number(slot);
 };
+
+/** The temporary Cell of `run --once`: it has no slot, so the daemon leaves it alone. */
+export const onceIdOf = (suffix: string): string => `once-${suffix}`;
+
+export const isCellId = (name: string): boolean =>
+  slotOf(name) !== null || ONCE_ID.test(name);
 
 export const cellDirOf = (cellId: string): string => `${CELLS_DIR}/${cellId}`;
 

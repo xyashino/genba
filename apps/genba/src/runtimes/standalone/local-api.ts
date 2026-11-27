@@ -30,7 +30,7 @@ export const createLocalApi = (
       const assignment = claimJob(context, cellId);
       // One Cell and one order: with no job left, nothing will ever appear.
       if (assignment === null) done();
-      return { assignment };
+      return { code: 200, assignment };
     }
     const jobId = COMPLETE.exec(path)?.[1];
     if (jobId === undefined) {
@@ -42,7 +42,7 @@ export const createLocalApi = (
       completeJobContract.in.body.parse(body),
     );
     if (settled()) done();
-    return { job };
+    return { code: 200, job };
   };
 
   return {

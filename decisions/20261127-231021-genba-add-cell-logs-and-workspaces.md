@@ -12,3 +12,6 @@ date: 2026-11-27
 - With `herdr`, one workspace per Cell, first tab runs full watch, last agent tab stays open
 - Workspaces carry project and repo hash; only recorded ids are closed
 - Station files copied to `.genba-local/runs/` per job with mode 0600; pane launchers skipped
+- `genba run --once` runs one order in process: in-memory queue, temporary `once-<hex>` Cell, no daemon
+- New `runtimes/standalone` composes daemon procedures and the Cell loop; the loop is unchanged
+- Once workspace closes on delivery or Ctrl+C, stays when blocked; `kill -9` can leave it and the agent

@@ -105,6 +105,17 @@ guards:
 - `genba watch --full [--cell <name>] [--order <slug>]`: header, saved entries of existing Cells, then live; no daemon needed; Ctrl+C ends it. History of removed Cells is gone. Plain `genba watch` streams live daemon events.
 - Attempt files: `.genba-local/runs/<order id>/<station>/<job id>/` (prompt, `step.log`, outputs, gate and worktree hook logs), written when the job reports; kept after worktree and Cell removal. A job stopped or crashed midway is not copied. No retention limit: delete the folder to clean up. May hold secrets that agents or commands print.
 
+## One-Off Run (`genba run <order.md> --once`)
+
+- Runs one order inside the command: no daemon, no port, in-memory queue. Same lines, stations, retries, Mechanic, escalation, delivery.
+- Temporary Cell `once-<hex>`; with `herdr: true` its own workspace. Timeline prints in the terminal.
+- Delivered or Ctrl+C: agent stopped, workspace, timeline and Cell folder removed. Attempt files stay in `.genba-local/runs/`. Ctrl+C keeps the worktree and branch.
+- Blocked: workspace and timeline stay for inspection; remove by hand. No `genba incident` or resume: the queue is gone.
+- Refused: existing local branch `genba/<slug>` (rename the file), `depends_on`, non-queued status, same slug already in a `--once` run.
+- Does not check the daemon queue: do not run a slug both ways at once.
+- No supervisor: after `kill -9` or power loss, the agent process and workspace may remain.
+- A loopback endpoint still serves `genba operator` for the running agent.
+
 ## Operator Verbs
 
 | Role | Verbs |

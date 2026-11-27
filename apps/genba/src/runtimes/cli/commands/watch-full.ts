@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import {
   CELLS_DIR,
   crashPathOf,
-  slotOf,
+  isCellId,
   timelinePathOf,
 } from '../../../domain/cells.ts';
 import {
@@ -38,9 +38,7 @@ export const timelineReader = (
 ): (() => Promise<TimelineEntry[]>) => {
   let seen = new Set<string>();
   return async () => {
-    const cells = (await fs.list(join(root, CELLS_DIR))).filter(
-      (name) => slotOf(name) !== null,
-    );
+    const cells = (await fs.list(join(root, CELLS_DIR))).filter(isCellId);
     const lines = (
       await Promise.all(
         cells
@@ -65,7 +63,7 @@ export const runWatchFull = async (
   deps: CliDeps,
   filter: TimelineFilter,
 ): Promise<number> => {
-  if (filter.cell !== undefined && slotOf(filter.cell) === null) {
+  if (filter.cell !== undefined && !isCellId(filter.cell)) {
     throw new CliError(`--cell takes a name like cell-1, found ${filter.cell}`);
   }
   const root = await repoRootOf(deps);

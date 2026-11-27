@@ -14,6 +14,7 @@ cd your-repo
 genba init                     # writes .genba/ config, lines and roles
 genba doctor
 genba run order.md             # one order, to a pull request
+genba run order.md --once      # same, without daemon or queue
 ```
 
 Order file: markdown, optional frontmatter (`title`, `line`, `priority`, `depends_on`). File name is the slug.

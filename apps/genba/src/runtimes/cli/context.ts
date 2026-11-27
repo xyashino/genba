@@ -13,6 +13,8 @@ export type CliDeps = {
   port: number;
   selfCommand: readonly string[];
   fs: FsPort;
+  /** line files are read while the queue is being changed, which cannot wait */
+  readTextIfPresent: (path: string) => string | undefined;
   git: GitPort;
   process: ProcessPort;
   catalog: RunnerCatalogPort;

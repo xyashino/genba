@@ -25,6 +25,8 @@ import { createLocalApi } from './local-api.ts';
 const POLL_MS = 500;
 const INTERRUPTED_EXIT = 130;
 const ID_BYTES = 4;
+// "<order> <station> attempt N" and "<order> <station> -> <outcome>".
+const PROGRESS = / (attempt \d+|-> \w+)$/;
 const STOP_SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const;
 
 const contextOf = (deps: CliDeps, root: string): DaemonContext => {
@@ -127,7 +129,10 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
           signal: stop.signal,
           // No daemon watches this process; Ctrl+C stops the agent itself.
           trackRunner: async () => undefined,
-          log: () => undefined,
+          // Only problems: the timeline already shows the progress.
+          log: (line) => {
+            if (!PROGRESS.test(line)) deps.err(line);
+          },
         }),
       );
     } finally {
