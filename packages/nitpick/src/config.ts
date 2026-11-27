@@ -51,7 +51,11 @@ type UnitIds<
   A extends string,
 > = { [G in keyof R]: keyof R[G] & string }[keyof R] | A;
 
-type FileDoc = { file: string; inline?: boolean };
+type FileDoc = {
+  file: string;
+  inline?: boolean;
+  inputs?: Record<string, unknown>;
+};
 
 type Doc<I extends string, K extends string> =
   string | FileDoc | ((ctx: Ctx<I, K>) => string);
@@ -76,7 +80,9 @@ export type RuleUnit<I extends string = never, K extends string = never> = {
 } & Check;
 
 export type EntryDoc<I extends string, K extends string> =
-  string | { file: string } | ((ctx: Ctx<I, K> & { header: string }) => string);
+  | string
+  | { file: string; inputs?: Record<string, unknown> }
+  | ((ctx: Ctx<I, K> & { header: string }) => string);
 
 type AgentUnit<I extends string, K extends string> = {
   doc: Doc<I, K>;

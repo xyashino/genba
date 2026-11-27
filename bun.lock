@@ -37,6 +37,9 @@
       "bin": {
         "nitpick": "./dist/cli.js",
       },
+      "dependencies": {
+        "@repo/prompt": "workspace:*",
+      },
       "devDependencies": {
         "@repo/eslint-config": "workspace:*",
         "@repo/typescript-config": "workspace:*",

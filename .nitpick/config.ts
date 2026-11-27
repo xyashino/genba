@@ -68,10 +68,7 @@ export default config({
   },
   rules: {
     git: {
-      'rich-commit': {
-        ...richCommit,
-        doc: { file: './rules/git/rich-commit.md' },
-      },
+      'rich-commit': richCommit,
       'git-no-artifacts': md('A', 'git/git-no-artifacts'),
     },
     testing: {
@@ -95,14 +92,11 @@ export default config({
       'testing-pyramid': md('A', 'testing/testing-pyramid'),
     },
     general: {
-      'decision-log': {
-        ...decisionLog({
-          scopes: [
-            /^(repo|genba|hub|obeya|prompt|nitpick|eslint-config|typescript-config|docs|ci)(\/[a-z][a-z0-9-]*)?$/,
-          ],
-        }),
-        doc: { file: './rules/general/decision-log.md' },
-      },
+      'decision-log': decisionLog({
+        scopes: [
+          /^(repo|genba|hub|obeya|prompt|nitpick|eslint-config|typescript-config|docs|ci)(\/[a-z][a-z0-9-]*)?$/,
+        ],
+      }),
       'general-minimal-text': md('A', 'general/general-minimal-text'),
       'general-prefer-ascii': md('I', 'general/general-prefer-ascii'),
       'general-caveman-markdown': md('A', 'general/general-caveman-markdown'),

@@ -47,6 +47,15 @@ describe('Repo config works when', () => {
     expect(aodi).toContain('| `A` | always');
   });
 
+  it('renders decision-log and rich-commit from stage: sync templates with real config', async () => {
+    const { read } = await built();
+    const decision = read('.agents', 'rules', 'decision-log.md');
+    const commit = read('.agents', 'rules', 'rich-commit.md');
+    expect(decision).toContain('genba');
+    expect(decision).not.toContain('parka');
+    expect(commit).toContain('Allowed types: `feat, fix,');
+  });
+
   it('rejects a ref typo to a peer agent at compile time', () => {
     config({
       rules: { g: { r: { importance: 'A', doc: 'r' } } },

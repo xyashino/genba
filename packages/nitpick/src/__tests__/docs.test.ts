@@ -730,6 +730,59 @@ describe('Settings generation works when', () => {
   });
 });
 
+describe('Sync prompt docs work when', () => {
+  it('renders a stage: sync file doc with inputs', async () => {
+    const { read, problems } = await build(
+      {
+        rules: {
+          g: {
+            r: {
+              importance: A,
+              doc: {
+                file: './r.md',
+                inputs: { scope: 'genba', max: 70 },
+              },
+            },
+          },
+        },
+      },
+      {
+        'r.md':
+          '---\nid: sample\nstage: sync\ninput:\n  scope: string\n  max: number\n---\nUse {{scope}} up to {{max}} chars.\n',
+      },
+    );
+    expect(problems).toEqual([]);
+    expect(read('.ai', 'rules', 'r.md')).toBe('Use genba up to 70 chars.\n');
+  });
+
+  it('keeps plain markdown with literal braces untouched', async () => {
+    const { read, problems } = await build(
+      {
+        rules: { g: { r: { importance: A, doc: { file: './r.md' } } } },
+      },
+      { 'r.md': 'Keep {{literal}} placeholders untouched.\n' },
+    );
+    expect(problems).toEqual([]);
+    expect(read('.ai', 'rules', 'r.md')).toBe(
+      'Keep {{literal}} placeholders untouched.\n',
+    );
+  });
+
+  it('reports a problem when a stage: sync file is missing declared inputs', async () => {
+    const { problems } = await build(
+      {
+        rules: { g: { r: { importance: A, doc: { file: './r.md' } } } },
+      },
+      {
+        'r.md':
+          '---\nid: sample\nstage: sync\ninput:\n  scope: string\n---\nUse {{scope}}.\n',
+      },
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('Rule "r": sample:');
+  });
+});
+
 describe('Config helper works when', () => {
   it('returns the given rules untouched', () => {
     const value = config({ rules: { g: { r: { importance: A, doc: 'x' } } } });

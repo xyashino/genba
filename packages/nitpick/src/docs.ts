@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
 import { listRules } from './config.js';
 import type { Config, EntryDoc, Importance } from './config.js';
 import { buildSettings } from './settings.js';
@@ -299,7 +300,19 @@ export const buildDocs = (
       ...extra,
     };
     if (typeof doc === 'function') return doc(ctx);
-    return read(doc.file)?.replace(REF, (_, key: string) =>
+    const raw = read(doc.file);
+    if (raw === undefined) return undefined;
+    let text = raw;
+    if (frontmatterOf(raw).get('stage') === 'sync') {
+      try {
+        text = renderPrompt(parsePrompt(raw), { inputs: doc.inputs ?? {} });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        problems.push(`${label}: ${reason}`);
+        return undefined;
+      }
+    }
+    return text.replace(REF, (_, key: string) =>
       key in refs ? ctx.file(key) : ctx.ref(key),
     );
   };

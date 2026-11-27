@@ -1,4 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
 import type { RuleUnit } from '../config.js';
 
 export const COMMIT_TYPES = [
@@ -19,11 +21,13 @@ const FOOTER =
   /^(\s*- )?\s*(co-authored-by|signed-off-by|reviewed-by|acked-by|refs?|fixes|closes|resolves|breaking[ -]change|generated (with|by))\b|🤖/i;
 const SESSION_TRAILER =
   /^Claude-Session: https:\/\/claude\.ai\/code\/session_[\w-]+$/;
-const FIX = `Rewrite the commit message as "type(scope): title", a blank line, then a "- " change list (nested "  - " items allowed). Nothing may follow the list except an optional final "Claude-Session: https://claude.ai/code/session_<id>" line (after a blank line); no other footer, trailer, reference or credit. Example:
-fix(repo): prevent racing of requests
-
-- Introduce a request id and a reference to latest request
-  - Nested detail`;
+const TYPES_TEXT = COMMIT_TYPES.join(', ');
+const FIX = renderPrompt(
+  parsePrompt(
+    readFileSync(new URL('rich-commit-fix.md', import.meta.url), 'utf8'),
+  ),
+  { inputs: { types: TYPES_TEXT } },
+).trim();
 
 export const validateRichCommit = (
   message: string,
@@ -73,6 +77,7 @@ export const richCommit: RuleUnit = {
   fix: FIX,
   doc: {
     file: fileURLToPath(new URL('rich-commit.md', import.meta.url)),
+    inputs: { types: TYPES_TEXT },
   },
   run: ({ git, report }) => {
     for (const message of git.commitMessages)

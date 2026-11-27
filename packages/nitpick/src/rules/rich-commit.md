@@ -1,3 +1,9 @@
+---
+id: rich-commit
+stage: sync
+input:
+  types: string
+---
 Follow this conventional commit convention:
 
 ```md
@@ -21,6 +27,7 @@ fix(repo)!: prevent racing of requests
 Strict format:
 
 - Subject `type(scope): title`, scope required, `!` before `:` for breaking change.
-- Blank line, then a `- ` change list. Nested ` -` items allowed.
+- Allowed types: `{{types}}`.
+- Blank line, then a `- ` change list. Nested `  - ` items allowed.
 - The list ends the message. Only exception: one final `Claude-Session: https://claude.ai/code/session_<id>` line, optionally after a blank line. Nothing else after the last list item: no footer, trailer (`Key: value`), reference (`Refs`, `Fixes`, `Closes`), `Co-authored-by`, `Signed-off-by` or AI credit.
 - No blank lines inside the list.
