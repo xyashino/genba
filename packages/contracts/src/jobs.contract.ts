@@ -26,6 +26,19 @@ export const jobSchema = z.object({
   finishedAt: z.string().nullable(),
 });
 
+export const getOrderContract = {
+  in: { params: idParams },
+  out: {
+    200: z.object({
+      code: z.literal(200),
+      order: workOrderSchema,
+      steps: z.array(orderStepSchema),
+      jobs: z.array(jobSchema),
+    }),
+    404: errorResponse(404, 'not_found'),
+  },
+} satisfies ZodContract;
+
 export const runnerQuotaSchema = z.object({
   runner: z.string().min(1),
   remainingPct: z.number().min(0).max(100),

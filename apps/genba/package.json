@@ -12,9 +12,10 @@
   "dependencies": {
     "@repo/contract-kit": "workspace:*",
     "@repo/contracts": "workspace:*",
+    "@repo/factory": "workspace:*",
+    "@repo/host": "workspace:*",
+    "@repo/line": "workspace:*",
     "@repo/prompt": "workspace:*",
-    "@repo/sqlite-kit": "workspace:*",
-    "drizzle-orm": "catalog:",
     "yaml": "catalog:",
     "zod": "catalog:"
   },

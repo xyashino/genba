@@ -7,7 +7,7 @@ import {
   rolePathOf,
   rulePathsOf,
   skillPathOf,
-} from '../domain/runtime-paths.ts';
+} from '@repo/line/runtime-paths';
 import { BUILTIN_LINES, BUILTIN_ROLES } from './registry.ts';
 
 const TEMPLATE_RUNNER = 'claude';

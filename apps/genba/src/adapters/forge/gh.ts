@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ForgePort, PublishPrSpec } from '../../ports/forge.port.ts';
-import type { ProcessPort } from '../../ports/process.port.ts';
+import type { ProcessPort } from '@repo/host/ports/process.port';
 import {
   ANDON_LABEL,
   andonBodyOf,

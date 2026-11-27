@@ -27,7 +27,11 @@ export const listIncidentsContract = {
   in: {
     query: paginationIn.extend({
       triageOwner: triageOwnerSchema.optional(),
-      openOnly: z.coerce.boolean().optional(),
+      // Not `z.coerce.boolean`: it reads any non-empty string as true.
+      openOnly: z
+        .string()
+        .transform((value) => value === 'true')
+        .optional(),
     }),
   },
   out: {

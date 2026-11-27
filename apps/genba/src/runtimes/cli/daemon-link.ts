@@ -7,7 +7,7 @@ import {
   DATA_DIR,
   PORT_ENV,
   daemonUrlOf,
-} from '../../domain/runtime-paths.ts';
+} from '@repo/line/runtime-paths';
 import {
   ApiError,
   ApiUnreachableError,

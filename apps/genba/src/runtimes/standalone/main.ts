@@ -1,26 +1,23 @@
 import { randomBytes } from 'node:crypto';
 import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
-import { createFileLock } from '../../adapters/fs/lock.ts';
-import { createPidFile } from '../../adapters/fs/pid-file.ts';
-import { createSystemClock } from '../../adapters/process/system-clock.ts';
-import { createHerdrWorkspaces } from '../../adapters/runners/herdr-workspaces.ts';
-import { createSqliteStore } from '../../adapters/sqlite/store.ts';
-import { orderBranchOf } from '../../domain/branch.ts';
-import { onceIdOf, workspaceLabelOf } from '../../domain/cells.ts';
-import { DATA_DIR, WORKTREES_DIR } from '../../domain/runtime-paths.ts';
-import { renderEntry, renderHeader } from '../../domain/timeline.ts';
+import { createFileLock } from '@repo/host/fs/lock';
+import { createPidFile } from '@repo/host/fs/pid-file';
+import { createHerdrWorkspaces } from '@repo/host/herdr-workspaces';
+import { orderBranchOf } from '@repo/line/branch';
+import { onceIdOf, workspaceLabelOf } from '@repo/line/cells';
+import { DATA_DIR, WORKTREES_DIR } from '@repo/line/runtime-paths';
+import { renderEntry, renderHeader } from '@repo/line/timeline';
+import { createLoopbackApi } from '../../adapters/http/loopback-api.ts';
 import { cellDepsOf } from '../cell/deps.ts';
 import { runCellLoop } from '../cell/loop.ts';
 import { readOrders } from '../cli/commands/orders.ts';
 import { timelineReader } from '../cli/commands/watch-full.ts';
 import type { CliDeps } from '../cli/context.ts';
 import { CliError, manifestOf, repoRootOf } from '../cli/context.ts';
-import { createCellHomes } from '../daemon/cell-homes.ts';
-import type { DaemonContext } from '../daemon/core/context.ts';
-import { createLineLoader } from '../daemon/core/lines.ts';
-import { importOrders } from '../daemon/procedures/import-orders.ts';
-import { createLocalApi } from './local-api.ts';
+import { createCellHomes } from '@repo/factory/cell-homes';
+import { EMBEDDED_URL, createEmbeddedFactory } from '@repo/factory/embedded';
+import { untilSettled } from './local-api.ts';
 
 const POLL_MS = 500;
 const INTERRUPTED_EXIT = 130;
@@ -29,23 +26,16 @@ const ID_BYTES = 4;
 const PROGRESS = / (attempt \d+|-> \w+)$/;
 const STOP_SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const;
 
-const contextOf = (deps: CliDeps, root: string): DaemonContext => {
-  // Read once, so editing a line file cannot change a run midway.
+// Read once, so editing a line file cannot change a run midway.
+const readOnce = (deps: CliDeps, root: string) => {
   const read = new Map<string, string>();
-  return {
-    // Nothing outlives the run, so the queue is never written to disk.
-    store: createSqliteStore(':memory:'),
-    clock: createSystemClock(),
-    newId: (prefix) => `${prefix}-${randomBytes(ID_BYTES).toString('hex')}`,
-    publish: () => undefined,
-    lineOf: createLineLoader((path) => {
-      const full = join(root, path);
-      if (!read.has(full)) {
-        const text = deps.readTextIfPresent(full);
-        if (text !== undefined) read.set(full, text);
-      }
-      return read.get(full);
-    }),
+  return (path: string): string | undefined => {
+    const full = join(root, path);
+    if (!read.has(full)) {
+      const text = deps.readTextIfPresent(full);
+      if (text !== undefined) read.set(full, text);
+    }
+    return read.get(full);
   };
 };
 
@@ -105,8 +95,15 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
         `branch ${branch} exists from an earlier run: rename the order file, or remove ${WORKTREES_DIR}/${order.slug} and the branch`,
       );
     }
-    const context = contextOf(deps, root);
-    importOrders(context, { orders: [order] });
+    const factory = createEmbeddedFactory({
+      cellId,
+      readRepo: readOnce(deps, root),
+    });
+    const apiOf = (token: string) =>
+      createLoopbackApi({ url: EMBEDDED_URL, token, fetch: factory.fetch });
+    await apiOf(factory.cliToken).request('POST', '/orders/import', {
+      orders: [order],
+    });
     await homes.open(cellId, { crashed: false });
     for (const signal of STOP_SIGNALS) process.on(signal, interrupt);
 
@@ -125,7 +122,11 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
         cellDepsOf({
           cellId,
           repoRoot: root,
-          api: createLocalApi(context, order.slug, () => stop.abort()),
+          api: untilSettled(
+            apiOf(factory.cellToken),
+            () => factory.order(order.slug)!.status,
+            () => stop.abort(),
+          ),
           signal: stop.signal,
           // No daemon watches this process; Ctrl+C stops the agent itself.
           trackRunner: async () => undefined,
@@ -141,7 +142,7 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
       await print();
     }
 
-    const result = context.store.findOrder(order.slug)!;
+    const result = factory.order(order.slug)!;
     const delivered = result.status === 'delivered';
     if (delivered || interrupted) {
       await homes.close(cellId);
@@ -154,7 +155,7 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
       `${order.slug}: ${result.status}${result.prUrl === null ? '' : ` ${result.prUrl}`}`,
     );
     if (delivered) return 0;
-    for (const job of context.store.jobsOf(result.id)) {
+    for (const job of factory.jobsOf(result.id)) {
       if (job.status === 'failed') {
         deps.err(`${job.stationId} #${job.attempt}: ${job.summary ?? ''}`);
       }

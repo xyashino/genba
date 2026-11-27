@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createNodeFs } from '../adapters/fs/node-fs.ts';
+import { createNodeFs } from '@repo/host/fs/node-fs';
 import { resolveGuidance } from '../domain/guidance.ts';
-import { rulePathsOf } from '../domain/runtime-paths.ts';
+import { rulePathsOf } from '@repo/line/runtime-paths';
 import { tempDir } from './support/stub-bin.ts';
 
 const repoWith = (...files: string[]): string => {

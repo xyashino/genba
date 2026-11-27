@@ -1,5 +1,5 @@
 import { join, relative } from 'node:path';
-import type { FsPort } from '../ports/fs.port.ts';
+import type { FsPort } from '@repo/host/ports/fs.port';
 
 /** One listed rule or skill: the first candidate path that holds files wins. */
 export type GuidanceEntry = readonly string[];

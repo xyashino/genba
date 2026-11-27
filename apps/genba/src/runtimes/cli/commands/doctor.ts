@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 import { resolveGuidance } from '../../../domain/guidance.ts';
 import type { GuidanceEntry } from '../../../domain/guidance.ts';
-import { agentsOf, checksOfLine, parseLine } from '../../../domain/line.ts';
-import type { AgentDefinition, LineDefinition } from '../../../domain/line.ts';
+import { agentsOf, checksOfLine, parseLine } from '@repo/line/line';
+import type { AgentDefinition, LineDefinition } from '@repo/line/line';
 import { guidanceOf, parseRole } from '../../../domain/role.ts';
-import { LINES_DIR, rolePathOf } from '../../../domain/runtime-paths.ts';
-import type { RepoManifest } from '../../../domain/manifest.ts';
+import { LINES_DIR, rolePathOf } from '@repo/line/runtime-paths';
+import type { RepoManifest } from '@repo/line/manifest';
 import type { CliDeps } from '../context.ts';
 import { manifestOf, repoRootOf } from '../context.ts';
 import { findDaemon } from '../daemon-link.ts';

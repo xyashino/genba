@@ -15,6 +15,8 @@ const errorSchema = z.object({ type: z.string(), message: z.string() });
 export type LoopbackApiOptions = {
   url: string;
   token: string;
+  /** replaces the network, for a factory in this process */
+  fetch?: (url: string, init: RequestInit) => Promise<Response>;
 };
 
 async function* dataLinesOf(
@@ -35,6 +37,7 @@ async function* dataLinesOf(
 export const createLoopbackApi = ({
   url,
   token,
+  fetch: transport = fetch,
 }: LoopbackApiOptions): LoopbackApiPort => {
   const send = async (
     method: string,
@@ -44,7 +47,7 @@ export const createLoopbackApi = ({
   ): Promise<Response> => {
     let response: Response;
     try {
-      response = await fetch(`${url}${PREFIX}${path}`, {
+      response = await transport(`${url}${PREFIX}${path}`, {
         method,
         headers: {
           authorization: `Bearer ${token}`,

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { InspectionStation } from '../../domain/line.ts';
+import type { InspectionStation } from '@repo/line/line';
 import type { JobContext, Workspace } from './context.ts';
 import { readIfPresent, runTracked, stationDirOf, tailOf } from './context.ts';
 import type { StationRun } from './station-operator.ts';

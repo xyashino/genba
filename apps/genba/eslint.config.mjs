@@ -14,29 +14,22 @@ export default [
   {
     files: ['src/domain/**/*.ts'],
     ...forbid(
-      ['../adapters/**', '../runtimes/**'],
-      'domain must stay pure and never import adapters or runtimes',
+      ['../adapters/**', '../runtimes/**', '@repo/factory/**'],
+      'domain must stay pure and never import adapters, runtimes, or the factory',
     ),
   },
   {
     files: ['src/runtimes/operator/**/*.ts'],
     ...forbid(
-      ['../../adapters/**', '../daemon/**', '../cell/**'],
+      ['../../adapters/**', '../cell/**', '@repo/factory/**'],
       'operator runtime must stay a zero-state loopback client',
     ),
   },
   {
-    files: ['src/runtimes/cell/**/*.ts'],
+    files: ['src/runtimes/cell/**/*.ts', 'src/runtimes/cli/**/*.ts'],
     ...forbid(
-      ['**/adapters/sqlite/**', '../daemon/**'],
-      'cell runtime must never access SQLite or daemon internals',
-    ),
-  },
-  {
-    files: ['src/runtimes/cli/**/*.ts'],
-    ...forbid(
-      ['**/adapters/sqlite/**'],
-      'cli runtime must talk to daemon loopback, never SQLite directly',
+      ['@repo/factory/**'],
+      'cell and cli runtimes reach the factory over its HTTP API only',
     ),
   },
 ];

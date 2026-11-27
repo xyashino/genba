@@ -58,15 +58,12 @@ export const listOrdersContract = {
   },
 } satisfies ZodContract;
 
-export const getOrderContract = {
+export const cancelOrderContract = {
   in: { params: idParams },
   out: {
-    200: z.object({
-      code: z.literal(200),
-      order: workOrderSchema,
-      steps: z.array(orderStepSchema),
-    }),
+    200: z.object({ code: z.literal(200), order: workOrderSchema }),
     404: errorResponse(404, 'not_found'),
+    409: errorResponse(409, 'invalid_state'),
   },
 } satisfies ZodContract;
 

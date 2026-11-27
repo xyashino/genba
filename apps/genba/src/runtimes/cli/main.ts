@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { createForgeRouter } from '../../adapters/forge/router.ts';
-import { createNodeFs } from '../../adapters/fs/node-fs.ts';
+import { createNodeFs } from '@repo/host/fs/node-fs';
 import { createGitAdapter } from '../../adapters/git/git.ts';
-import { selfCommand } from '../../adapters/process/self.ts';
-import { createProcessAdapter } from '../../adapters/process/spawn.ts';
+import { selfCommand } from '@repo/host/process/self';
+import { createProcessAdapter } from '@repo/host/process/spawn';
 import { createRunnerCatalog } from '../../adapters/runners/catalog.ts';
 import { EXIT } from '../../domain/exit-codes.ts';
-import { PORT_ENV, portOf } from '../../domain/runtime-paths.ts';
+import { PORT_ENV, portOf } from '@repo/line/runtime-paths';
 import {
   ApiError,
   ApiUnreachableError,

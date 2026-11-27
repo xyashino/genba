@@ -1,0 +1,35 @@
+{
+  "name": "@repo/factory",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./start": "./src/start.ts",
+    "./embedded": "./src/embedded.ts",
+    "./cell-homes": "./src/application/cells/cell-homes.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src test --max-warnings 0",
+    "test": "bun --bun vitest run"
+  },
+  "dependencies": {
+    "@repo/contract-kit": "workspace:*",
+    "@repo/contracts": "workspace:*",
+    "@repo/host": "workspace:*",
+    "@repo/line": "workspace:*",
+    "@repo/sqlite-kit": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
