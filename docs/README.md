@@ -4,8 +4,8 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 
 ## Docs
 
-- [architecture.md](./architecture.md) — Monorepo layout, runtime boundaries, import rules
-- [boundaries.md](./boundaries.md) — Runtime ownership matrix, topology, security invariants
+- [architecture.md](./architecture.md) — Monorepo layout, Option 1 single-binary package split, dependency rules
+- [boundaries.md](./boundaries.md) — Hub / Factory / Cell / Line / Order boundaries, worktree ownership, invariants
 - [lines-and-roles.md](./lines-and-roles.md) — Repo-agnostic Lines, `ROLE.md` guards, Forge Andon
 - [migration.md](./migration.md) — Phased migration plan from `software-factory`
 
@@ -16,16 +16,21 @@ Injectable autonomous software factory for any git repo. Wraps existing AI CLIs 
 - **Lower token waste**: Surgical role context, live `genba operator done` guards.
 - **Forge-native**: Opens PR/MR on delivery; pushes WIP Draft PR + `genba:andon` Issue on escalation (`gh` / `glab`).
 - **Provable ROI (`genba stats`)**: Planned for Phase 4: First-Pass Yield, Autonomous Rate, Merge Rate.
-- **Optional Hub + Web UI**: Local server works standalone; `hub` is opt-in bridge for multi-machine browser visibility.
+- **Optional Hub + Web UI**: Local Factory works standalone; `hub` is opt-in bridge for multi-machine browser visibility.
 
 ## Glossary
 
 | Term | Meaning |
 | :--- | :--- |
-| **Genba** | Single binary: CLI + local loopback server (`127.0.0.1:7072`) owning SQLite, queue, telemetry, and Cells |
-| **Cell** | Disposable worker process: 1 Job, 1 git worktree, 1 runner or inspection command |
-| **Line** | Workflow in `.genba/lines/` declaring changeover, agents, stations, delivery |
+| **Genba** | Single compiled binary (`apps/genba`): CLI, `operator` client, and local Factory/Cell runtimes |
+| **Factory** | Local control plane (`packages/factory`, Hono + SQLite, `127.0.0.1:7072`): owns queue, scheduling, retries, and Cell supervision for 1 repo |
+| **Cell** | Disposable worker slot (`packages/cell`, `cell-1..N`, 1 `herdr` workspace): claims 1 Job at a time, attaches to the Order's worktree, runs 1 station |
+| **Line** | Static workflow blueprint in `.genba/lines/` (`packages/line`) declaring changeover, agents, stations, and delivery rules |
+| **Plan** | Optional batch/epic grouping `1..N` related Orders via `planId` (may form a `depends_on` / `parentSlug` DAG) |
+| **Order** | Single deliverable unit of work moving through a Line; owns 1 git branch (`genba/<slug>`), 1 worktree (`.worktrees/<slug>/`), and 1 PR |
+| **Step** | One station instance (`order_steps`) along an Order's Line, tracking attempts and feedback |
+| **Job** | One concrete execution attempt (`jobs`) of a Step, claimed and executed by 1 Cell |
 | **Role (`ROLE.md`)** | Executable agent contract (`rules`, `skills`, `outputs`, `guards`) compiled via `@repo/prompt` (`stage: runtime`) |
 | **Andon / Incident** | Escalated blocker: opens WIP Draft PR + `genba:andon` Issue on GitHub/GitLab and frees Cell |
 | **Mechanic** | Read-only AI triager attempting self-heal before escalating to human |
-| **Hub** | Optional thin Web UI bridge: outbound Genba registry, read cache, command outbox (zero execution logic) |
+| **Hub** | Optional thin multi-factory bridge (`apps/hub`): outbound Factory registry, read projections, SSE fan-out, command outbox (zero execution logic) |
