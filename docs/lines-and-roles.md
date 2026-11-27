@@ -49,7 +49,7 @@ deliver: { commit: build.commit, report: build.report, to: new-pr, requireAdr: f
 - Worktrees start from `origin/<base>` when it exists, else local `<base>`.
 - `profile` names `.genba/roles/<profile>.md`. Profile `doctor` reports a verdict.
 - `permission: read` needs a runner with a read mode. `model` omitted: CLI default.
-- `herdr: true` in `config.json` runs every agent interactively in a herdr tab (workspace `genba:<project>`, tab `<order>:<station>`); hooks and gates stay headless. The tab closes when the station ends; its last screen is saved to `step.log`. Needs a running herdr server. Genba does not edit runner trust settings: answer any trust prompt in the pane. Default `false`: headless. Lines have no `headless` key.
+- `herdr: true` in `config.json` runs every agent interactively in a herdr tab named `<order>:<station>` in its Cell's workspace; hooks and gates stay headless. The agent is stopped when its station ends; its tab stays until the Cell's next agent starts, and its last screen is saved to `step.log`. Needs a running herdr server. Genba does not edit runner trust settings: answer any trust prompt in the pane. Default `false`: headless. Lines have no `headless` key.
 - Unknown keys are rejected.
 - `timeout`: `s`, `m`, `h`; default `30m`.
 - `requireAdr`: delivery needs exactly one new `decisions/` file.
@@ -93,6 +93,17 @@ guards:
 - Resolutions: `retry_step` (one more attempt), `restart_from_step`, `restart_from_scratch` (new branch from base), `escalate`, `cancel`.
 - `restart_from_scratch` overwrites remote branch only while it still holds what genba pushed.
 - Child order waits for parent delivery, then stacks on parent branch until merged.
+
+## Cells, Logs, Workspaces
+
+- Cells are named by slot: `cell-1` .. `cell-N`. Scale down removes the highest names; a running job goes back to the queue without spending an attempt.
+- Per Cell: timeline `.genba-local/cells/<cell>/events.jsonl`, process log `.genba-local/logs/<cell>.log`, and with `herdr: true` a workspace `genba:<project>-<repo hash>:<cell>`.
+- All three live as long as the Cell. A new Cell starts fresh; `scale` down and `stop` remove them.
+- Crash: the replacement gets a new workspace and keeps the old timeline in `crash.jsonl` until the Cell is scaled away or `genba stop`. After a daemon crash, logs stay through recovery.
+- Genba records the workspaces it creates (`.genba-local/herdr-workspaces.json`) and closes only those. A same-named workspace it did not create stops Cell setup with an error.
+- First tab `logs` runs `genba watch --full --cell <cell>`.
+- `genba watch --full [--cell <name>] [--order <slug>]`: header, saved entries of existing Cells, then live; no daemon needed; Ctrl+C ends it. History of removed Cells is gone. Plain `genba watch` streams live daemon events.
+- Attempt files: `.genba-local/runs/<order id>/<station>/<job id>/` (prompt, `step.log`, outputs, gate and worktree hook logs), written when the job reports; kept after worktree and Cell removal. A job stopped or crashed midway is not copied. No retention limit: delete the folder to clean up. May hold secrets that agents or commands print.
 
 ## Operator Verbs
 

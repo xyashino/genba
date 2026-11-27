@@ -5,7 +5,7 @@ export type RunSpec = {
   env: Readonly<Record<string, string>>;
   logPath: string;
   /** set for an interactive run the user can watch */
-  pane?: { workspace: string; tab: string };
+  pane?: { workspace: string; tab: string; logsCommand: string };
 };
 
 export type RunHandle = {

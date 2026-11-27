@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -189,6 +195,24 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         git(origin, 'ls-tree', '-r', '--name-only', 'genba/add-greeting'),
       ).not.toContain('.cell');
       expect(existsSync(join(repo, '.worktrees', 'add-greeting'))).toBe(false);
+      const runs = join(repo, '.genba-local', 'runs');
+      const kept = readdirSync(runs, { recursive: true }).map(String);
+      for (const file of ['prompt.md', 'report.md', 'gate.log', 'audit.md']) {
+        expect(kept.some((path) => path.endsWith(`/${file}`))).toBe(true);
+      }
+      expect(kept.filter((path) => /\.sh(\.|$)/.test(path))).toEqual([]);
+      const timeline = readFileSync(
+        join(repo, '.genba-local', 'cells', 'cell-1', 'events.jsonl'),
+        'utf8',
+      );
+      for (const action of [
+        'claim',
+        'worktree create',
+        'agent start',
+        'push',
+      ]) {
+        expect(timeline).toContain(`"action":"${action}"`);
+      }
     },
     SETTLE_MS,
   );
@@ -279,6 +303,12 @@ describe('standalone genba on a fresh non-Bun repo', () => {
 
       expect(order.status).toBe('delivered');
       expect(() => process.kill(runnerPid, 0)).toThrow();
+      expect(
+        readFileSync(
+          join(repo, '.genba-local', 'cells', cell.cellId, 'crash.jsonl'),
+          'utf8',
+        ),
+      ).toContain('cell crash');
       expect(
         jobs.slice(0, 2).map((job) => [job.stationId, job.status]),
       ).toEqual([
@@ -489,7 +519,11 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       const calls = readFileSync(herdrLog, 'utf8');
       expect(calls).toContain('--label in-a-pane:build');
       expect(calls).toContain('--label in-a-pane:audit');
-      expect(calls.match(/^tab close/gm)).toHaveLength(2);
+      // The last agent tab stays open, so only the first one was closed.
+      expect(calls.match(/^tab close/gm)).toHaveLength(1);
+      expect(calls).toMatch(
+        /^workspace create --label genba:shop-\w{6}:cell-1 /m,
+      );
       expect(calls).not.toContain('--label in-a-pane:quality-gate');
       const starts = agentEvents().filter((e) => e['event'] === 'start');
       expect(starts.map((e) => e['interactive'])).toEqual([true, true]);
@@ -498,7 +532,37 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         'GENBA_OPERATOR_URL',
       ]);
       genba('stop');
+      expect(readFileSync(herdrLog, 'utf8')).toMatch(/^workspace close /m);
       writeFileSync(path, original);
+    },
+    SETTLE_MS,
+  );
+
+  it(
+    'names cells by slot and removes what a stopped cell left',
+    () => {
+      const cellsDir = join(repo, '.genba-local', 'cells');
+      const names = (): string[] =>
+        (JSON.parse(genba('queue', '--json')).cells as { cellId: string }[])
+          .map((cell) => cell.cellId)
+          .sort();
+
+      genba('start', '2');
+      expect(names()).toEqual(['cell-1', 'cell-2']);
+      expect(readdirSync(cellsDir).sort()).toEqual(['cell-1', 'cell-2']);
+
+      genba('scale', '1');
+      expect(names()).toEqual(['cell-1']);
+      expect(readdirSync(cellsDir)).toEqual(['cell-1']);
+
+      genba('scale', '0');
+      expect(readdirSync(cellsDir)).toEqual([]);
+      expect(
+        readdirSync(join(repo, '.genba-local', 'logs')).filter((name) =>
+          name.startsWith('cell-'),
+        ),
+      ).toEqual([]);
+      genba('stop');
     },
     SETTLE_MS,
   );

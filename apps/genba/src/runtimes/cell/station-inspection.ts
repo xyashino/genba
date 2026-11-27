@@ -24,6 +24,7 @@ export const runInspectionStation = async (
   try {
     for (const command of commands) {
       await job.fs.appendText(logPath, `$ ${command}\n`);
+      await job.note('gate start', command);
       const end = await runTracked(
         job,
         {

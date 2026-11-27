@@ -2,10 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { createNodeFs } from '../../adapters/fs/node-fs.ts';
+import { createFileLock } from '../../adapters/fs/lock.ts';
 import { createPidFile } from '../../adapters/fs/pid-file.ts';
 import { selfCommand } from '../../adapters/process/self.ts';
 import { createProcessAdapter } from '../../adapters/process/spawn.ts';
 import { createSystemClock } from '../../adapters/process/system-clock.ts';
+import { createHerdrWorkspaces } from '../../adapters/runners/herdr-workspaces.ts';
 import { createSqliteStore } from '../../adapters/sqlite/store.ts';
 import {
   CLI_TOKEN_FILE,
@@ -16,6 +18,7 @@ import {
   portOf,
 } from '../../domain/runtime-paths.ts';
 import type { DaemonContext } from './core/context.ts';
+import { createCellHomes } from './cell-homes.ts';
 import { createLineLoader } from './core/lines.ts';
 import { createEventBus } from './events.ts';
 import { createDaemonServer } from './server.ts';
@@ -51,6 +54,19 @@ export const runDaemon = async (repoRoot: string): Promise<number> => {
   };
   const cliToken = newToken();
   const supervisor = createSupervisor({
+    homes: createCellHomes({
+      fs,
+      repoRoot: root,
+      selfCommand: selfCommand(),
+      now: () => new Date().toISOString(),
+      warn: (message) => console.error(message),
+      workspaces: createHerdrWorkspaces({
+        process: processes,
+        fs,
+        lock: createFileLock('herdr.lock'),
+        dataDir,
+      }),
+    }),
     context,
     process: processes,
     fs,

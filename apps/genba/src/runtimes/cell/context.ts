@@ -27,6 +27,7 @@ import type { JobAssignment } from '@repo/contracts/jobs.contract';
 const TAIL_CHARS = 4_000;
 
 export type CellDeps = {
+  cellId: string;
   repoRoot: string;
   selfCommand: readonly string[];
   git: GitPort;
@@ -37,6 +38,8 @@ export type CellDeps = {
   /** one `changeover.root` at a time across Cells */
   rootLock: LockPort;
   forgeOf: (manifest: RepoManifest) => ForgePort;
+  /** adds one entry to this Cell's timeline; never fails the job */
+  note: (action: string, detail?: string) => Promise<void>;
   /** tells the daemon which process group to kill if this Cell dies */
   trackRunner: (
     runner: { pid: number; command: string } | null,

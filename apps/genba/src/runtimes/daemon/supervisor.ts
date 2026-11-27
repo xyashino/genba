@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { z } from 'zod';
+import { cellIdOf, slotOf } from '../../domain/cells.ts';
 import {
   CELLS_FILE,
   CELL_TOKEN_ENV,
@@ -8,7 +9,9 @@ import {
 } from '../../domain/runtime-paths.ts';
 import type { FsPort } from '../../ports/fs.port.ts';
 import type { ProcessPort } from '../../ports/process.port.ts';
+import type { CellHomes } from './cell-homes.ts';
 import type { DaemonContext } from './core/context.ts';
+import { DaemonError } from './core/errors.ts';
 import { nowOf } from './core/context.ts';
 import { requeueJob } from './procedures/requeue-job.ts';
 
@@ -53,6 +56,7 @@ export type SupervisorDeps = {
   daemonUrl: string;
   selfCommand: readonly string[];
   newToken: () => string;
+  homes: CellHomes;
 };
 
 export type Supervisor = {
@@ -88,6 +92,9 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
   let exits: number[] = [];
   let crashLoop = false;
   let nextSpawnAt = 0;
+  // Cells that died on their own: their replacement keeps the log.
+  const crashed = new Set<string>();
+  const { homes } = deps;
   let queue: Promise<unknown> = Promise.resolve();
 
   // Spawn, kill, and requeue never interleave.
@@ -184,8 +191,33 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
       now + Math.min(RESPAWN_BASE_MS * 2 ** (exits.length - 1), RESPAWN_MAX_MS);
   };
 
+  const freeCellId = (): string => {
+    let slot = 1;
+    while (cells.has(cellIdOf(slot))) slot += 1;
+    return cellIdOf(slot);
+  };
+
+  // Removes everything left by Cells above the target, alive or not.
+  const purge = async (above: number): Promise<void> => {
+    for (const cellId of await homes.known()) {
+      if (slotOf(cellId)! <= above || cells.has(cellId)) continue;
+      await homes.close(cellId);
+      crashed.delete(cellId);
+    }
+  };
+
   const spawnCell = async (): Promise<void> => {
-    const cellId = context.newId('cell');
+    const cellId = freeCellId();
+    try {
+      await homes.open(cellId, { crashed: crashed.has(cellId) });
+    } catch (error) {
+      noteExit();
+      throw new DaemonError(
+        409,
+        'invalid_state',
+        `cannot set up ${cellId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     const token = deps.newToken();
     const [command = '', ...prefix] = deps.selfCommand;
     const pid = await processes.spawnDetached({
@@ -207,6 +239,8 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
       startedAt: nowOf(context),
       stopping: false,
     });
+    crashed.delete(cellId);
+    await homes.note(cellId, 'cell start', `pid ${pid}`);
     await persist();
     changed();
   };
@@ -215,6 +249,12 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
     for (const entry of [...cells.values()]) {
       if (processes.isAlive(entry.pid)) continue;
       await killRunner(entry.runner);
+      await homes.note(
+        entry.cellId,
+        'cell crash',
+        'its job goes back to the queue',
+      );
+      crashed.add(entry.cellId);
       await release(entry.cellId, false);
       noteExit();
     }
@@ -230,17 +270,10 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
     }
   };
 
+  // The highest names go first, so what remains is always cell-1 to cell-N.
   const trim = async (): Promise<void> => {
-    // Idle Cells go first, newest first.
-    const ordered = [...cells.values()]
-      .reverse()
-      .sort(
-        (a, b) =>
-          Number(jobOf(a.cellId) !== undefined) -
-          Number(jobOf(b.cellId) !== undefined),
-      );
-    for (const entry of ordered.slice(0, Math.max(cells.size - desired, 0))) {
-      await stopCell(entry);
+    for (const entry of [...cells.values()]) {
+      if (slotOf(entry.cellId)! > desired) await stopCell(entry);
     }
   };
 
@@ -259,6 +292,7 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
           if (await recorded(saved.pid, saved.cellId)) {
             await killProcess(saved.pid);
           }
+          crashed.add(saved.cellId);
           // A pid that now runs something else was reused: leave it alone.
           const { runner } = saved;
           if (runner !== null) {
@@ -281,6 +315,7 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
         nextSpawnAt = 0;
         await bury();
         await trim();
+        await purge(count);
         await fill();
       }),
     reconcile: () =>
@@ -324,6 +359,7 @@ export const createSupervisor = (deps: SupervisorDeps): Supervisor => {
         desired = 0;
         await bury();
         await trim();
+        await purge(0);
       }),
   };
 };

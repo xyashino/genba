@@ -22,6 +22,7 @@ import {
   runRun,
 } from './commands/orders.ts';
 import { runScale, runStart, runStop, runWatch } from './commands/daemon.ts';
+import { runWatchFull } from './commands/watch-full.ts';
 import type { CliDeps } from './context.ts';
 import { CliError } from './context.ts';
 
@@ -39,6 +40,8 @@ const USAGE = `usage: genba <command>
   incident [--all] [--json]    list open incidents
   incident resolve <id> <resolution> [--step <station>] [--diagnosis <text>]
   watch [--json]               stream daemon events
+  watch --full [--cell <name>] [--order <slug>]
+                               Cell history in detail, then live
   operator <verb>              used by agents inside a station`;
 
 const parse = (argv: readonly string[]) =>
@@ -48,6 +51,9 @@ const parse = (argv: readonly string[]) =>
     options: {
       force: { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
+      full: { type: 'boolean', default: false },
+      cell: { type: 'string' },
+      order: { type: 'string' },
       all: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
       step: { type: 'string' },
@@ -117,8 +123,13 @@ const route = (
       return first === undefined || first === 'list'
         ? runIncidentList(deps, { all: values.all, json })
         : null;
-    case 'watch':
-      return runWatch(deps, { json });
+    case 'watch': {
+      const { full, cell, order } = values;
+      if (full) return json ? null : runWatchFull(deps, { cell, order });
+      return cell === undefined && order === undefined
+        ? runWatch(deps, { json })
+        : null;
+    }
     default:
       return null;
   }

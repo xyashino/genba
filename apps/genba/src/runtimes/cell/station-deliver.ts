@@ -72,6 +72,7 @@ export const runDeliverStation = async (
       };
     }
   }
+  await job.note('push', workspace.branch);
   await pushBranch(job, workspace);
   let published: { url: string; number: number } | undefined;
   if (job.line.deliver.to === 'new-pr') {

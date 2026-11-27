@@ -3,6 +3,7 @@ export type FsPort = {
   writeText(path: string, text: string, mode?: number): Promise<void>;
   appendText(path: string, text: string): Promise<void>;
   remove(path: string): Promise<void>;
+  removeDir(path: string): Promise<void>;
   exists(path: string): Promise<boolean>;
   list(dir: string): Promise<string[]>;
   /** a file gives itself, a folder every file under it (sorted, no dotfiles), a missing path nothing */

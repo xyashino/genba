@@ -11,7 +11,7 @@ import { runTracked, tailOf } from './context.ts';
 
 const ROOT_MARKER = 'changeover-root.done';
 const WORKTREE_MARKER = 'changeover-worktree.done';
-const WORKTREE_LOG = 'changeover-worktree.log';
+export const WORKTREE_LOG = 'changeover-worktree.log';
 const REPLACES_FILE = 'replaces';
 
 // Returns the failure, or null.
@@ -24,6 +24,7 @@ const runHook = async (
 ): Promise<string | null> => {
   await job.fs.remove(logPath);
   for (const command of hook.exec) {
+    await job.note(`${name} start`, command);
     const end = await runTracked(
       job,
       { command: 'sh', args: ['-c', command], cwd, env: {}, logPath },
@@ -117,7 +118,9 @@ export const ensureWorktree = async (
   const replaced = assignment.freshWorktree
     ? await discardHistory(job, path, branch)
     : null;
-  if (!(await fs.exists(join(path, '.git')))) {
+  const existed = await fs.exists(join(path, '.git'));
+  await job.note(existed ? 'worktree reuse' : 'worktree create', branch);
+  if (!existed) {
     if ((await git.branchHead(repoRoot, branch)) !== null) {
       await git.worktreeAttach(repoRoot, path, branch);
     } else {

@@ -7,8 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { z } from 'zod';
-import type { LockPort } from '../../ports/fs.port.ts';
+import type { WorkspacePort } from '../../ports/workspace.port.ts';
 import type { ProcessPort } from '../../ports/process.port.ts';
 import type {
   RunHandle,
@@ -25,21 +24,11 @@ const LOG_LINES = '500';
 const LOST_EXIT = -1;
 const TAB_ID = /"tab_id"\s*:\s*"([^"]+)"/;
 const PANE_ID = /"pane_id"\s*:\s*"([^"]+)"/;
-const WORKSPACE_ID = /"workspace_id"\s*:\s*"([^"]+)"/;
-
-const workspaceListSchema = z.object({
-  result: z.object({
-    workspaces: z.array(
-      z.object({ label: z.string().nullish(), workspace_id: z.string() }),
-    ),
-  }),
-});
 
 export type HerdrDeps = {
   process: ProcessPort;
-  /** keeps Cells from creating the same workspace twice */
-  lock: LockPort;
-  dataDir: string;
+  workspaces: WorkspacePort;
+  repoRoot: string;
 };
 
 type PaneRun = {
@@ -96,9 +85,11 @@ export const createHerdrRunner = (deps: HerdrDeps): RunnerPort => {
   const processes = deps.process;
   const runs = new Map<string, PaneRun>();
   let started = 0;
+  // The last finished tab stays readable until the next agent starts.
+  let finished: string | undefined;
 
-  const herdr = async (args: string[], cwd: string): Promise<string> => {
-    const result = await processes.run(HERDR, args, cwd);
+  const herdr = async (args: string[]): Promise<string> => {
+    const result = await processes.run(HERDR, args, deps.repoRoot);
     if (result.exitCode !== 0) {
       throw new Error(
         `herdr ${args.slice(0, 2).join(' ')} failed: ${result.stderr.trim()}`,
@@ -114,56 +105,29 @@ export const createHerdrRunner = (deps: HerdrDeps): RunnerPort => {
   };
 
   const openTab = async (
-    { workspace, tab }: NonNullable<RunSpec['pane']>,
+    { workspace, tab, logsCommand }: NonNullable<RunSpec['pane']>,
     cwd: string,
-  ): Promise<{ tabId: string; paneId: string }> =>
-    deps.lock.withLock(deps.dataDir, new AbortController().signal, async () => {
-      const listed = workspaceListSchema.parse(
-        JSON.parse(await herdr(['workspace', 'list'], cwd)),
-      );
-      const existing = listed.result.workspaces.find(
-        (entry) => entry.label === workspace,
-      )?.workspace_id;
-      const workspaceId =
-        existing ??
-        matched(
-          WORKSPACE_ID,
-          await herdr(
-            [
-              'workspace',
-              'create',
-              '--label',
-              workspace,
-              '--cwd',
-              dirname(deps.dataDir),
-              '--no-focus',
-            ],
-            cwd,
-          ),
-          'workspace_id',
-        );
-      const created = await herdr(
-        [
-          'tab',
-          'create',
-          '--workspace',
-          workspaceId,
-          '--cwd',
-          cwd,
-          '--label',
-          tab,
-          '--no-focus',
-        ],
-        cwd,
-      );
-      return {
-        tabId: matched(TAB_ID, created, 'tab_id'),
-        paneId: matched(PANE_ID, created, 'pane_id'),
-      };
-    });
+  ): Promise<{ tabId: string; paneId: string }> => {
+    const workspaceId = await deps.workspaces.ensure(workspace, logsCommand);
+    const created = await herdr([
+      'tab',
+      'create',
+      '--workspace',
+      workspaceId,
+      '--cwd',
+      cwd,
+      '--label',
+      tab,
+      '--no-focus',
+    ]);
+    return {
+      tabId: matched(TAB_ID, created, 'tab_id'),
+      paneId: matched(PANE_ID, created, 'pane_id'),
+    };
+  };
 
-  const closeTab = async (tabId: string, cwd: string): Promise<void> => {
-    await processes.run(HERDR, ['tab', 'close', tabId], cwd);
+  const closeTab = async (tabId: string): Promise<void> => {
+    await processes.run(HERDR, ['tab', 'close', tabId], deps.repoRoot);
   };
 
   // The screen is the only record of an interactive run; keep it for retries and the mechanic.
@@ -171,7 +135,7 @@ export const createHerdrRunner = (deps: HerdrDeps): RunnerPort => {
     const screen = await processes.run(
       HERDR,
       ['pane', 'read', run.paneId, '--lines', LOG_LINES, '--format', 'text'],
-      run.cwd,
+      deps.repoRoot,
     );
     if (screen.exitCode === 0) writeFileSync(run.logPath, screen.stdout);
   };
@@ -207,18 +171,17 @@ export const createHerdrRunner = (deps: HerdrDeps): RunnerPort => {
       writeFileSync(launcher, launcherOf(spec, exitFile, pidFile));
       chmodSync(launcher, 0o700);
       const { tabId, paneId } = await openTab(spec.pane, spec.cwd);
+      if (finished !== undefined) await closeTab(finished);
+      finished = undefined;
       let pid: number | undefined;
       try {
-        await herdr(
-          ['pane', 'run', paneId, `bash ${shellQuote(launcher)}`],
-          spec.cwd,
-        );
+        await herdr(['pane', 'run', paneId, `bash ${shellQuote(launcher)}`]);
         pid = await within(() => numberIn(pidFile), PID_WAIT_MS);
         if (pid === undefined) {
           throw new Error('the herdr pane did not start the agent');
         }
       } catch (error) {
-        await closeTab(tabId, spec.cwd);
+        await closeTab(tabId);
         rmSync(launcher, { force: true });
         throw error;
       }
@@ -242,7 +205,7 @@ export const createHerdrRunner = (deps: HerdrDeps): RunnerPort => {
       await saveScreen(run);
       const stopped = await stopGroup(run.pid);
       if (stopped) {
-        await closeTab(run.tabId, run.cwd);
+        finished = run.tabId;
         rmSync(run.launcher, { force: true });
         runs.delete(handle.id);
       }

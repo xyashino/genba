@@ -11,6 +11,7 @@ import { createSystemClock } from '../../adapters/process/system-clock.ts';
 import { createRunnerCatalog } from '../../adapters/runners/catalog.ts';
 import { createHeadlessRunner } from '../../adapters/runners/headless.ts';
 import { createHerdrRunner } from '../../adapters/runners/herdr.ts';
+import { createHerdrWorkspaces } from '../../adapters/runners/herdr-workspaces.ts';
 import { createRoutingRunner } from '../../adapters/runners/routing.ts';
 import {
   CELL_TOKEN_ENV,
@@ -49,8 +50,13 @@ export const runCell = async (cellId: string): Promise<number> => {
       createHeadlessRunner(),
       createHerdrRunner({
         process: processes,
-        lock: createFileLock('herdr.lock'),
-        dataDir: join(repoRoot, DATA_DIR),
+        repoRoot,
+        workspaces: createHerdrWorkspaces({
+          process: processes,
+          fs: createNodeFs(),
+          lock: createFileLock('herdr.lock'),
+          dataDir: join(repoRoot, DATA_DIR),
+        }),
       }),
     ),
     catalog: createRunnerCatalog(),

@@ -6,6 +6,7 @@ import type { AgentDefinition, OperatorStation } from '../../domain/line.ts';
 import { resolveGuidance } from '../../domain/guidance.ts';
 import { RULE_FILES } from '../../domain/detect-project.ts';
 import { guidanceOf, renderRole } from '../../domain/role.ts';
+import { logsCommandOf, workspaceLabelOf } from '../../domain/cells.ts';
 import { DECISIONS_DIR } from '../../domain/runtime-paths.ts';
 import type { OperatorResponse } from '../../ports/operator.port.ts';
 import type { JobContext, ProcessEnd, Workspace } from './context.ts';
@@ -311,6 +312,12 @@ export const runAgent = async (
 
   const session = await job.operator.open(handle);
   const logPath = join(stationDir, LOG_FILE);
+  // Each attempt is archived on its own, so its log starts empty.
+  await job.fs.remove(logPath);
+  await job.note(
+    'agent start',
+    `${agent.runner} ${agent.model ?? 'default'} ${permission}`,
+  );
   let end: ProcessEnd;
   try {
     const line = job.catalog.commandLine(
@@ -328,8 +335,13 @@ export const runAgent = async (
         ...(job.manifest.herdr
           ? {
               pane: {
-                workspace: `genba:${job.manifest.project}`,
+                workspace: workspaceLabelOf(
+                  job.manifest.project,
+                  job.repoRoot,
+                  job.cellId,
+                ),
                 tab: `${job.assignment.order.slug}:${stationId}`,
+                logsCommand: logsCommandOf(job.selfCommand, job.cellId),
               },
             }
           : {}),
@@ -340,6 +352,10 @@ export const runAgent = async (
   } finally {
     await job.operator.close();
   }
+  await job.note(
+    'agent end',
+    end.kind === 'exited' ? `exit ${end.exitCode}` : end.kind,
+  );
   const log = (await readIfPresent(job.fs, logPath)) ?? '';
   let outcome = accepted ?? endDetailOf(end, log);
   // The agent kept running after its report, so check again now that it is gone.

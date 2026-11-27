@@ -1,4 +1,10 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  rmSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import type { FsPort } from '../../ports/fs.port.ts';
 import { appendTextFile, removeFile, writeTextFile } from './write-text.ts';
@@ -17,6 +23,7 @@ export const createNodeFs = (): FsPort => ({
   writeText: writeTextFile,
   appendText: appendTextFile,
   remove: removeFile,
+  removeDir: async (path) => rmSync(path, { recursive: true, force: true }),
   exists: async (path) => existsSync(path),
   list: async (dir) => (existsSync(dir) ? readdirSync(dir).sort() : []),
   filesAt: async (path) => filesAt(path),
