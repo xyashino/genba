@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createHeadlessRunner } from '../adapters/runners/headless.js';
+import { createHeadlessRunner } from '../adapters/runners/headless.ts';
 
 const KILL_AFTER_MS = 5_000;
 

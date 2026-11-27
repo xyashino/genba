@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_ROLES } from '../builtin/registry.js';
-import { parseRole, renderRole, validateRoleGuards } from '../domain/role.js';
+import { BUILTIN_ROLES } from '../builtin/registry.ts';
+import { parseRole, renderRole, validateRoleGuards } from '../domain/role.ts';
 
 describe('Built-in ROLE.md contracts and live guards', () => {
   it('parses all built-in runtime roles and renders builder prompt via @repo/prompt', () => {

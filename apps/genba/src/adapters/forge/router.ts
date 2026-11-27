@@ -1,11 +1,11 @@
 import type { ForgeProvider } from '@repo/contracts/enums';
-import { ForgeError } from '../../ports/forge.port.js';
-import type { ForgePort } from '../../ports/forge.port.js';
-import type { GitPort } from '../../ports/git.port.js';
-import type { ProcessPort } from '../../ports/process.port.js';
-import { detectForgeRemote } from './detect.js';
-import { createGhForge } from './gh.js';
-import { createGlabForge } from './glab.js';
+import { ForgeError } from '../../ports/forge.port.ts';
+import type { ForgePort } from '../../ports/forge.port.ts';
+import type { GitPort } from '../../ports/git.port.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
+import { detectForgeRemote } from './detect.ts';
+import { createGhForge } from './gh.ts';
+import { createGlabForge } from './glab.ts';
 
 export type ForgeRouterDeps = {
   process: ProcessPort;

@@ -3,12 +3,12 @@ import { operatorRequestSchema } from '@repo/contracts/operator.contract';
 import {
   CYCLE_TOKEN_ENV,
   OPERATOR_URL_ENV,
-} from '../../ports/operator.port.js';
+} from '../../ports/operator.port.ts';
 import type {
   OperatorEndpointPort,
   OperatorHandler,
   OperatorResponse,
-} from '../../ports/operator.port.js';
+} from '../../ports/operator.port.ts';
 
 const HOST = '127.0.0.1';
 const TOKEN_BYTES = 16;

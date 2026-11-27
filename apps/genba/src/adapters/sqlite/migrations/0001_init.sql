@@ -46,11 +46,6 @@ CREATE TABLE `jobs` (
   `runner` text,
   `model` text,
   `tier` text,
-  `input_tokens` integer,
-  `output_tokens` integer,
-  `cache_read_tokens` integer,
-  `cache_write_tokens` integer,
-  `cost_usd` real DEFAULT 0 NOT NULL,
   `duration_ms` integer,
   `started_at` text NOT NULL,
   `finished_at` text

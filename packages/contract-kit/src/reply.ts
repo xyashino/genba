@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ZodContract } from './types';
+import type { ZodContract } from './types.ts';
 
 export type ReplyOutcome =
   | { ok: true; value: unknown }

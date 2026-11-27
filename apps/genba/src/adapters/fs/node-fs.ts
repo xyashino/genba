@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import type { FsPort } from '../../ports/fs.port.js';
-import { appendTextFile, removeFile, writeTextFile } from './write-text.js';
+import type { FsPort } from '../../ports/fs.port.ts';
+import { appendTextFile, removeFile, writeTextFile } from './write-text.ts';
 
 export const createNodeFs = (): FsPort => ({
   readText: async (path) => readFileSync(path, 'utf8'),

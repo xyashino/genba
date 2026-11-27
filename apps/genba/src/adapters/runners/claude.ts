@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import type { RunnerUsage } from '../../ports/runner.port.js';
-import { jsonLinesOf } from './json-lines.js';
-import { promptFor } from './runner.js';
-import type { CommandSpec, RunnerAdapter } from './runner.js';
+import type { RunnerReport } from '../../ports/runner.port.ts';
+import { jsonLinesOf } from './json-lines.ts';
+import { promptFor } from './runner.ts';
+import type { CommandSpec, RunnerAdapter } from './runner.ts';
 
 const BINARY = 'claude';
 // Read mode keeps auto approval but denies file writes outright, so a judge cannot edit files.
@@ -16,7 +16,6 @@ const GUIDANCE = {
 const count = z.number().int().min(0);
 const resultSchema = z.object({
   type: z.literal('result'),
-  total_cost_usd: z.number().min(0).optional(),
   usage: z.object({
     input_tokens: count,
     output_tokens: count,
@@ -24,6 +23,9 @@ const resultSchema = z.object({
     cache_creation_input_tokens: count.default(0),
   }),
 });
+
+const promptArg = ({ promptFile, permission }: CommandSpec): string =>
+  `${promptFor(promptFile)} ${GUIDANCE[permission]}`;
 
 const permissionArgs = ({ permission }: CommandSpec): string[] =>
   permission === 'read'
@@ -33,11 +35,11 @@ const permissionArgs = ({ permission }: CommandSpec): string[] =>
 const modelArgs = ({ model }: CommandSpec): string[] =>
   model === undefined ? [] : ['--model', model];
 
-const parseUsage = (log: string): RunnerUsage | null => {
+const parseOutput = (log: string): RunnerReport => {
   for (const line of jsonLinesOf(log).reverse()) {
     const result = resultSchema.safeParse(line);
     if (!result.success) continue;
-    const { usage, total_cost_usd: costUsd } = result.data;
+    const { usage } = result.data;
     return {
       usage: {
         inputTokens: usage.input_tokens,
@@ -45,23 +47,29 @@ const parseUsage = (log: string): RunnerUsage | null => {
         cacheReadTokens: usage.cache_read_input_tokens,
         cacheWriteTokens: usage.cache_creation_input_tokens,
       },
-      costUsd: costUsd ?? null,
     };
   }
-  return null;
+  return {};
 };
 
 export const claudeRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
+  // The prompt goes first: variadic `--disallowedTools` would swallow a trailing one.
   buildCommand: (spec) => [
     BINARY,
+    promptArg(spec),
+    ...permissionArgs(spec),
+    ...modelArgs(spec),
+  ],
+  buildHeadlessCommand: (spec) => [
+    BINARY,
     '-p',
-    `${promptFor(spec.promptFile)} ${GUIDANCE[spec.permission]}`,
+    promptArg(spec),
     ...permissionArgs(spec),
     '--output-format',
     'json',
     ...modelArgs(spec),
   ],
-  parseUsage,
+  parseOutput,
 };

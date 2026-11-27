@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { ProcessPort } from '../../ports/process.port.js';
+import type { ProcessPort } from '../../ports/process.port.ts';
 
 const INFO_EXCLUDE = 'info/exclude';
 

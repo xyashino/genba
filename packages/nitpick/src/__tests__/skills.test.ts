@@ -11,10 +11,10 @@ import {
   it,
   vi,
 } from 'vitest';
-import { config } from '../config.js';
-import type { Config } from '../config.js';
-import { buildDocs } from '../docs.js';
-import { run } from '../run.js';
+import { config } from '../config.ts';
+import type { Config } from '../config.ts';
+import { buildDocs } from '../docs.ts';
+import { run } from '../run.ts';
 
 const SKILL = '---\nname: demo\ndescription: "Does demo"\n---\n\n# Demo\n';
 const BINARY = Buffer.from([0, 255, 13, 10, 128]);

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { EXIT } from '../../domain/exit-codes.js';
-import type { ExitCode } from '../../domain/exit-codes.js';
-import type { OperatorReply } from '../../ports/operator.port.js';
+import { EXIT } from '../../domain/exit-codes.ts';
+import type { ExitCode } from '../../domain/exit-codes.ts';
+import type { OperatorReply } from '../../ports/operator.port.ts';
 
 const errorBodySchema = z.object({
   code: z.number(),

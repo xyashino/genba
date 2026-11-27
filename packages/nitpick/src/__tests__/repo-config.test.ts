@@ -3,9 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { config } from '../config.js';
-import type { Config } from '../config.js';
-import { buildDocs } from '../docs.js';
+import { config } from '../config.ts';
+import type { Config } from '../config.ts';
+import { buildDocs } from '../docs.ts';
 
 const configDir = join(import.meta.dirname, '..', '..', '..', '..', '.nitpick');
 const { default: repo } = (await import(

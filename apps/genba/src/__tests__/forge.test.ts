@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { detectForgeRemote } from '../adapters/forge/detect.js';
-import { createGhForge } from '../adapters/forge/gh.js';
-import { createGlabForge } from '../adapters/forge/glab.js';
-import { createForgeRouter } from '../adapters/forge/router.js';
-import { ForgeError } from '../ports/forge.port.js';
-import { createFakeForge } from './support/forge-fixture.js';
+import { detectForgeRemote } from '../adapters/forge/detect.ts';
+import { createGhForge } from '../adapters/forge/gh.ts';
+import { createGlabForge } from '../adapters/forge/glab.ts';
+import { createForgeRouter } from '../adapters/forge/router.ts';
+import { ForgeError } from '../ports/forge.port.ts';
+import { createFakeForge } from './support/forge-fixture.ts';
 
 const FORGES = [
   { binary: 'gh', create: createGhForge, mr: 'pull', prCommand: 'pr' },

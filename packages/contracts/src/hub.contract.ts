@@ -1,9 +1,9 @@
 import { errorResponse } from '@repo/contract-kit/reply';
 import type { ZodContract } from '@repo/contract-kit/types';
 import { z } from 'zod';
-import { hubCommandKindSchema } from './enums.js';
-import { incidentSchema } from './incidents.contract.js';
-import { workOrderSchema } from './orders.contract.js';
+import { hubCommandKindSchema } from './enums.ts';
+import { incidentSchema } from './incidents.contract.ts';
+import { workOrderSchema } from './orders.contract.ts';
 
 export const hubCommandSchema = z.object({
   id: z.string().min(1),

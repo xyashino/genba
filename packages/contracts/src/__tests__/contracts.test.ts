@@ -1,22 +1,22 @@
 import { parseReply } from '@repo/contract-kit/reply';
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { hubSyncContract } from '../hub.contract.js';
-import type { HubCommand } from '../hub.contract.js';
+import { hubSyncContract } from '../hub.contract.ts';
+import type { HubCommand } from '../hub.contract.ts';
 import {
   incidentSchema,
   resolveIncidentContract,
-} from '../incidents.contract.js';
-import { completeJobContract, jobSchema } from '../jobs.contract.js';
+} from '../incidents.contract.ts';
+import { completeJobContract, jobSchema } from '../jobs.contract.ts';
 import {
   operatorDoneContract,
   operatorRequestSchema,
-} from '../operator.contract.js';
+} from '../operator.contract.ts';
 import {
   getOrderContract,
   importOrdersContract,
   workOrderSchema,
-} from '../orders.contract.js';
-import type { WorkOrder } from '../orders.contract.js';
+} from '../orders.contract.ts';
+import type { WorkOrder } from '../orders.contract.ts';
 
 const SAMPLE_ORDER = {
   id: 'ord-1',
@@ -64,7 +64,7 @@ describe('Unified wire contracts', () => {
     expect(reply.ok).toBe(true);
   });
 
-  it('validates jobs with runner, model, tier, usage, and cost', () => {
+  it('validates jobs with runner, model, tier, and duration', () => {
     const job = jobSchema.parse({
       id: 'job-1',
       orderId: 'ord-1',
@@ -76,22 +76,15 @@ describe('Unified wire contracts', () => {
       runner: 'claude',
       model: 'sonnet',
       tier: 'strong',
-      usage: {
-        inputTokens: 12000,
-        outputTokens: 3200,
-        cacheReadTokens: 8000,
-      },
-      costUsd: 0.18,
       durationMs: 42000,
       startedAt: '2026-11-27T10:05:00Z',
       finishedAt: '2026-11-27T10:05:42Z',
     });
-    expect(job.usage?.cacheWriteTokens).toBe(0);
+    expect(job.tier).toBe('strong');
     expect(
       completeJobContract.in.body.safeParse({
         status: 'completed',
         durationMs: 1000,
-        costUsd: 0.05,
       }).success,
     ).toBe(true);
   });

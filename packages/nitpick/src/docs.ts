@@ -2,10 +2,10 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
-import { listRules } from './config.js';
-import type { Config, EntryDoc, Importance } from './config.js';
-import { buildSettings } from './settings.js';
-import type { SettingsSource } from './settings.js';
+import { listRules } from './config.ts';
+import type { Config, EntryDoc, Importance } from './config.ts';
+import { buildSettings } from './settings.ts';
+import type { SettingsSource } from './settings.ts';
 
 type Docs = {
   files: Map<string, string | Uint8Array>;

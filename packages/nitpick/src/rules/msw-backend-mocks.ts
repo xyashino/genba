@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import type { RuleUnit } from '../config.js';
+import type { RuleUnit } from '../config.ts';
 
 const FETCH_MOCKS = [
   /\bvi\.stubGlobal\(\s*['"`]fetch['"`]/g,

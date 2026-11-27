@@ -1,5 +1,3 @@
-import type { TokenUsage } from '@repo/contracts/jobs.contract';
-
 export type RunSpec = {
   command: string;
   args: readonly string[];
@@ -32,12 +30,21 @@ export type CommandLine = {
 export type CommandOptions = {
   model?: string;
   permission?: 'read' | 'write';
+  /** defaults to true */
+  headless?: boolean;
 };
 
-export type RunnerUsage = {
-  usage: TokenUsage;
-  /** null when the CLI reports tokens but no price */
-  costUsd: number | null;
+export type TokenUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+};
+
+/** What a run's log says, in one shape for every runner. */
+export type RunnerReport = {
+  /** omitted when the runner does not support it or the log holds none */
+  usage?: TokenUsage;
 };
 
 export type RunnerCatalogPort = {
@@ -48,6 +55,5 @@ export type RunnerCatalogPort = {
     promptFile: string,
     options?: CommandOptions,
   ): CommandLine | undefined;
-  /** null when the runner reports no usage or the log holds none */
-  parseUsage(name: string, log: string): RunnerUsage | null;
+  parseOutput(name: string, log: string): RunnerReport | undefined;
 };

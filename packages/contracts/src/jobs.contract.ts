@@ -2,14 +2,7 @@ import { idParams } from '@repo/contract-kit/fields';
 import { errorResponse } from '@repo/contract-kit/reply';
 import type { ZodContract } from '@repo/contract-kit/types';
 import { z } from 'zod';
-import { jobStatusSchema, modelTierSchema } from './enums.js';
-
-export const tokenUsageSchema = z.object({
-  inputTokens: z.number().int().min(0),
-  outputTokens: z.number().int().min(0),
-  cacheReadTokens: z.number().int().min(0).default(0),
-  cacheWriteTokens: z.number().int().min(0).default(0),
-});
+import { jobStatusSchema, modelTierSchema } from './enums.ts';
 
 export const jobSchema = z.object({
   id: z.string().min(1),
@@ -22,8 +15,6 @@ export const jobSchema = z.object({
   runner: z.string().min(1).nullable(),
   model: z.string().min(1).nullable(),
   tier: modelTierSchema.nullable(),
-  usage: tokenUsageSchema.nullable(),
-  costUsd: z.number().min(0).default(0),
   durationMs: z.number().int().min(0).nullable(),
   startedAt: z.string().min(1),
   finishedAt: z.string().nullable(),
@@ -56,8 +47,6 @@ export const completeJobContract = {
     params: idParams,
     body: z.object({
       status: z.enum(['completed', 'failed', 'cancelled']),
-      usage: tokenUsageSchema.optional(),
-      costUsd: z.number().min(0).optional(),
       durationMs: z.number().int().min(0),
       summary: z.string().optional(),
     }),
@@ -72,6 +61,5 @@ export const completeJobContract = {
   },
 } satisfies ZodContract;
 
-export type TokenUsage = z.infer<typeof tokenUsageSchema>;
 export type RunnerQuota = z.infer<typeof runnerQuotaSchema>;
 export type Job = z.infer<typeof jobSchema>;

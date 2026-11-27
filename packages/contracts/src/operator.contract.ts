@@ -1,7 +1,7 @@
 import { errorResponse } from '@repo/contract-kit/reply';
 import type { ZodContract } from '@repo/contract-kit/types';
 import { z } from 'zod';
-import { incidentResolutionSchema } from './enums.js';
+import { incidentResolutionSchema } from './enums.ts';
 
 export const operatorVerdictSchema = z.enum(['pass', 'fail']);
 

@@ -2,8 +2,8 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createDb } from '@repo/sqlite-kit/create-db';
 import type { BunSqliteDb } from '@repo/sqlite-kit/create-db';
-import { migrations } from './migrations.js';
-import { schema } from './schema.js';
+import { migrations } from './migrations.ts';
+import { schema } from './schema.ts';
 
 export type GenbaDb = BunSqliteDb<typeof schema>;
 

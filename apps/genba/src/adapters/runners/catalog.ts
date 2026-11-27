@@ -1,11 +1,11 @@
-import type { RunnerCatalogPort } from '../../ports/runner.port.js';
-import { antigravityRunner } from './antigravity.js';
-import { claudeRunner } from './claude.js';
-import { codexRunner } from './codex.js';
-import { copilotRunner } from './copilot.js';
-import { cursorRunner } from './cursor.js';
-import { opencodeRunner } from './opencode.js';
-import type { RunnerAdapter } from './runner.js';
+import type { RunnerCatalogPort } from '../../ports/runner.port.ts';
+import { antigravityRunner } from './antigravity.ts';
+import { claudeRunner } from './claude.ts';
+import { codexRunner } from './codex.ts';
+import { copilotRunner } from './copilot.ts';
+import { cursorRunner } from './cursor.ts';
+import { opencodeRunner } from './opencode.ts';
+import type { RunnerAdapter } from './runner.ts';
 
 const ADAPTERS: readonly RunnerAdapter[] = [
   claudeRunner,
@@ -32,14 +32,23 @@ export const createRunnerCatalog = (
     return adapter !== undefined && (await probe(adapter.binary));
   },
   commandLine: (name, promptFile, options = {}) => {
-    const argv = BY_NAME.get(name)?.buildCommand({
+    const adapter = BY_NAME.get(name);
+    if (adapter === undefined) return undefined;
+    const spec = {
       promptFile,
       model: options.model,
       permission: options.permission ?? 'write',
-    });
-    if (argv === undefined) return undefined;
+    };
+    const argv =
+      (options.headless ?? true)
+        ? adapter.buildHeadlessCommand(spec)
+        : adapter.buildCommand(spec);
     const [command = '', ...args] = argv;
     return { command, args };
   },
-  parseUsage: (name, log) => BY_NAME.get(name)?.parseUsage?.(log) ?? null,
+  parseOutput: (name, log) => {
+    const adapter = BY_NAME.get(name);
+    if (adapter === undefined) return undefined;
+    return adapter.parseOutput?.(log) ?? {};
+  },
 });

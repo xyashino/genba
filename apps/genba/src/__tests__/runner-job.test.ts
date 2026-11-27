@@ -1,13 +1,13 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.js';
-import { createRunnerCatalog } from '../adapters/runners/catalog.js';
-import { createHeadlessRunner } from '../adapters/runners/headless.js';
-import { installStub, tempDir } from './support/stub-bin.js';
+import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.ts';
+import { createRunnerCatalog } from '../adapters/runners/catalog.ts';
+import { createHeadlessRunner } from '../adapters/runners/headless.ts';
+import { installStub, tempDir } from './support/stub-bin.ts';
 
 describe('runner job', () => {
-  it('runs an agent that reports done and leaves its usage in the log', async () => {
+  it('runs an agent that reports done and keeps its output in the log', async () => {
     const cwd = tempDir('job');
     writeFileSync(join(cwd, 'prompt.md'), 'build the login form\n');
     const logPath = join(cwd, 'step.log');
@@ -36,8 +36,6 @@ describe('runner job', () => {
     expect(received).toEqual([
       { verb: 'done', summary: 'build the login form' },
     ]);
-    expect(
-      catalog.parseUsage('claude', readFileSync(logPath, 'utf8'))?.costUsd,
-    ).toBe(0.01);
+    expect(readFileSync(logPath, 'utf8')).toContain('agent finished');
   });
 });

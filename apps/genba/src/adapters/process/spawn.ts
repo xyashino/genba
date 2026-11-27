@@ -5,7 +5,7 @@ import type {
   DetachedSpec,
   ProcessPort,
   ProcessResult,
-} from '../../ports/process.port.js';
+} from '../../ports/process.port.ts';
 
 const SPAWN_FAILED_EXIT = 127;
 const PROBE_TIMEOUT_MS = 1_000;

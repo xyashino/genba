@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { ForgePort, PublishPrSpec } from '../../ports/forge.port.js';
-import type { ProcessPort } from '../../ports/process.port.js';
+import type { ForgePort, PublishPrSpec } from '../../ports/forge.port.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
 import {
   ANDON_LABEL,
   andonBodyOf,
@@ -8,7 +8,7 @@ import {
   createdRefOf,
   parseForgeJson,
   runForgeCli,
-} from './cli.js';
+} from './cli.ts';
 
 const GLAB = 'glab';
 const MR_URL = /https?:\/\/\S+\/-\/merge_requests\/(\d+)/;

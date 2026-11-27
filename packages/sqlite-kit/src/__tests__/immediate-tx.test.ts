@@ -3,9 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Database } from 'bun:sqlite';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createDb } from '../create-db';
-import { immediateTx } from '../immediate-tx';
-import { items, migrations, schema } from './fixture';
+import { createDb } from '../create-db.ts';
+import { immediateTx } from '../immediate-tx.ts';
+import { items, migrations, schema } from './fixture.ts';
 
 const scratch: string[] = [];
 

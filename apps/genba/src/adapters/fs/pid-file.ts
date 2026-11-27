@@ -7,9 +7,9 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import type { PidFilePort } from '../../ports/fs.port.js';
-import type { ProcessPort } from '../../ports/process.port.js';
-import { createProcessAdapter } from '../process/spawn.js';
+import type { PidFilePort } from '../../ports/fs.port.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
+import { createProcessAdapter } from '../process/spawn.ts';
 
 const PID_FILE_NAME = 'daemon.pid';
 const PID_MODE = 0o600;

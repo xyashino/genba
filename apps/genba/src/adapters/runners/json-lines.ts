@@ -1,9 +1,9 @@
-// A run log mixes stdout and stderr, so lines that are not JSON are skipped.
+/** Parsed JSON lines of a run log; stderr noise and plain text are skipped. */
 export const jsonLinesOf = (log: string): unknown[] =>
-  log.split('\n').flatMap((line): unknown[] => {
-    if (!line.trimStart().startsWith('{')) return [];
+  log.split('\n').flatMap((line) => {
+    if (!line.startsWith('{')) return [];
     try {
-      return [JSON.parse(line)];
+      return [JSON.parse(line) as unknown];
     } catch {
       return [];
     }

@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createOperatorClient } from '../adapters/operator-client/client.js';
+import { createOperatorClient } from '../adapters/operator-client/client.ts';
 import {
   errorLineFor,
   exitCodeFor,
-} from '../adapters/operator-client/exit-map.js';
-import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.js';
-import { EXIT } from '../domain/exit-codes.js';
-import { OperatorUnreachableError } from '../ports/operator.port.js';
-import type { OperatorHandler } from '../ports/operator.port.js';
+} from '../adapters/operator-client/exit-map.ts';
+import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.ts';
+import { EXIT } from '../domain/exit-codes.ts';
+import { OperatorUnreachableError } from '../ports/operator.port.ts';
+import type { OperatorHandler } from '../ports/operator.port.ts';
 
 const accept: OperatorHandler = async () => ({ code: 200, accepted: true });
 

@@ -9,10 +9,10 @@ import {
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
-import { listRules } from './config.js';
-import type { Config } from './config.js';
-import { buildDocs } from './docs.js';
-import { createSnapshot } from './snapshot.js';
+import { listRules } from './config.ts';
+import type { Config } from './config.ts';
+import { buildDocs } from './docs.ts';
+import { createSnapshot } from './snapshot.ts';
 
 const USAGE =
   'Usage: nitpick [--sync | --check] [--commit-msg <file>] [--range <a..b>]';

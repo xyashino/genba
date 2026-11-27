@@ -1,7 +1,7 @@
 // Stands in for `gh` and `glab`. Unknown subcommands and flags fail, as in the real CLIs.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { FORGE_STATE_ENV } from './forge-state.js';
-import type { FakeForgeState, FakeItem } from './forge-state.js';
+import { FORGE_STATE_ENV } from './forge-state.ts';
+import type { FakeForgeState, FakeItem } from './forge-state.ts';
 
 const [CLI, ...args] = process.argv.slice(2) as ['gh' | 'glab', ...string[]];
 const command = args.slice(0, 2).join(' ');

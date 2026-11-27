@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { run } from '../run.js';
+import { run } from '../run.ts';
 
 const SKILL = '---\nname: s\ndescription: d\n---\n\nbody\n';
 

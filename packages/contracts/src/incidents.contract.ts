@@ -6,7 +6,7 @@ import {
   incidentReasonSchema,
   incidentResolutionSchema,
   triageOwnerSchema,
-} from './enums.js';
+} from './enums.ts';
 
 export const incidentSchema = z.object({
   id: z.string().min(1),

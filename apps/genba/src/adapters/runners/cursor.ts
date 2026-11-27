@@ -1,5 +1,5 @@
-import { promptFor } from './runner.js';
-import type { CommandSpec, RunnerAdapter } from './runner.js';
+import { promptFor } from './runner.ts';
+import type { CommandSpec, RunnerAdapter } from './runner.ts';
 
 const BINARY = 'cursor-agent';
 
@@ -10,18 +10,21 @@ const modeArgs = ({ permission }: CommandSpec): string[] =>
 const modelArgs = ({ model }: CommandSpec): string[] =>
   model === undefined ? [] : ['--model', model];
 
+const buildArgv = (spec: CommandSpec): string[] => [
+  BINARY,
+  '-p',
+  ...modeArgs(spec),
+  '--trust',
+  '--approve-mcps',
+  '--output-format',
+  'json',
+  ...modelArgs(spec),
+  promptFor(spec.promptFile),
+];
+
 export const cursorRunner: RunnerAdapter = {
   name: 'cursor',
   binary: BINARY,
-  buildCommand: (spec) => [
-    BINARY,
-    '-p',
-    ...modeArgs(spec),
-    '--trust',
-    '--approve-mcps',
-    '--output-format',
-    'json',
-    ...modelArgs(spec),
-    promptFor(spec.promptFile),
-  ],
+  buildCommand: buildArgv,
+  buildHeadlessCommand: buildArgv,
 };

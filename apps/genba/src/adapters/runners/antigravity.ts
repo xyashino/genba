@@ -1,5 +1,5 @@
-import { promptFor } from './runner.js';
-import type { CommandSpec, RunnerAdapter } from './runner.js';
+import { promptFor } from './runner.ts';
+import type { CommandSpec, RunnerAdapter } from './runner.ts';
 
 const BINARY = 'agy';
 
@@ -10,6 +10,15 @@ export const antigravityRunner: RunnerAdapter = {
   name: 'antigravity',
   binary: BINARY,
   buildCommand: (spec) => [
+    BINARY,
+    '--mode',
+    'auto',
+    '--dangerously-skip-permissions',
+    ...modelArgs(spec),
+    '-i',
+    promptFor(spec.promptFile),
+  ],
+  buildHeadlessCommand: (spec) => [
     BINARY,
     '--mode',
     'auto',

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { mswBackendMocks } from '../rules/msw-backend-mocks.js';
+import { mswBackendMocks } from '../rules/msw-backend-mocks.ts';
 
 const problemsOf = async (sources: Record<string, string>) => {
   const reports: string[] = [];

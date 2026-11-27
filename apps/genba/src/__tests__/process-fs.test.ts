@@ -1,11 +1,11 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { createNodeFs } from '../adapters/fs/node-fs.js';
-import { createPidFile } from '../adapters/fs/pid-file.js';
-import { createProcessAdapter } from '../adapters/process/spawn.js';
-import { createSystemClock } from '../adapters/process/system-clock.js';
-import { tempDir } from './support/stub-bin.js';
+import { createNodeFs } from '../adapters/fs/node-fs.ts';
+import { createPidFile } from '../adapters/fs/pid-file.ts';
+import { createProcessAdapter } from '../adapters/process/spawn.ts';
+import { createSystemClock } from '../adapters/process/system-clock.ts';
+import { tempDir } from './support/stub-bin.ts';
 
 const port = createProcessAdapter();
 const onlyAlive =

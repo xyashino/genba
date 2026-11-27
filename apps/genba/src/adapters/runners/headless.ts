@@ -6,7 +6,7 @@ import type {
   RunnerPort,
   RunOutcome,
   RunSpec,
-} from '../../ports/runner.port.js';
+} from '../../ports/runner.port.ts';
 
 const KILL_AFTER_MS = 5_000;
 const SPAWN_FAILED_EXIT = 127;

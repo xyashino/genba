@@ -8,9 +8,9 @@ import {
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createGitAdapter } from '../adapters/git/git.js';
-import { createProcessAdapter } from '../adapters/process/spawn.js';
-import { tempDir } from './support/stub-bin.js';
+import { createGitAdapter } from '../adapters/git/git.ts';
+import { createProcessAdapter } from '../adapters/process/spawn.ts';
+import { tempDir } from './support/stub-bin.ts';
 
 const git = (cwd: string, ...args: string[]): string =>
   execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' }).trim();

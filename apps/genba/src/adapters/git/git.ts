@@ -1,8 +1,8 @@
 import { rm } from 'node:fs/promises';
-import { baseRefOf } from '../../domain/branch.js';
-import type { GitPort } from '../../ports/git.port.js';
-import type { ProcessPort } from '../../ports/process.port.js';
-import { addInfoExclude } from './exclude.js';
+import { baseRefOf } from '../../domain/branch.ts';
+import type { GitPort } from '../../ports/git.port.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
+import { addInfoExclude } from './exclude.ts';
 
 const GIT = 'git';
 const REMOTE = 'origin';

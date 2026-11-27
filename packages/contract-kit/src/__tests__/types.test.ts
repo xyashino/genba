@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
-import type { ContractInput } from '../types';
+import type { ContractInput } from '../types.ts';
 
 const sampleContract = {
   in: {

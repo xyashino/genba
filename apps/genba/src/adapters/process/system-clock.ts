@@ -1,4 +1,4 @@
-import type { ClockPort } from '../../ports/clock.port.js';
+import type { ClockPort } from '../../ports/clock.port.ts';
 
 export const createSystemClock = (): ClockPort => ({
   now: () => Date.now(),

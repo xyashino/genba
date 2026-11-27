@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
-import { createProcessAdapter } from '../../adapters/process/spawn.js';
-import type { ProcessPort } from '../../ports/process.port.js';
-import { FORGE_STATE_ENV } from './forge-state.js';
-import type { FakeForgeState } from './forge-state.js';
-import { installStub, tempDir } from './stub-bin.js';
+import { createProcessAdapter } from '../../adapters/process/spawn.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
+import { FORGE_STATE_ENV } from './forge-state.ts';
+import type { FakeForgeState } from './forge-state.ts';
+import { installStub, tempDir } from './stub-bin.ts';
 
 export const createFakeForge = (binary: 'gh' | 'glab') => {
   const cwd = tempDir('forge');

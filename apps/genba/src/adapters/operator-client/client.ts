@@ -1,5 +1,5 @@
-import { OperatorUnreachableError } from '../../ports/operator.port.js';
-import type { OperatorClientPort } from '../../ports/operator.port.js';
+import { OperatorUnreachableError } from '../../ports/operator.port.ts';
+import type { OperatorClientPort } from '../../ports/operator.port.ts';
 
 const REQUEST_TIMEOUT_MS = 10_000;
 const UNREADABLE_REPLY = 'the Cell sent a reply this CLI cannot read';

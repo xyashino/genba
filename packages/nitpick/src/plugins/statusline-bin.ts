@@ -2,9 +2,9 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { renderStatusLine } from './statusline-render.js';
-import type { SessionInput } from './statusline-render.js';
-import { readUsage } from './statusline-usage.js';
+import { renderStatusLine } from './statusline-render.ts';
+import type { SessionInput } from './statusline-render.ts';
+import { readUsage } from './statusline-usage.ts';
 
 const claudeDir = join(homedir(), '.claude');
 

@@ -21,7 +21,7 @@ Hexagonal core (`domain/`, `builtin/`, `ports/`, `adapters/`) separated from 4 s
 
 ```text
 apps/genba/src/
-├── domain/                  # Pure rules, zero IO (manifest, line, role, order, budget, errors)
+├── domain/                  # Pure rules, zero IO (manifest, line, role, order, errors)
 ├── builtin/                 # Embedded lines/*.yml & roles/*/ROLE.md (`with { type: 'text' }`)
 ├── ports/                   # Narrow app-owned interfaces (clock, fs, process, git, forge, runner, event-bus)
 ├── adapters/                # Concrete implementations (sqlite, fs, git, forge, runners, process, operator-endpoint, operator-client, http)
@@ -30,7 +30,7 @@ apps/genba/src/
 │   │   ├── ports/           # store.port.ts (repository contract decoupling procedures from Drizzle)
 │   │   ├── core/            # procedure.ts (contract-first), error-handling.ts, context.ts
 │   │   ├── procedures/      # One file per use-case (claim-job, complete-job, import-orders, stats...)
-│   │   ├── scheduler.ts     # Queue ordering, retry tier escalation, budget caps
+│   │   ├── scheduler.ts     # Queue ordering, retry tier escalation
 │   │   ├── supervisor.ts    # Spawns/scales/kills Cells (kill-before-requeue invariant)
 │   │   ├── hub-sync.ts      # Optional outbound Hub sync + outbox poller
 │   │   └── server.ts        # Thin Hono HTTP/SSE adapter wiring routes -> procedures

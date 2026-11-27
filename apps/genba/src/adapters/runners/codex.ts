@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import type { RunnerUsage } from '../../ports/runner.port.js';
-import { jsonLinesOf } from './json-lines.js';
-import { promptFor } from './runner.js';
-import type { CommandSpec, RunnerAdapter } from './runner.js';
+import type { RunnerReport } from '../../ports/runner.port.ts';
+import { jsonLinesOf } from './json-lines.ts';
+import { promptFor } from './runner.ts';
+import type { CommandSpec, RunnerAdapter } from './runner.ts';
 
 const BINARY = 'codex';
 
@@ -24,12 +24,20 @@ const sandboxArgs = ({ permission }: CommandSpec): string[] =>
 const modelArgs = ({ model }: CommandSpec): string[] =>
   model === undefined ? [] : ['-m', model];
 
-const parseUsage = (log: string): RunnerUsage | null => {
+const buildArgv = (spec: CommandSpec): string[] => [
+  BINARY,
+  ...sandboxArgs(spec),
+  '--json',
+  ...modelArgs(spec),
+  promptFor(spec.promptFile),
+];
+
+const parseOutput = (log: string): RunnerReport => {
   const turns = jsonLinesOf(log).flatMap((line) => {
     const turn = turnSchema.safeParse(line);
     return turn.success ? [turn.data.usage] : [];
   });
-  if (turns.length === 0) return null;
+  if (turns.length === 0) return {};
   const usage = {
     inputTokens: 0,
     outputTokens: 0,
@@ -45,18 +53,13 @@ const parseUsage = (log: string): RunnerUsage | null => {
     usage.cacheReadTokens += turn.cached_input_tokens;
     usage.outputTokens += turn.output_tokens;
   }
-  return { usage, costUsd: null };
+  return { usage };
 };
 
 export const codexRunner: RunnerAdapter = {
   name: BINARY,
   binary: BINARY,
-  buildCommand: (spec) => [
-    BINARY,
-    ...sandboxArgs(spec),
-    '--json',
-    ...modelArgs(spec),
-    promptFor(spec.promptFile),
-  ],
-  parseUsage,
+  buildCommand: buildArgv,
+  buildHeadlessCommand: buildArgv,
+  parseOutput,
 };

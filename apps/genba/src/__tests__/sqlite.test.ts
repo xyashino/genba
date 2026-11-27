@@ -11,14 +11,14 @@ import {
 import type { OrderStep, WorkOrder } from '@repo/contracts/orders.contract';
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
-import { openGenbaDb } from '../adapters/sqlite/db.js';
+import { openGenbaDb } from '../adapters/sqlite/db.ts';
 import {
   incidents,
   jobs,
   orderSteps,
   orders,
-} from '../adapters/sqlite/schema.js';
-import { tempDir } from './support/stub-bin.js';
+} from '../adapters/sqlite/schema.ts';
+import { tempDir } from './support/stub-bin.ts';
 
 const AT = '2026-11-27T10:00:00.000Z';
 
@@ -64,11 +64,6 @@ const jobRow = {
   runner: 'claude',
   model: 'sonnet',
   tier: 'strong' as const,
-  inputTokens: 10,
-  outputTokens: 20,
-  cacheReadTokens: 30,
-  cacheWriteTokens: 40,
-  costUsd: 0.42,
   durationMs: 1200,
   startedAt: AT,
   finishedAt: AT,
@@ -125,18 +120,13 @@ describe('genba database', () => {
     );
   });
 
-  it('keeps job usage and cost telemetry', () => {
+  it('round-trips job runner details', () => {
     const db = seeded();
 
     const row = db.select().from(jobs).get()!;
 
     expect(row).toEqual(jobRow);
-    expect(jobSchema.parse({ ...row, usage: row }).usage).toEqual({
-      inputTokens: 10,
-      outputTokens: 20,
-      cacheReadTokens: 30,
-      cacheWriteTokens: 40,
-    });
+    expect(jobSchema.parse(row)).toEqual(jobRow);
   });
 
   it('keeps data when reopened', () => {

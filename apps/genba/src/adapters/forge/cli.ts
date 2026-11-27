@@ -1,7 +1,7 @@
 import type { z } from 'zod';
-import { ForgeError } from '../../ports/forge.port.js';
-import type { ForgeRef } from '../../ports/forge.port.js';
-import type { ProcessPort } from '../../ports/process.port.js';
+import { ForgeError } from '../../ports/forge.port.ts';
+import type { ForgeRef } from '../../ports/forge.port.ts';
+import type { ProcessPort } from '../../ports/process.port.ts';
 
 export const ANDON_LABEL = {
   name: 'genba:andon',

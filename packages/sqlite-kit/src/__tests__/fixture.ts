@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { embeddedMigrationsOf } from '../embedded-migrations';
+import { embeddedMigrationsOf } from '../embedded-migrations.ts';
 
 export const items = sqliteTable('items', {
   id: integer('id').primaryKey(),

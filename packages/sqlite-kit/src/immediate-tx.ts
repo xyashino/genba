@@ -1,4 +1,4 @@
-import type { BunSqliteDb, BunSqliteSchema, BunSqliteTx } from './create-db';
+import type { BunSqliteDb, BunSqliteSchema, BunSqliteTx } from './create-db.ts';
 
 export const immediateTx = <S extends BunSqliteSchema, T>(
   db: BunSqliteDb<S>,
