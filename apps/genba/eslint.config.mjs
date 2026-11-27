@@ -28,14 +28,14 @@ export default [
   {
     files: ['src/runtimes/cell/**/*.ts'],
     ...forbid(
-      ['../../adapters/db/**', '../daemon/**'],
+      ['**/adapters/sqlite/**', '../daemon/**'],
       'cell runtime must never access SQLite or daemon internals',
     ),
   },
   {
     files: ['src/runtimes/cli/**/*.ts'],
     ...forbid(
-      ['../../adapters/db/**'],
+      ['**/adapters/sqlite/**'],
       'cli runtime must talk to daemon loopback, never SQLite directly',
     ),
   },

@@ -1,0 +1,103 @@
+import { spawn } from 'node:child_process';
+import { closeSync, mkdirSync, openSync } from 'node:fs';
+import { dirname } from 'node:path';
+import type {
+  DetachedSpec,
+  ProcessPort,
+  ProcessResult,
+} from '../../ports/process.port.js';
+
+const SPAWN_FAILED_EXIT = 127;
+const PROBE_TIMEOUT_MS = 1_000;
+
+const collect = (
+  command: string,
+  args: readonly string[],
+  cwd: string,
+  env: Readonly<Record<string, string>>,
+): Promise<ProcessResult> =>
+  new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd,
+      env: { ...process.env, ...env },
+      windowsHide: true,
+    });
+    // A CLI that prompts must see EOF instead of hanging the caller.
+    child.stdin.end();
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+    child.on('error', (error) => {
+      resolve({ exitCode: SPAWN_FAILED_EXIT, stdout, stderr: error.message });
+    });
+    child.on('close', (code) => {
+      resolve({ exitCode: code ?? SPAWN_FAILED_EXIT, stdout, stderr });
+    });
+  });
+
+const isPermissionError = (error: unknown): boolean =>
+  error instanceof Error && 'code' in error && error.code === 'EPERM';
+
+export const createProcessAdapter = (): ProcessPort => ({
+  run: collect,
+  spawnDetached: async ({ command, args, env, logPath, cwd }: DetachedSpec) => {
+    mkdirSync(dirname(logPath), { recursive: true });
+    const logFd = openSync(logPath, 'a');
+    const child = spawn(command, args, {
+      cwd,
+      detached: true,
+      stdio: ['ignore', logFd, logFd],
+      env: { ...process.env, ...env },
+      windowsHide: true,
+    });
+    child.on('error', () => undefined);
+    child.unref();
+    closeSync(logFd);
+    if (child.pid === undefined) {
+      throw new Error('process did not start');
+    }
+    return child.pid;
+  },
+  isAlive: (pid) => {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch (error) {
+      return isPermissionError(error);
+    }
+  },
+  parentPid: () => process.ppid,
+  terminate: (pid) => {
+    try {
+      process.kill(pid, 'SIGTERM');
+    } catch {
+      return;
+    }
+  },
+  forceKill: (pid) => {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      return;
+    }
+  },
+  probeUrl: async (url) => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+      });
+      await response.body?.cancel();
+      return true;
+    } catch {
+      return false;
+    }
+  },
+});

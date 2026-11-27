@@ -7,7 +7,10 @@ import {
   resolveIncidentContract,
 } from '../incidents.contract.js';
 import { completeJobContract, jobSchema } from '../jobs.contract.js';
-import { operatorDoneContract } from '../operator.contract.js';
+import {
+  operatorDoneContract,
+  operatorRequestSchema,
+} from '../operator.contract.js';
 import {
   getOrderContract,
   importOrdersContract,
@@ -145,5 +148,25 @@ describe('Unified wire contracts', () => {
       | 'resolve_incident'
       | 'sync_prs'
     >();
+  });
+});
+
+describe('operator request', () => {
+  it('accepts a verb with its contract body', () => {
+    const request = operatorRequestSchema.parse({
+      verb: 'incident',
+      resolution: 'escalate',
+      diagnosis: 'env broken',
+    });
+
+    expect(request.verb).toBe('incident');
+  });
+
+  it('rejects an unknown verb and a verdict without feedback', () => {
+    expect(operatorRequestSchema.safeParse({ verb: 'x' }).success).toBe(false);
+    expect(
+      operatorRequestSchema.safeParse({ verb: 'verdict', verdict: 'pass' })
+        .success,
+    ).toBe(false);
   });
 });

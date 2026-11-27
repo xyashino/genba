@@ -59,3 +59,15 @@ export const operatorIncidentContract = {
 } satisfies ZodContract;
 
 export type OperatorVerdict = z.infer<typeof operatorVerdictSchema>;
+
+/** The one body `genba operator` posts to its Cell: a verb plus that verb's contract body. */
+export const operatorRequestSchema = z.discriminatedUnion('verb', [
+  operatorDoneContract.in.body.extend({ verb: z.literal('done') }),
+  operatorVerdictContract.in.body.extend({ verb: z.literal('verdict') }),
+  operatorBlockContract.in.body.extend({ verb: z.literal('block') }),
+  operatorIncidentContract.in.body.extend({ verb: z.literal('incident') }),
+  z.object({ verb: z.literal('context') }),
+  z.object({ verb: z.literal('read') }),
+]);
+
+export type OperatorRequest = z.infer<typeof operatorRequestSchema>;
