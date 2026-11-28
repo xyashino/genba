@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
-import { EXIT } from '../../../domain/exit-codes.ts';
+import { EXIT } from '../../domain/exit-codes.ts';
 import { WORKTREES_DIR } from '@repo/line/runtime-paths';
 import type { CliDeps } from '../context.ts';
 import { CliError, manifestOf, repoRootOf } from '../context.ts';

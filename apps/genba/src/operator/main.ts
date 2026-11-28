@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
 import { operatorRequestSchema } from '@repo/contracts/operator.contract';
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
-import { EXIT } from '../../domain/exit-codes.ts';
-import type { ExitCode } from '../../domain/exit-codes.ts';
+import { EXIT } from '../domain/exit-codes.ts';
+import type { ExitCode } from '../domain/exit-codes.ts';
 import { OperatorUnreachableError } from '@repo/cell/ports/operator.port';
 import type {
   OperatorClientPort,

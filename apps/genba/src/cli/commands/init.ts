@@ -1,10 +1,7 @@
 import { basename, join } from 'node:path';
-import { templateAssets } from '../../../builtin/assets.ts';
+import { templateAssets } from '../../builtin/assets.ts';
 import { detectForgeRemote } from '@repo/cell/probes';
-import {
-  DETECTION_FILES,
-  detectProject,
-} from '../../../domain/detect-project.ts';
+import { DETECTION_FILES, detectProject } from '../../domain/detect-project.ts';
 import { parseRepoManifest } from '@repo/line/manifest';
 import {
   DATA_DIR,

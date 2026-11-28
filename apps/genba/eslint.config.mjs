@@ -14,29 +14,28 @@ export default [
   {
     files: ['src/domain/**/*.ts'],
     ...forbid(
-      ['../adapters/**', '../runtimes/**', '@repo/factory/**'],
-      'domain must stay pure and never import adapters, runtimes, or the factory',
+      ['../cli/**', '../operator/**', '../standalone/**', '@repo/factory/**'],
+      'domain must stay pure and never import cli, operator, standalone, or the factory',
     ),
   },
   {
-    files: ['src/runtimes/operator/**/*.ts'],
+    files: ['src/operator/**/*.ts'],
     ...forbid(
       [
-        '../../adapters/**',
         '@repo/cell/main',
         '@repo/cell/loop',
         '@repo/cell/deps',
         '@repo/cell/runtime/**',
         '@repo/factory/**',
       ],
-      'operator runtime must stay a zero-state loopback client',
+      'operator must stay a zero-state loopback client',
     ),
   },
   {
-    files: ['src/runtimes/cli/**/*.ts'],
+    files: ['src/cli/**/*.ts'],
     ...forbid(
       ['@repo/factory/**'],
-      'cli runtime reaches the factory over its HTTP API only',
+      'cli reaches the factory over its HTTP API only',
     ),
   },
 ];

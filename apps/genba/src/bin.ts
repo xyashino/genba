@@ -2,9 +2,9 @@
 const runOperatorVerb = async (args: string[]): Promise<number> => {
   const [{ runOperator }, { createOperatorClient }, exits, port] =
     await Promise.all([
-      import('./runtimes/operator/main.ts'),
-      import('./adapters/operator-client/client.ts'),
-      import('./adapters/operator-client/exit-map.ts'),
+      import('./operator/main.ts'),
+      import('./operator/client.ts'),
+      import('./operator/exit-map.ts'),
       import('@repo/cell/ports/operator.port'),
     ]);
   const url = process.env[port.OPERATOR_URL_ENV];
@@ -43,7 +43,7 @@ const dispatch = async (argv: string[]): Promise<number> => {
       return runCell(rest[0] ?? '');
     }
     default: {
-      const { runCli } = await import('./runtimes/cli/main.ts');
+      const { runCli } = await import('./cli/main.ts');
       return runCli(argv);
     }
   }

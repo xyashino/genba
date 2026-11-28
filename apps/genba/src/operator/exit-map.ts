@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { EXIT } from '../../domain/exit-codes.ts';
-import type { ExitCode } from '../../domain/exit-codes.ts';
+import { EXIT } from '../domain/exit-codes.ts';
+import type { ExitCode } from '../domain/exit-codes.ts';
 import type { OperatorReply } from '@repo/cell/ports/operator.port';
 
 const errorBodySchema = z.object({

@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createOperatorClient } from '../adapters/operator-client/client.ts';
-import {
-  errorLineFor,
-  exitCodeFor,
-} from '../adapters/operator-client/exit-map.ts';
+import { createOperatorClient } from '../operator/client.ts';
+import { errorLineFor, exitCodeFor } from '../operator/exit-map.ts';
 import { createLoopbackEndpoint } from '@repo/cell/adapters/operator-endpoint/loopback';
 import { EXIT } from '../domain/exit-codes.ts';
 import { OperatorUnreachableError } from '@repo/cell/ports/operator.port';
