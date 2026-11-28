@@ -46,8 +46,8 @@ const filesOf = async (deps: CliDeps, path: string): Promise<string[]> => {
 
 const ordersFolderOf = async (deps: CliDeps): Promise<string> => {
   const folder = join(await repoRootOf(deps), ORDERS_DIR);
-  if (!(await deps.fs.exists(folder))) {
-    throw new CliError(`orders folder is missing: ${folder}`);
+  if (!(await deps.fs.exists(folder)) || !statSync(folder).isDirectory()) {
+    throw new CliError(`orders folder is missing or not a folder: ${folder}`);
   }
   return folder;
 };

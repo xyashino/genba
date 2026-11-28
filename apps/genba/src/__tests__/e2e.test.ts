@@ -711,6 +711,16 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     expect(refusal.stderr).toContain(join(repo, 'orders'));
   });
 
+  it('refuses to import when orders is a file, not a folder', () => {
+    writeFileSync(join(repo, 'orders'), '---\ntitle: stray\n---\nAdd.\n');
+
+    const refusal = refusedBy(repo, 'orders', 'import');
+    rmSync(join(repo, 'orders'));
+
+    expect(refusal.status).toBe(EXIT.refused);
+    expect(refusal.stderr).toContain(join(repo, 'orders'));
+  });
+
   it('refuses to import when orders/ holds no order files', () => {
     mkdirSync(join(repo, 'orders', 'nested'), { recursive: true });
     writeFileSync(join(repo, 'orders', 'notes.txt'), 'not an order\n');
