@@ -28,40 +28,79 @@ describe('Built-in ROLE.md contracts and live guards', () => {
     expect(rendered).toContain('genba operator done');
   });
 
-  it('lists the files each role must read and rejects names that leave the folder', () => {
+  it('resolves wildcards, globs, and exact names while rejecting path traversal', () => {
     const planner = parseRole(BUILTIN_ROLES.planner);
 
     expect(
       guidanceOf(planner, { rules: 'docs/rules', skills: '.agents/skills' }),
     ).toEqual({
-      rules: ['coding', 'testing', 'typescript'].map((name) => [
-        `docs/rules/${name}`,
-        `docs/rules/${name}.md`,
-      ]),
-      skills: [['.agents/skills/caveman/SKILL.md']],
+      rules: [{ kind: 'glob', baseDir: 'docs/rules', pattern: '**' }],
+      skills: [
+        { kind: 'glob', baseDir: '.agents/skills', pattern: '*/SKILL.md' },
+      ],
     });
+
+    const custom = parseRole(
+      '---\nid: custom\nstage: runtime\nrules: [coding/**, git]\nskills: [evidence]\n---\nbody\n',
+    );
+    expect(
+      guidanceOf(custom, { rules: 'docs/rules', skills: '.agents/skills' }),
+    ).toEqual({
+      rules: [
+        { kind: 'glob', baseDir: 'docs/rules', pattern: 'coding/**' },
+        { kind: 'exact', candidates: ['docs/rules/git', 'docs/rules/git.md'] },
+      ],
+      skills: [
+        { kind: 'exact', candidates: ['.agents/skills/evidence/SKILL.md'] },
+      ],
+    });
+
     expect(() =>
       parseRole('---\nid: x\nstage: runtime\nrules: [../secrets]\n---\nbody\n'),
     ).toThrow('inside the rules folder');
   });
 
-  it('writes into a role only the rules and skills the repo has', () => {
+  it('inherits inputs, outputs, guards, and body when extending a built-in role', () => {
+    const extended = parseRole(
+      '---\nid: builder\nstage: runtime\nextends: builtin:builder\nrules: [go-style]\n---\n\n## Repo Notes\nRun go test ./...\n',
+      BUILTIN_ROLES,
+    );
+
+    expect(extended.config.rules).toEqual(['go-style']);
+    expect(extended.config.skills).toEqual(['*']);
+    expect(extended.config.guards.requireDiff).toBe(true);
+    expect(Object.keys(extended.config.outputs)).toEqual(['report', 'commit']);
+
+    const rendered = renderRole(extended, {
+      order: 'Add handler',
+      checks: 'go test ./...',
+      feedback: 'None',
+      lessons: 'None',
+      operatorCommand: 'genba operator',
+    });
+    expect(rendered).toContain('You implement the work order alone.');
+    expect(rendered).toContain('Run go test ./...');
+
+    expect(() =>
+      parseRole(
+        '---\nid: x\nstage: runtime\nextends: builtin:ghost\n---\n',
+        BUILTIN_ROLES,
+      ),
+    ).toThrow('unknown "builtin:ghost"');
+  });
+
+  it('writes only line files on init so repos inherit built-in roles by default', () => {
     const written = templateAssets({
       project: { setup: [], verify: [] },
       runner: 'claude',
       hasOrigin: false,
-      has: (path) => path === '.agents/rules/testing.md',
-    }).find((asset) => asset.path === '.genba/roles/planner.md');
-
-    expect(
-      guidanceOf(parseRole(written!.text), {
-        rules: '.agents/rules',
-        skills: '.agents/skills',
-      }),
-    ).toEqual({
-      rules: [['.agents/rules/testing', '.agents/rules/testing.md']],
-      skills: [],
     });
+
+    expect(written.map((asset) => asset.path).sort()).toEqual([
+      '.genba/lines/fast.yml',
+      '.genba/lines/feature.yml',
+      '.genba/lines/standard.yml',
+    ]);
   });
 
   it('enforces requireDiff, forbidPaths, and conventional commit format', () => {

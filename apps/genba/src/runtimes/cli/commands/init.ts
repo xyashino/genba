@@ -1,8 +1,5 @@
 import { basename, join } from 'node:path';
-import {
-  templateAssets,
-  templateGuidancePaths,
-} from '../../../builtin/assets.ts';
+import { templateAssets } from '../../../builtin/assets.ts';
 import { detectForgeRemote } from '../../../adapters/forge/detect.ts';
 import {
   DETECTION_FILES,
@@ -81,10 +78,6 @@ export const runInit = async (
   const remote = url === null ? null : detectForgeRemote(url);
   const installed = await installedRunners(deps);
   const runner = RUNNER_PREFERENCE.find((name) => installed.includes(name));
-  const guidance = new Set<string>();
-  for (const path of templateGuidancePaths()) {
-    if (await deps.fs.exists(join(root, path))) guidance.add(path);
-  }
   const manifest = {
     project: basename(root),
     rules: `./${DEFAULT_GUIDANCE_DIRS.rules}`,
@@ -101,7 +94,6 @@ export const runInit = async (
     project,
     runner: runner ?? 'claude',
     hasOrigin: url !== null,
-    has: (path) => guidance.has(path),
   })) {
     const path = join(root, asset.path);
     if (force || !(await deps.fs.exists(path))) {
@@ -113,11 +105,11 @@ export const runInit = async (
   deps.out(
     [
       `wrote ${MANIFEST_PATH}`,
-      `  assets:  ${LINES_DIR}, ${ROLES_DIR}`,
+      `  assets:  ${LINES_DIR} (roles use built-ins; override in ${ROLES_DIR})`,
       `  stack:   ${project.stack.join(', ') || 'unknown'}`,
       `  setup:   ${project.setup.join(' && ') || 'none'}`,
       `  verify:  ${project.verify.join(' && ') || 'none'}`,
-      `  rules:   ${guidance.size} rule and skill files listed in roles`,
+      `  rules:   ${manifest.rules} (skills: ${manifest.skills})`,
       `  forge:   ${manifest.git.provider} (base ${manifest.git.baseBranch})`,
       `  runners: ${installed.join(', ') || 'none found'}`,
     ].join('\n'),

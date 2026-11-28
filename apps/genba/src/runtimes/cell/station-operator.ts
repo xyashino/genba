@@ -3,7 +3,7 @@ import type { JobOutcome } from '@repo/contracts/jobs.contract';
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
 import { checksOfLine, operatorOf } from '../../domain/line.ts';
 import type { AgentDefinition, OperatorStation } from '../../domain/line.ts';
-import { resolveGuidance } from '../../domain/guidance.ts';
+import { resolveGuidance, skillIndexOf } from '../../domain/guidance.ts';
 import { RULE_FILES } from '../../domain/detect-project.ts';
 import { guidanceOf, renderRole } from '../../domain/role.ts';
 import { logsCommandOf, workspaceLabelOf } from '../../domain/cells.ts';
@@ -252,7 +252,7 @@ export const runAgent = async (
   }
   const guidance = {
     rules: rules.files,
-    skills: skills.files,
+    skills: await skillIndexOf(job.fs, workspace.path, skills.files),
     fallback: await presentIn(job, workspace, RULE_FILES),
   };
   const stationDir = stationDirOf(workspace, stationId);

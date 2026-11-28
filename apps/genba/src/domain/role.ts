@@ -5,6 +5,8 @@ import { isAssetName, rulePathsOf, skillPathOf } from './runtime-paths.ts';
 
 const CONVENTIONAL_SUBJECT =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\([^()\s]+\)!?: \S.*$/;
+const BUILTIN_EXTENDS = /^builtin:([a-z0-9][a-z0-9_-]*)$/i;
+const GLOB_CHARS = /[*?]/;
 
 const outputSpecSchema = z.object({
   file: z.string().min(1),
@@ -12,10 +14,11 @@ const outputSpecSchema = z.object({
   format: z.enum(['conventional']).optional(),
 });
 
-// Names become file paths, so they must not escape their folder.
-const assetNames = z
-  .array(z.string().refine(isAssetName, 'use a plain file name'))
-  .default([]);
+const isSafeRuleSegment = (part: string): boolean =>
+  part !== '' &&
+  part !== '.' &&
+  part !== '..' &&
+  (part === '**' || /^[a-z0-9*?._-]+$/i.test(part));
 
 const rulePaths = z
   .array(
@@ -23,22 +26,38 @@ const rulePaths = z
       .string()
       .refine(
         (path) =>
-          path.split('/').every((part) => /^[a-z0-9][a-z0-9_.-]*$/i.test(part)),
-        'use a file or folder inside the rules folder',
+          !path.startsWith('/') && path.split('/').every(isSafeRuleSegment),
+        'use a file, folder, or glob inside the rules folder',
       ),
   )
   .default([]);
 
+// Names become file paths, so they must not escape their folder; `*` selects all skills.
+const skillNames = z
+  .array(
+    z
+      .string()
+      .refine(
+        (name) => name === '*' || isAssetName(name),
+        'use a plain skill name or "*"',
+      ),
+  )
+  .default([]);
+
+const guardsSchema = z.object({
+  requireDiff: z.boolean().default(false),
+  forbidPaths: z.array(z.string().min(1)).default([]),
+});
+
 const roleConfigSchema = z.object({
+  extends: z
+    .string()
+    .regex(BUILTIN_EXTENDS, 'extends must be "builtin:<role>"')
+    .optional(),
   rules: rulePaths,
-  skills: assetNames,
+  skills: skillNames,
   outputs: z.record(z.string(), outputSpecSchema).default({}),
-  guards: z
-    .object({
-      requireDiff: z.boolean().default(false),
-      forbidPaths: z.array(z.string().min(1)).default([]),
-    })
-    .default({ requireDiff: false, forbidPaths: [] }),
+  guards: guardsSchema.default({ requireDiff: false, forbidPaths: [] }),
 });
 
 export type RoleOutputSpec = z.infer<typeof outputSpecSchema>;
@@ -68,13 +87,63 @@ const hasHeading = (markdown: string, heading: string): boolean => {
     });
 };
 
-export const parseRole = (markdown: string): RoleDefinition => {
+const mergeExtendedRole = (
+  base: RoleDefinition,
+  childPrompt: ReturnType<typeof parsePrompt>,
+  childConfig: RoleConfig,
+): RoleDefinition => {
+  const raw = childPrompt.config;
+  const rawGuards =
+    typeof raw['guards'] === 'object' && raw['guards'] !== null
+      ? (raw['guards'] as Record<string, unknown>)
+      : {};
+  const extraBody = childPrompt.body.trim();
+  return {
+    prompt: {
+      ...base.prompt,
+      id: childPrompt.id,
+      input: { ...base.prompt.input, ...childPrompt.input },
+      config: { ...base.prompt.config, ...childPrompt.config },
+      body:
+        extraBody.length > 0
+          ? `${base.prompt.body.trimEnd()}\n\n${childPrompt.body.trimStart()}`
+          : base.prompt.body,
+    },
+    config: {
+      extends: childConfig.extends,
+      rules: 'rules' in raw ? childConfig.rules : base.config.rules,
+      skills: 'skills' in raw ? childConfig.skills : base.config.skills,
+      outputs: { ...base.config.outputs, ...childConfig.outputs },
+      guards: {
+        requireDiff:
+          'requireDiff' in rawGuards
+            ? childConfig.guards.requireDiff
+            : base.config.guards.requireDiff,
+        forbidPaths:
+          'forbidPaths' in rawGuards
+            ? childConfig.guards.forbidPaths
+            : base.config.guards.forbidPaths,
+      },
+    },
+  };
+};
+
+export const parseRole = (
+  markdown: string,
+  builtins?: Readonly<Record<string, string>>,
+): RoleDefinition => {
   const prompt = parsePrompt(markdown);
   if (prompt.stage !== 'runtime') {
     throw new Error(`role "${prompt.id}" must declare stage: runtime`);
   }
   const config = roleConfigSchema.parse(prompt.config);
-  return { prompt, config };
+  if (config.extends === undefined) return { prompt, config };
+  const baseName = BUILTIN_EXTENDS.exec(config.extends)?.[1] ?? '';
+  const baseSource = builtins?.[baseName];
+  if (baseSource === undefined) {
+    throw new Error(`role "${prompt.id}" extends unknown "${config.extends}"`);
+  }
+  return mergeExtendedRole(parseRole(baseSource), prompt, config);
 };
 
 /** Repo files this role must read, relative to the repo root. */
@@ -82,8 +151,19 @@ export const guidanceOf = (
   { config }: RoleDefinition,
   dirs: { rules: string; skills: string },
 ): { rules: GuidanceEntry[]; skills: GuidanceEntry[] } => ({
-  rules: config.rules.map((name) => rulePathsOf(dirs.rules, name)),
-  skills: config.skills.map((name) => [skillPathOf(dirs.skills, name)]),
+  rules: config.rules.map((name): GuidanceEntry => {
+    if (name === '*')
+      return { kind: 'glob', baseDir: dirs.rules, pattern: '**' };
+    if (GLOB_CHARS.test(name)) {
+      return { kind: 'glob', baseDir: dirs.rules, pattern: name };
+    }
+    return { kind: 'exact', candidates: rulePathsOf(dirs.rules, name) };
+  }),
+  skills: config.skills.map((name): GuidanceEntry =>
+    name === '*'
+      ? { kind: 'glob', baseDir: dirs.skills, pattern: '*/SKILL.md' }
+      : { kind: 'exact', candidates: [skillPathOf(dirs.skills, name)] },
+  ),
 });
 
 export const renderRole = (

@@ -2,7 +2,7 @@
 id: mechanic
 stage: runtime
 rules: []
-skills: [caveman]
+skills: []
 input:
   order: string
   failure: string

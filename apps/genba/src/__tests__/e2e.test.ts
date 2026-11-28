@@ -146,15 +146,14 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     if (existsSync(binary)) genba('stop');
   }, SETTLE_MS);
 
-  it('writes config, lines and roles for the repo', () => {
+  it('writes config and lines for the repo without copying built-in roles', () => {
     genba('init');
 
     const config = JSON.parse(
       readFileSync(join(repo, '.genba', 'config.json'), 'utf8'),
     );
-    for (const asset of ['lines/standard.yml', 'roles/builder.md']) {
-      expect(existsSync(join(repo, '.genba', asset))).toBe(true);
-    }
+    expect(existsSync(join(repo, '.genba', 'lines/standard.yml'))).toBe(true);
+    expect(existsSync(join(repo, '.genba', 'roles/builder.md'))).toBe(false);
     expect(config).toMatchObject({
       rules: './.agents/rules',
       skills: './.agents/skills',
@@ -578,9 +577,13 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         config,
         JSON.stringify({ ...JSON.parse(original), herdr: true }),
       );
-      const role = join(repo, '.genba', 'roles', 'builder.md');
-      const builder = readFileSync(role, 'utf8');
-      writeFileSync(role, builder.replace('rules: []', 'rules: [ghost]'));
+      const roleDir = join(repo, '.genba', 'roles');
+      const role = join(roleDir, 'builder.md');
+      mkdirSync(roleDir, { recursive: true });
+      writeFileSync(
+        role,
+        '---\nid: builder\nstage: runtime\nextends: builtin:builder\nrules: [ghost]\n---\n',
+      );
       writeFileSync(herdrLog, '');
 
       expect(() =>
@@ -588,7 +591,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       ).toThrow(/is kept so you can look/);
 
       expect(readFileSync(herdrLog, 'utf8')).not.toMatch(/^workspace close /m);
-      writeFileSync(role, builder);
+      rmSync(role);
       writeFileSync(config, original);
     },
     SETTLE_MS,
@@ -632,9 +635,13 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     async () => {
       const prompt = agentEvents().find((e) => e['event'] === 'start');
       expect(prompt!['rules']).toEqual(['AGENTS.md']);
-      const path = join(repo, '.genba', 'roles', 'builder.md');
-      const original = readFileSync(path, 'utf8');
-      writeFileSync(path, original.replace('rules: []', 'rules: [ghost]'));
+      const roleDir = join(repo, '.genba', 'roles');
+      const path = join(roleDir, 'builder.md');
+      mkdirSync(roleDir, { recursive: true });
+      writeFileSync(
+        path,
+        '---\nid: builder\nstage: runtime\nextends: builtin:builder\nrules: [ghost]\n---\n',
+      );
       genba('import', addOrder('no-rule', 'Add.', 'fast'));
       genba('start', '1');
 
@@ -645,7 +652,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       expect(incident.summary).toContain('.agents/rules/ghost.md');
       genba('incident', 'resolve', incident.id, 'cancel');
       genba('stop');
-      writeFileSync(path, original);
+      rmSync(path);
     },
     SETTLE_MS,
   );

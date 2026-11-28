@@ -1,8 +1,8 @@
 ---
 id: doctor
 stage: runtime
-rules: [coding, general, git, security, testing, typescript, decision-log, rich-commit]
-skills: [evidence]
+rules: ['*']
+skills: ['*']
 input:
   order: string
   diff: string

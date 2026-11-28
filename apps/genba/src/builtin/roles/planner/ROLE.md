@@ -1,8 +1,8 @@
 ---
 id: planner
 stage: runtime
-rules: [coding, testing, typescript]
-skills: [caveman]
+rules: ['*']
+skills: ['*']
 input:
   order: string
   lessons: string
