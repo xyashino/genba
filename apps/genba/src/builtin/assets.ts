@@ -1,6 +1,6 @@
 import { parseDocument, stringify } from 'yaml';
 import type { DetectedProject } from '../domain/detect-project.ts';
-import { linePathOf } from '../domain/runtime-paths.ts';
+import { linePathOf } from '@repo/line/runtime-paths';
 import { BUILTIN_LINES } from './registry.ts';
 
 const TEMPLATE_RUNNER = 'claude';

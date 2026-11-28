@@ -6,16 +6,16 @@ import {
   incidentSchema,
   resolveIncidentContract,
 } from '../incidents.contract.ts';
-import { completeJobContract, jobSchema } from '../jobs.contract.ts';
+import {
+  completeJobContract,
+  getOrderContract,
+  jobSchema,
+} from '../jobs.contract.ts';
 import {
   operatorDoneContract,
   operatorRequestSchema,
 } from '../operator.contract.ts';
-import {
-  getOrderContract,
-  importOrdersContract,
-  workOrderSchema,
-} from '../orders.contract.ts';
+import { importOrdersContract, workOrderSchema } from '../orders.contract.ts';
 import type { WorkOrder } from '../orders.contract.ts';
 
 const SAMPLE_ORDER = {

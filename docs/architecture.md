@@ -97,12 +97,22 @@ packages/factory/src/
 │   ├── memory/             # event-bus.adapter.ts (in-process SSE bus)
 │   ├── sqlite/             # store.ts
 │   └── hono/               # routes, middlewares, error-handlers
+├── config.ts               # Limits and timings
 ├── app.ts                  # createApp(): Hono router + middleware
 ├── start.ts                # startFactory(): loopback Bun.serve + supervisor
 └── embedded.ts             # createEmbeddedFactory(): :memory: SQLite + app.request()
 ```
 
+- Server layout follows `software-factory/apps/hq`: contract in `@repo/contracts` (input and output checked) -> procedure -> thin route with `honoAdapter`.
+- Procedures never touch Hono; they return `{ code }` or throw `BaseError`. Only `events.route.ts` streams.
+- Unlike HQ: procedures use `StorePort`, not Drizzle directly.
+- Public exports: `start`, `embedded`. `cellVerb` and `selfCommand` come from the app.
+- Layers inside the package are ESLint-enforced (`packages/factory/eslint.config.mjs`): `domain/` pure; `application/` and `db/` never import Hono or adapters.
+- HTTP tests: `packages/factory/test/blackbox/`, via `app.request()`.
+
 ### `packages/cell`
+
+Not extracted yet: this code is in `apps/genba/src/` (`runtimes/cell`, `adapters`, `ports`). Until then, ESLint (`apps/genba/eslint.config.mjs`) keeps `cell/`, `cli/`, `operator/`, and `domain/` off `@repo/factory`.
 
 ```text
 packages/cell/src/

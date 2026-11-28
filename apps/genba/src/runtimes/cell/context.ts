@@ -1,9 +1,9 @@
 import { join } from 'node:path';
 import { BUILTIN_ROLES } from '../../builtin/registry.ts';
-import { parseLine } from '../../domain/line.ts';
-import type { LineDefinition } from '../../domain/line.ts';
-import { parseRepoManifest } from '../../domain/manifest.ts';
-import type { RepoManifest } from '../../domain/manifest.ts';
+import { parseLine } from '@repo/line/line';
+import type { LineDefinition } from '@repo/line/line';
+import { parseRepoManifest } from '@repo/line/manifest';
+import type { RepoManifest } from '@repo/line/manifest';
 import { parseRole } from '../../domain/role.ts';
 import type { RoleDefinition } from '../../domain/role.ts';
 import {
@@ -12,9 +12,9 @@ import {
   isAssetName,
   linePathOf,
   rolePathOf,
-} from '../../domain/runtime-paths.ts';
+} from '@repo/line/runtime-paths';
 import type { ForgePort } from '../../ports/forge.port.ts';
-import type { FsPort, LockPort } from '../../ports/fs.port.ts';
+import type { FsPort, LockPort } from '@repo/host/ports/fs.port';
 import type { GitPort } from '../../ports/git.port.ts';
 import type { OperatorEndpointPort } from '../../ports/operator.port.ts';
 import type {

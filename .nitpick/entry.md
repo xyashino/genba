@@ -5,7 +5,7 @@ This repo is a bun + turbo monorepo. Apps live in `apps/`, shared packages in `p
 ## Shared standards
 
 - This file, the rules, skills and references listed below are the standards every role and interactive session follows.
-- Architecture and runtime import boundaries live in `docs/architecture.md` and `docs/boundaries.md` (enforced by ESLint in `apps/genba/eslint.config.mjs`).
+- Architecture and runtime import boundaries live in `docs/architecture.md` and `docs/boundaries.md` (enforced by ESLint in `apps/genba/eslint.config.mjs` and `packages/factory/eslint.config.mjs`).
 - Proof of work follows {{ref:evidence}}.
 - Every completed change adds exactly one ADR entry in `decisions/` ({{ref:decision-log}}).
 

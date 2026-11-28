@@ -3,7 +3,7 @@ import {
   CELL_TOKEN_ENV,
   DAEMON_URL_ENV,
   REPO_ROOT_ENV,
-} from '../../domain/runtime-paths.ts';
+} from '@repo/line/runtime-paths';
 import { cellDepsOf } from './deps.ts';
 import { runCellLoop } from './loop.ts';
 

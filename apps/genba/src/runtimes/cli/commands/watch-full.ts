@@ -4,18 +4,15 @@ import {
   crashPathOf,
   isCellId,
   timelinePathOf,
-} from '../../../domain/cells.ts';
+} from '@repo/line/cells';
 import {
   matchesFilter,
   parseTimelineLine,
   renderEntry,
   renderHeader,
-} from '../../../domain/timeline.ts';
-import type {
-  TimelineEntry,
-  TimelineFilter,
-} from '../../../domain/timeline.ts';
-import type { FsPort } from '../../../ports/fs.port.ts';
+} from '@repo/line/timeline';
+import type { TimelineEntry, TimelineFilter } from '@repo/line/timeline';
+import type { FsPort } from '@repo/host/ports/fs.port';
 import type { CliDeps } from '../context.ts';
 import { CliError, repoRootOf } from '../context.ts';
 

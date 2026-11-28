@@ -28,8 +28,15 @@ const dispatch = async (argv: string[]): Promise<number> => {
     case 'operator':
       return runOperatorVerb(rest);
     case '__daemon': {
-      const { runDaemon } = await import('./runtimes/daemon/main.ts');
-      return runDaemon(process.cwd());
+      const [{ startFactory }, { selfCommand }] = await Promise.all([
+        import('@repo/factory/start'),
+        import('@repo/host/process/self'),
+      ]);
+      return startFactory({
+        repoRoot: process.cwd(),
+        selfCommand: selfCommand(),
+        cellVerb: '__cell',
+      });
     }
     case '__cell': {
       const { runCell } = await import('./runtimes/cell/main.ts');

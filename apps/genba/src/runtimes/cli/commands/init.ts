@@ -5,7 +5,7 @@ import {
   DETECTION_FILES,
   detectProject,
 } from '../../../domain/detect-project.ts';
-import { parseRepoManifest } from '../../../domain/manifest.ts';
+import { parseRepoManifest } from '@repo/line/manifest';
 import {
   DATA_DIR,
   DEFAULT_GUIDANCE_DIRS,
@@ -13,7 +13,7 @@ import {
   MANIFEST_PATH,
   ROLES_DIR,
   WORKTREES_DIR,
-} from '../../../domain/runtime-paths.ts';
+} from '@repo/line/runtime-paths';
 import type { CliDeps } from '../context.ts';
 import { CliError, repoRootOf } from '../context.ts';
 

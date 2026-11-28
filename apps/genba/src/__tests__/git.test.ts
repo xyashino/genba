@@ -9,7 +9,7 @@ import {
 import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createGitAdapter } from '../adapters/git/git.ts';
-import { createProcessAdapter } from '../adapters/process/spawn.ts';
+import { createProcessAdapter } from '@repo/host/process/spawn';
 import { tempDir } from './support/stub-bin.ts';
 
 const git = (cwd: string, ...args: string[]): string =>

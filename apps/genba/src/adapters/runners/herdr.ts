@@ -7,8 +7,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { WorkspacePort } from '../../ports/workspace.port.ts';
-import type { ProcessPort } from '../../ports/process.port.ts';
+import type { WorkspacePort } from '@repo/host/ports/workspace.port';
+import type { ProcessPort } from '@repo/host/ports/process.port';
 import type {
   RunHandle,
   RunnerPort,

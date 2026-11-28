@@ -34,6 +34,9 @@ Queue mode: `genba import <dir>`, `genba start 3`, `genba watch` (`--full` for d
 ## Workspace
 
 - `apps/`: applications
+- `packages/factory`: local server (Hono, scheduler, supervisor, SQLite)
+- `packages/line`: definitions shared by app and factory
+- `packages/host`: process, fs, and workspace I/O shared by app and factory
 - `packages/contract-kit`: shared Zod contract field/reply helpers
 - `packages/sqlite-kit`: Bun SQLite + Drizzle DB & migration helpers
 - `packages/prompt`: typed frontmatter + Handlebars template renderer (`stage: sync` and `stage: runtime`)

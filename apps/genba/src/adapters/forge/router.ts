@@ -2,7 +2,7 @@ import type { ForgeProvider } from '@repo/contracts/enums';
 import { ForgeError } from '../../ports/forge.port.ts';
 import type { ForgePort } from '../../ports/forge.port.ts';
 import type { GitPort } from '../../ports/git.port.ts';
-import type { ProcessPort } from '../../ports/process.port.ts';
+import type { ProcessPort } from '@repo/host/ports/process.port';
 import { detectForgeRemote } from './detect.ts';
 import { createGhForge } from './gh.ts';
 import { createGlabForge } from './glab.ts';

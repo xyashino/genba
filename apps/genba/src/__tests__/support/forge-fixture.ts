@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
-import { createProcessAdapter } from '../../adapters/process/spawn.ts';
-import type { ProcessPort } from '../../ports/process.port.ts';
+import { createProcessAdapter } from '@repo/host/process/spawn';
+import type { ProcessPort } from '@repo/host/ports/process.port';
 import { FORGE_STATE_ENV } from './forge-state.ts';
 import type { FakeForgeState } from './forge-state.ts';
 import { installStub, tempDir } from './stub-bin.ts';

@@ -1,7 +1,11 @@
 import { parsePrompt, renderPrompt } from '@repo/prompt/prompt';
 import { z } from 'zod';
 import type { GuidanceEntry } from './guidance.ts';
-import { isAssetName, rulePathsOf, skillPathOf } from './runtime-paths.ts';
+import {
+  isAssetName,
+  rulePathsOf,
+  skillPathOf,
+} from '@repo/line/runtime-paths';
 
 const CONVENTIONAL_SUBJECT =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\([^()\s]+\)!?: \S.*$/;

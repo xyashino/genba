@@ -1,16 +1,15 @@
 import { basename, extname, join, resolve } from 'node:path';
 import { statSync } from 'node:fs';
 import {
-  getOrderContract,
   importOrdersContract,
   listOrdersContract,
   orderStepSchema,
   workOrderSchema,
 } from '@repo/contracts/orders.contract';
-import { jobSchema } from '@repo/contracts/jobs.contract';
+import { getOrderContract, jobSchema } from '@repo/contracts/jobs.contract';
 import { z } from 'zod';
-import { parseOrderMarkdown } from '../../../domain/order.ts';
-import type { ParsedOrder } from '../../../domain/order.ts';
+import { parseOrderMarkdown } from '@repo/line/order';
+import type { ParsedOrder } from '@repo/line/order';
 import type { LoopbackApiPort } from '../../../ports/loopback-api.port.ts';
 import type { CliDeps } from '../context.ts';
 import { CliError, manifestOf, repoRootOf } from '../context.ts';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { templateAssets } from '../builtin/assets.ts';
 import { BUILTIN_LINES } from '../builtin/registry.ts';
-import { checksOfLine, parseLine } from '../domain/line.ts';
+import { checksOfLine, parseLine } from '@repo/line/line';
 
 const LINE_PREFIX = '.genba/lines/';
 

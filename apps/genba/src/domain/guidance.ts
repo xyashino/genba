@@ -1,5 +1,5 @@
 import { join, relative } from 'node:path';
-import type { FsPort } from '../ports/fs.port.ts';
+import type { FsPort } from '@repo/host/ports/fs.port';
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/;
 const NAME_FIELD = /^name:\s*(.+)$/m;

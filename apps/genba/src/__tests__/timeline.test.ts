@@ -1,9 +1,9 @@
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createNodeFs } from '../adapters/fs/node-fs.ts';
-import { crashPathOf, timelinePathOf } from '../domain/cells.ts';
-import { renderEntry, timelineLineOf } from '../domain/timeline.ts';
+import { createNodeFs } from '@repo/host/fs/node-fs';
+import { crashPathOf, timelinePathOf } from '@repo/line/cells';
+import { renderEntry, timelineLineOf } from '@repo/line/timeline';
 import { timelineReader } from '../runtimes/cli/commands/watch-full.ts';
 import { tempDir } from './support/stub-bin.ts';
 

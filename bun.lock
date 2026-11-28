@@ -24,9 +24,10 @@
       "dependencies": {
         "@repo/contract-kit": "workspace:*",
         "@repo/contracts": "workspace:*",
+        "@repo/factory": "workspace:*",
+        "@repo/host": "workspace:*",
+        "@repo/line": "workspace:*",
         "@repo/prompt": "workspace:*",
-        "@repo/sqlite-kit": "workspace:*",
-        "drizzle-orm": "catalog:",
         "yaml": "catalog:",
         "zod": "catalog:",
       },
@@ -85,6 +86,64 @@
         "globals": "catalog:",
         "typescript": "catalog:",
         "typescript-eslint": "catalog:",
+      },
+    },
+    "packages/factory": {
+      "name": "@repo/factory",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contract-kit": "workspace:*",
+        "@repo/contracts": "workspace:*",
+        "@repo/host": "workspace:*",
+        "@repo/line": "workspace:*",
+        "@repo/sqlite-kit": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/host": {
+      "name": "@repo/host",
+      "version": "0.0.0",
+      "dependencies": {
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/line": {
+      "name": "@repo/line",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contract-kit": "workspace:*",
+        "@repo/contracts": "workspace:*",
+        "yaml": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
       },
     },
     "packages/nitpick": {
@@ -158,6 +217,7 @@
     "eslint-plugin-turbo": "2.11.10",
     "globals": "17.14.0",
     "handlebars": "4.7.10",
+    "hono": "4.13.14",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.10",
@@ -249,7 +309,13 @@
 
     "@repo/eslint-config": ["@repo/eslint-config@workspace:packages/eslint-config"],
 
+    "@repo/factory": ["@repo/factory@workspace:packages/factory"],
+
     "@repo/genba": ["@repo/genba@workspace:apps/genba"],
+
+    "@repo/host": ["@repo/host@workspace:packages/host"],
+
+    "@repo/line": ["@repo/line@workspace:packages/line"],
 
     "@repo/nitpick": ["@repo/nitpick@workspace:packages/nitpick"],
 
@@ -556,6 +622,8 @@
     "hermes-estree": ["hermes-estree@0.25.1", "", {}, "sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw=="],
 
     "hermes-parser": ["hermes-parser@0.25.1", "", { "dependencies": { "hermes-estree": "0.25.1" } }, "sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA=="],
+
+    "hono": ["hono@4.13.14", "", {}, "sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ=="],
 
     "husky": ["husky@9.1.7", "", { "bin": { "husky": "bin.js" } }, "sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA=="],
 

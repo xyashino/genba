@@ -21,6 +21,7 @@
       "eslint-plugin-turbo": "2.11.10",
       "globals": "17.14.0",
       "handlebars": "4.7.10",
+      "hono": "4.13.14",
       "husky": "9.1.7",
       "lint-staged": "17.6.0",
       "prettier": "3.9.10",

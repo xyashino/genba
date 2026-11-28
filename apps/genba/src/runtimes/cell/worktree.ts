@@ -1,11 +1,7 @@
 import { join } from 'node:path';
-import { orderBranchOf } from '../../domain/branch.ts';
-import {
-  CELL_DIR,
-  DATA_DIR,
-  WORKTREES_DIR,
-} from '../../domain/runtime-paths.ts';
-import type { Hook } from '../../domain/line.ts';
+import { orderBranchOf } from '@repo/line/branch';
+import { CELL_DIR, DATA_DIR, WORKTREES_DIR } from '@repo/line/runtime-paths';
+import type { Hook } from '@repo/line/line';
 import type { JobContext, Workspace } from './context.ts';
 import { runTracked, tailOf } from './context.ts';
 

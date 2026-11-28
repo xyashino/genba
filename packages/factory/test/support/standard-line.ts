@@ -1,0 +1,55 @@
+export const STANDARD_LINE = `name: standard
+description: Build behind quality gate, then independent doctor audit
+
+operators:
+  builder:
+    profile: builder
+    runner: claude
+    model: haiku
+    timeout: 60m
+    permission: write
+  doctor:
+    profile: doctor
+    runner: claude
+    model: haiku
+    timeout: 20m
+    permission: read
+
+mechanic:
+  profile: mechanic
+  runner: claude
+  model: sonnet
+  timeout: 20m
+  permission: read
+
+stations:
+  - id: build
+    kind: operator
+    operator: builder
+    inputs: []
+
+  - id: quality-gate
+    kind: inspection
+    timeout: 30m
+    exec: []
+    onFail:
+      retry: build
+      max: 3
+
+  - id: audit
+    kind: operator
+    operator: doctor
+    inputs:
+      - build.report
+      - build.commit
+      - quality-gate.gate
+    onFail:
+      retry: build
+      max: 2
+
+deliver:
+  commit: build.commit
+  report: build.report
+  to: new-pr
+  requireAdr: false
+`;

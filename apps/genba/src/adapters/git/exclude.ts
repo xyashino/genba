@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { ProcessPort } from '../../ports/process.port.ts';
+import type { ProcessPort } from '@repo/host/ports/process.port';
 
 const INFO_EXCLUDE = 'info/exclude';
 
