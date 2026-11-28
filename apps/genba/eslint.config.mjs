@@ -21,15 +21,21 @@ export default [
   {
     files: ['src/runtimes/operator/**/*.ts'],
     ...forbid(
-      ['../../adapters/**', '../cell/**', '@repo/factory/**'],
+      [
+        '../../adapters/**',
+        '@repo/cell/main',
+        '@repo/cell/loop',
+        '@repo/cell/deps',
+        '@repo/factory/**',
+      ],
       'operator runtime must stay a zero-state loopback client',
     ),
   },
   {
-    files: ['src/runtimes/cell/**/*.ts', 'src/runtimes/cli/**/*.ts'],
+    files: ['src/runtimes/cli/**/*.ts'],
     ...forbid(
       ['@repo/factory/**'],
-      'cell and cli runtimes reach the factory over its HTTP API only',
+      'cli runtime reaches the factory over its HTTP API only',
     ),
   },
 ];

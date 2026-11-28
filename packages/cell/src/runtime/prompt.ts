@@ -1,6 +1,6 @@
 import { relative } from 'node:path';
-import type { SkillSummary } from '@repo/cell/domain/guidance';
-import type { RoleDefinition } from '@repo/cell/domain/role';
+import type { SkillSummary } from '../domain/guidance.ts';
+import type { RoleDefinition } from '../domain/role.ts';
 import type { Workspace } from './context.ts';
 
 const NONE = '_none_';

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { BUILTIN_ROLES } from '../../../builtin/registry.ts';
+import { BUILTIN_ROLES } from '@repo/cell/builtin/registry';
 import { guidanceKeyOf, resolveGuidance } from '@repo/cell/domain/guidance';
 import type { GuidanceEntry } from '@repo/cell/domain/guidance';
 import { agentsOf, checksOfLine, parseLine } from '@repo/line/line';

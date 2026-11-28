@@ -1,10 +1,3 @@
-export const RULE_FILES: readonly string[] = [
-  'AGENTS.md',
-  'CLAUDE.md',
-  'CONTRIBUTING.md',
-  '.cursorrules',
-  '.github/copilot-instructions.md',
-];
 const NODE_MANAGERS = [
   { lock: 'bun.lock', name: 'bun', setup: 'bun install --frozen-lockfile' },
   { lock: 'bun.lockb', name: 'bun', setup: 'bun install --frozen-lockfile' },

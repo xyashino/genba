@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { BUILTIN_ROLES } from '@repo/cell/builtin/registry';
 import { parseRole, renderRole } from '@repo/cell/domain/role';
 import { templateAssets } from '../builtin/assets.ts';
-import { BUILTIN_ROLES } from '../builtin/registry.ts';
 
 describe('Built-in ROLE.md contracts', () => {
   it('parses all built-in runtime roles and renders builder prompt via @repo/prompt', () => {

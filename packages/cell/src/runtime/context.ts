@@ -1,11 +1,11 @@
 import { join } from 'node:path';
-import { BUILTIN_ROLES } from '../../builtin/registry.ts';
+import { BUILTIN_ROLES } from '../builtin/registry.ts';
 import { parseLine } from '@repo/line/line';
 import type { LineDefinition } from '@repo/line/line';
 import { parseRepoManifest } from '@repo/line/manifest';
 import type { RepoManifest } from '@repo/line/manifest';
-import { parseRole } from '@repo/cell/domain/role';
-import type { RoleDefinition } from '@repo/cell/domain/role';
+import { parseRole } from '../domain/role.ts';
+import type { RoleDefinition } from '../domain/role.ts';
 import {
   CELL_DIR,
   MANIFEST_PATH,
@@ -13,16 +13,16 @@ import {
   linePathOf,
   rolePathOf,
 } from '@repo/line/runtime-paths';
-import type { ForgePort } from '@repo/cell/ports/forge.port';
+import type { ForgePort } from '../ports/forge.port.ts';
 import type { FsPort, LockPort } from '@repo/host/ports/fs.port';
-import type { GitPort } from '@repo/cell/ports/git.port';
-import type { OperatorEndpointPort } from '@repo/cell/ports/operator.port';
+import type { GitPort } from '../ports/git.port.ts';
+import type { OperatorEndpointPort } from '../ports/operator.port.ts';
 import type {
   RunHandle,
   RunnerCatalogPort,
   RunnerPort,
   RunSpec,
-} from '@repo/cell/ports/runner.port';
+} from '../ports/runner.port.ts';
 import type { JobAssignment } from '@repo/contracts/jobs.contract';
 
 const TAIL_CHARS = 4_000;

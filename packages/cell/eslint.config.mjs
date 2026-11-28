@@ -15,7 +15,7 @@ const OTHER_RUNTIMES = [
 
 const DOMAIN_IO = [
   '**/adapters/**',
-  '**/runtimes/**',
+  '**/runtime/**',
   'node:fs',
   'node:fs/*',
   'node:child_process',

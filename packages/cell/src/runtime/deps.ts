@@ -1,17 +1,17 @@
 import { join } from 'node:path';
-import { createForgeRouter } from '@repo/cell/adapters/forge/router';
+import { createForgeRouter } from '../adapters/forge/router.ts';
 import { createFileLock } from '@repo/host/fs/lock';
 import { createNodeFs } from '@repo/host/fs/node-fs';
-import { createGitAdapter } from '@repo/cell/adapters/git/git';
-import { createLoopbackEndpoint } from '@repo/cell/adapters/operator-endpoint/loopback';
+import { createGitAdapter } from '../adapters/git/git.ts';
+import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.ts';
 import { selfCommand } from '@repo/host/process/self';
 import { createProcessAdapter } from '@repo/host/process/spawn';
 import { createSystemClock } from '@repo/host/process/system-clock';
-import { createRunnerCatalog } from '@repo/cell/adapters/runners/catalog';
-import { createHeadlessRunner } from '@repo/cell/adapters/runners/headless';
-import { createHerdrRunner } from '@repo/cell/adapters/runners/herdr';
+import { createRunnerCatalog } from '../adapters/runners/catalog.ts';
+import { createHeadlessRunner } from '../adapters/runners/headless.ts';
+import { createHerdrRunner } from '../adapters/runners/herdr.ts';
 import { createHerdrWorkspaces } from '@repo/host/herdr-workspaces';
-import { createRoutingRunner } from '@repo/cell/adapters/runners/routing';
+import { createRoutingRunner } from '../adapters/runners/routing.ts';
 import { DATA_DIR } from '@repo/line/runtime-paths';
 import type { LoopDeps } from './loop.ts';
 

@@ -39,7 +39,7 @@ const dispatch = async (argv: string[]): Promise<number> => {
       });
     }
     case '__cell': {
-      const { runCell } = await import('./runtimes/cell/main.ts');
+      const { runCell } = await import('@repo/cell/main');
       return runCell(rest[0] ?? '');
     }
     default: {

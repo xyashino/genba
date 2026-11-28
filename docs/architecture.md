@@ -112,11 +112,12 @@ packages/factory/src/
 
 ### `packages/cell`
 
-Partly extracted: `domain/`, `ports/`, `adapters/`, and `probes.ts` live here. The runtime (`runtimes/cell`) is still in `apps/genba/src/` until its own extraction. ESLint (`apps/genba/eslint.config.mjs`) keeps `cell/`, `cli/`, `operator/`, and `domain/` off `@repo/factory`.
+Holds `domain/`, `ports/`, `adapters/`, `runtime/`, `builtin/` (built-in `ROLE.md` templates), and `probes.ts`. Exports `@repo/cell/main`, `@repo/cell/loop`, and `@repo/cell/deps` for the `genba __cell` entrypoint and standalone runtime. ESLint (`apps/genba/eslint.config.mjs`) keeps `cli/` and `operator/` off `@repo/factory` and the operator off the cell runtime; `packages/cell/eslint.config.mjs` keeps the package off `@repo/factory`, `@repo/sqlite-kit`, and `@repo/genba`.
 
 ```text
 packages/cell/src/
 ├── domain/                 # Pure role parsing, guidance, pr-body, quota helpers
+├── builtin/                # Built-in ROLE.md templates and their registry
 ├── ports/                  # git, forge, runner, operator, loopback-api
 ├── adapters/
 │   ├── git/                # worktree & branch operations
