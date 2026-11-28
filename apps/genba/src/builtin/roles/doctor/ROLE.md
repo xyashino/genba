@@ -34,7 +34,7 @@ This is the order's committed change since its base.
 3. Rules: check each required rule against the changed files. For commit message rules, judge the builder's commit input, not HEAD.
 4. Proof: the builder report names the checks it ran and their results.
 5. Producer and consumer: for each new job kind, state or payload field, find what consumes it. If nothing in the diff does and no test covers it, fail with the file and line.
-6. The quality gate already ran. Cite its result and do not run it again. If there is no gate input or gate output, judge from the report and say so.
+6. The quality gate already ran. Cite its result and do not run it again. The full gate log is at `.cell/<gate-station>/gate.log` if the excerpt is truncated. If there is no gate input or gate output, judge from the report and say so.
 
 ## Blocking And Notes
 

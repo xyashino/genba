@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const DETAIL_CHARS = 200;
+const DETAIL_CHARS = 400;
 const COLUMNS = {
   time: 8,
   cell: 8,
@@ -42,10 +42,18 @@ export type TimelineFilter = { cell?: string; order?: string };
 const printable = (text: string): string =>
   text.replace(ANSI, '').replace(CONTROL, ' ');
 
+const clipDetail = (text: string): string => {
+  const line = text.split('\n')[0] ?? '';
+  if (line.length <= DETAIL_CHARS) return line;
+  const cut = line.slice(0, DETAIL_CHARS - 3);
+  const space = cut.lastIndexOf(' ');
+  return `${space > DETAIL_CHARS / 2 ? cut.slice(0, space) : cut}...`;
+};
+
 export const timelineLineOf = (entry: TimelineEntry): string =>
   `${JSON.stringify({
     ...entry,
-    detail: entry.detail?.split('\n')[0]?.slice(0, DETAIL_CHARS),
+    detail: entry.detail === undefined ? undefined : clipDetail(entry.detail),
   })}\n`;
 
 /** Null for a line still being written. */

@@ -440,22 +440,23 @@ export const decisionLog = (options: Options): RuleUnit => {
           `${file}: decisions live in "${DIR}" at repo root, not in "__log__/"`,
         );
       const decisions = files.filter((file) => file.startsWith(DIR));
-      const entries = [
-        ...new Set([
-          ...git.stagedAddedFiles,
-          ...(git.committedAddedFiles ?? []),
-        ]),
-      ].filter((file) => file.startsWith(DIR));
+      const checkingStaged = git.stagedFiles.length > 0;
+      const entries = (
+        checkingStaged ? git.stagedAddedFiles : (git.committedAddedFiles ?? [])
+      ).filter((file) => file.startsWith(DIR));
       const decisionsOnly =
-        git.stagedFiles.length > 0 &&
+        checkingStaged &&
         git.stagedFiles.every(
           (file) => file.startsWith(DIR) || WRONG_LOCATION.test(file),
         );
+      const maxEntries = checkingStaged
+        ? 1
+        : Math.max(1, git.commitMessages.length);
       if (entries.length === 0 && !decisionsOnly)
         report(
           `No new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry staged in this commit`,
         );
-      if (entries.length > 1)
+      if (entries.length > maxEntries)
         report(
           `Exactly one new "${DIR}YYYYMMDD-HHmmss-[<TICKET>-]<slug>.md" entry per commit, found ${entries.length}: ${entries.join(', ')}`,
         );

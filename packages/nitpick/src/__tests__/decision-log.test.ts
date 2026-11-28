@@ -116,6 +116,34 @@ describe('Decision entry rule accepts', () => {
     expect(await commitCheck({}, { 'a.ts': 'x', [NAME]: doc() })).toBe(0);
   });
 
+  it('a multi-commit branch range with one entry per commit', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'nitpick-decision-range-'));
+    await mkdir(join(root, '.nitpick'));
+    await writeFile(join(root, '.nitpick', 'config.ts'), CONFIG);
+    git(root, 'init', '-q');
+    git(root, 'config', 'user.email', 't@t.t');
+    git(root, 'config', 'user.name', 't');
+    git(root, 'config', 'commit.gpgsign', 'false');
+    await run(['--sync'], root);
+    git(root, 'add', '-A');
+    git(root, 'commit', '-q', '-m', 'chore(repo): init\n\n- init\n');
+    const base = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: root,
+      encoding: 'utf8',
+    }).trim();
+    await mkdir(join(root, 'decisions'), { recursive: true });
+    await writeFile(join(root, 'a.ts'), 'export const a = 1;\n');
+    await writeFile(join(root, OTHER), doc());
+    git(root, 'add', '-A');
+    git(root, 'commit', '-q', '-m', 'feat(parka): order tiles\n\n- order\n');
+    await writeFile(join(root, 'b.ts'), 'export const b = 2;\n');
+    await writeFile(join(root, NAME), doc());
+    git(root, 'add', '-A');
+    git(root, 'commit', '-q', '-m', 'feat(parka): add thing\n\n- add\n');
+
+    expect(await run(['--check', '--range', `${base}..HEAD`], root)).toBe(0);
+  });
+
   it('an entry with all optional keys', () => {
     const full = doc(
       {
