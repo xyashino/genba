@@ -15,7 +15,6 @@ import { readOrders } from '../cli/commands/orders.ts';
 import { timelineReader } from '../cli/commands/watch-full.ts';
 import type { CliDeps } from '../cli/context.ts';
 import { CliError, manifestOf, repoRootOf } from '../cli/context.ts';
-import { createCellHomes } from '@repo/factory/cell-homes';
 import { EMBEDDED_URL, createEmbeddedFactory } from '@repo/factory/embedded';
 import { untilSettled } from './local-api.ts';
 
@@ -74,14 +73,6 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
     lock: createFileLock('herdr.lock'),
     dataDir,
   });
-  const homes = createCellHomes({
-    fs: deps.fs,
-    workspaces,
-    repoRoot: root,
-    selfCommand: deps.selfCommand,
-    now: () => new Date().toISOString(),
-    warn: deps.err,
-  });
   const stop = new AbortController();
   let interrupted = false;
   const interrupt = (): void => {
@@ -98,7 +89,16 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
     const factory = createEmbeddedFactory({
       cellId,
       readRepo: readOnce(deps, root),
+      homes: {
+        fs: deps.fs,
+        workspaces,
+        repoRoot: root,
+        selfCommand: deps.selfCommand,
+        now: () => new Date().toISOString(),
+        warn: deps.err,
+      },
     });
+    const { homes } = factory;
     const apiOf = (token: string) =>
       createLoopbackApi({ url: EMBEDDED_URL, token, fetch: factory.fetch });
     await apiOf(factory.cliToken).request('POST', '/orders/import', {

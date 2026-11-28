@@ -3,7 +3,7 @@ import { createEventBus } from '../../src/adapters/memory/event-bus.adapter.ts';
 import { createTokenAuth } from '../../src/adapters/auth/token-auth.adapter.ts';
 import { createSqliteStore } from '../../src/adapters/sqlite/store.ts';
 import { createApp } from '../../src/app.ts';
-import { createTransport } from '../../src/bootstrap/transport.ts';
+import { createTransport } from '../../src/adapters/hono/transport.ts';
 import type { Supervisor } from '../../src/application/cells/supervisor.ts';
 import { createLineLoader } from '../../src/application/core/lines.ts';
 import { STANDARD_LINE } from './standard-line.ts';

@@ -5,7 +5,7 @@ why: apps/genba mixed server, execution, and CLI; the server needs its own bound
 date: 2026-11-27
 ---
 
-- `packages/factory`: Hono app, scheduler, supervisor, SQLite; app uses only `start`, `embedded`, `cell-homes`
+- `packages/factory`: Hono app, scheduler, supervisor, SQLite; app uses only `start` and `embedded`
 - HQ shape: contract per endpoint with output check, `cliProcedure` / `cellProcedure`, thin routes, `app.request()` tests
 - `packages/line` (definitions, station ids) and `packages/host` (host I/O) hold what app and factory share
 - Packages, not apps: one binary, and apps never import another app's `src/`
@@ -14,4 +14,5 @@ date: 2026-11-27
 - Invalid request message is now `invalid request <section>:` plus Zod text; error `type` values unchanged
 - JSON bodies now need `content-type: application/json`; oversize `content-length` replies 413
 - Added contracts for health, shutdown, scale, runner, cancel; `getOrderContract` moved to `jobs.contract` with `jobs`
-- Cell execution stays in `apps/genba`; hub deferred
+- Follows the merged package boundary spec; no `bootstrap/`, `createTransport` sits with the Hono adapter
+- `packages/cell` not extracted yet: Cell execution stays in `apps/genba`; hub deferred

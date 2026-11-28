@@ -1,5 +1,5 @@
-import type { TransportContext } from '../application/core/procedure.ts';
-import type { CreateTransport } from '../adapters/hono/types.ts';
+import type { TransportContext } from '../../application/core/procedure.ts';
+import type { CreateTransport } from './types.ts';
 
 export type TransportDeps = Omit<TransportContext, 'bearer' | 'signal'>;
 

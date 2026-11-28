@@ -22,7 +22,7 @@ import { createLineLoader } from './application/core/lines.ts';
 import { createEventBus } from './adapters/memory/event-bus.adapter.ts';
 import { createTokenAuth } from './adapters/auth/token-auth.adapter.ts';
 import { createApp } from './app.ts';
-import { createTransport } from './bootstrap/transport.ts';
+import { createTransport } from './adapters/hono/transport.ts';
 import {
   ID_BYTES,
   MAX_BODY_BYTES,

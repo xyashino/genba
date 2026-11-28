@@ -3,7 +3,9 @@ import { createSystemClock } from '@repo/host/process/system-clock';
 import { createEventBus } from './adapters/memory/event-bus.adapter.ts';
 import { createSqliteStore } from './adapters/sqlite/store.ts';
 import { createApp } from './app.ts';
-import { createTransport } from './bootstrap/transport.ts';
+import { createTransport } from './adapters/hono/transport.ts';
+import { createCellHomes } from './application/cells/cell-homes.ts';
+import type { CellHomeDeps } from './application/cells/cell-homes.ts';
 import type { Supervisor } from './application/cells/supervisor.ts';
 import { createLineLoader } from './application/core/lines.ts';
 import { ID_BYTES } from './config.ts';
@@ -16,6 +18,8 @@ export type EmbeddedFactoryOptions = {
   cellId: string;
   /** a repo file by relative path, or undefined when it is missing */
   readRepo: (path: string) => string | undefined;
+  /** what the Cell's log and workspace need */
+  homes: CellHomeDeps;
 };
 
 // The caller owns its only Cell, so there is nothing to spawn, stop, or respawn.
@@ -35,6 +39,7 @@ const noFleet: Supervisor = {
 export const createEmbeddedFactory = ({
   cellId,
   readRepo,
+  homes,
 }: EmbeddedFactoryOptions) => {
   const store = createSqliteStore(':memory:');
   const events = createEventBus();
@@ -63,6 +68,7 @@ export const createEmbeddedFactory = ({
   return {
     cliToken,
     cellToken: token,
+    homes: createCellHomes(homes),
     fetch: async (url: string, init: RequestInit = {}): Promise<Response> => {
       const headers = new Headers(init.headers);
       headers.set('host', `127.0.0.1:${EMBEDDED_PORT}`);

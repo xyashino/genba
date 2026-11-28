@@ -10,11 +10,6 @@ const ADAPTERS = {
   message: 'Inner layers depend on ports, never on adapters.',
 };
 
-const BOOTSTRAP = {
-  group: ['**/bootstrap/**'],
-  message: 'Only a composition root imports bootstrap.',
-};
-
 const GENBA = {
   group: ['@repo/genba', '@repo/genba/**'],
   message: 'The factory never imports the app that hosts it.',
@@ -34,7 +29,6 @@ export default [
       GENBA,
       HTTP,
       ADAPTERS,
-      BOOTSTRAP,
       {
         group: [
           'drizzle-orm',
@@ -51,7 +45,7 @@ export default [
   },
   {
     files: ['src/application/**/*.ts'],
-    rules: restricted([GENBA, HTTP, ADAPTERS, BOOTSTRAP]),
+    rules: restricted([GENBA, HTTP, ADAPTERS]),
   },
   {
     files: ['src/db/**/*.ts'],
@@ -59,7 +53,6 @@ export default [
       GENBA,
       HTTP,
       ADAPTERS,
-      BOOTSTRAP,
       {
         group: ['**/application/**'],
         message: 'The database never calls procedures.',

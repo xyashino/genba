@@ -5,8 +5,7 @@
   "private": true,
   "exports": {
     "./start": "./src/start.ts",
-    "./embedded": "./src/embedded.ts",
-    "./cell-homes": "./src/application/cells/cell-homes.ts"
+    "./embedded": "./src/embedded.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",
