@@ -10,6 +10,7 @@ import {
 import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { EXIT } from '../domain/exit-codes.ts';
 import { FORGE_STATE_ENV } from './support/forge-state.ts';
 import type { FakeForgeState } from './support/forge-state.ts';
 import { installStub, tempDir } from './support/stub-bin.ts';
@@ -34,8 +35,23 @@ let env: Record<string, string | undefined> = {};
 const git = (cwd: string, ...args: string[]): string =>
   execFileSync('git', args, { cwd, stdio: 'pipe' }).toString().trim();
 
-const genba = (...args: string[]): string =>
-  execFileSync(binary, args, { cwd: repo, env, stdio: 'pipe' }).toString();
+const genbaIn = (cwd: string, ...args: string[]): string =>
+  execFileSync(binary, args, { cwd, env, stdio: 'pipe' }).toString();
+
+const genba = (...args: string[]): string => genbaIn(repo, ...args);
+
+const refusedBy = (
+  cwd: string,
+  ...args: string[]
+): { status: number; stderr: string } => {
+  try {
+    genbaIn(cwd, ...args);
+  } catch (error) {
+    const failure = error as { status: number; stderr: Buffer };
+    return { status: failure.status, stderr: failure.stderr.toString() };
+  }
+  throw new Error(`genba ${args.join(' ')} should have been refused`);
+};
 
 const forge = (): FakeForgeState =>
   JSON.parse(readFileSync(forgeState, 'utf8')) as FakeForgeState;
@@ -166,7 +182,11 @@ describe('standalone genba on a fresh non-Bun repo', () => {
   it(
     'delivers a verified pull request from an imported order',
     async () => {
-      genba('import', addOrder('add-greeting', 'Add a greeting file.'));
+      genba(
+        'orders',
+        'import',
+        addOrder('add-greeting', 'Add a greeting file.'),
+      );
       genba('start', '1');
 
       const { order, steps } = await settled('add-greeting');
@@ -236,7 +256,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
   it(
     'opens a draft pull request and an andon issue when the checks keep failing',
     async () => {
-      genba('import', addOrder('break-build', 'FORCE_FAILURE'));
+      genba('orders', 'import', addOrder('break-build', 'FORCE_FAILURE'));
 
       const { order, steps, jobs } = await settled('break-build');
 
@@ -291,7 +311,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
   it(
     'kills the runner of a crashed cell before another cell takes the job',
     async () => {
-      genba('import', addOrder('crash-recovery', 'HANG_ONCE'));
+      genba('orders', 'import', addOrder('crash-recovery', 'HANG_ONCE'));
       const hang = await eventually(() =>
         agentEvents().find((event) => event['event'] === 'hang'),
       );
@@ -324,7 +344,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     'requeues a running job without spending an attempt when cells are scaled down',
     async () => {
       writeFileSync(agentLog, '');
-      genba('import', addOrder('scale-down', 'HANG_ONCE'));
+      genba('orders', 'import', addOrder('scale-down', 'HANG_ONCE'));
       const hang = await eventually(() =>
         agentEvents().find((event) => event['event'] === 'hang'),
       );
@@ -365,7 +385,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     'stops the agent before it cancels a running order',
     async () => {
       writeFileSync(agentLog, '');
-      genba('import', addOrder('cancel-me', 'HANG_ONCE'));
+      genba('orders', 'import', addOrder('cancel-me', 'HANG_ONCE'));
       const hang = await eventually(() =>
         agentEvents().find((event) => event['event'] === 'hang'),
       );
@@ -386,7 +406,11 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       );
       genba('scale', '3');
 
-      genba('import', ...slugs.map((slug) => addOrder(slug, 'Add a file.')));
+      genba(
+        'orders',
+        'import',
+        ...slugs.map((slug) => addOrder(slug, 'Add a file.')),
+      );
       const results = await Promise.all(slugs.map(settled));
 
       expect(results.map((result) => result.order.status)).toEqual(
@@ -469,7 +493,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
       const path = join(repo, '.genba', 'lines', 'fast.yml');
       const original = readFileSync(path, 'utf8');
       writeFileSync(path, original.replace('git fetch origin', 'exit 3'));
-      genba('import', addOrder('bad-root', 'Add.', 'fast'));
+      genba('orders', 'import', addOrder('bad-root', 'Add.', 'fast'));
       genba('start', '1');
 
       const failed = await settled('bad-root');
@@ -487,7 +511,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         path,
         original.replace('requireAdr: false', 'requireAdr: true'),
       );
-      genba('import', addOrder('no-adr', 'Add.', 'fast'));
+      genba('orders', 'import', addOrder('no-adr', 'Add.', 'fast'));
       const undocumented = await settled('no-adr');
 
       expect(undocumented.order.status).toBe('blocked');
@@ -510,7 +534,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         JSON.stringify({ ...JSON.parse(original), herdr: true }),
       );
       writeFileSync(agentLog, '');
-      genba('import', addOrder('in-a-pane', 'Add a greeting.'));
+      genba('orders', 'import', addOrder('in-a-pane', 'Add a greeting.'));
       genba('start', '1');
 
       const { order } = await settled('in-a-pane');
@@ -642,7 +666,7 @@ describe('standalone genba on a fresh non-Bun repo', () => {
         path,
         '---\nid: builder\nstage: runtime\nextends: builtin:builder\nrules: [ghost]\n---\n',
       );
-      genba('import', addOrder('no-rule', 'Add.', 'fast'));
+      genba('orders', 'import', addOrder('no-rule', 'Add.', 'fast'));
       genba('start', '1');
 
       const { order } = await settled('no-rule');
@@ -656,4 +680,117 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     },
     SETTLE_MS,
   );
+
+  it('removes the `import` command', () => {
+    const refusal = refusedBy(repo, 'import', addOrder('gone', 'Add.'));
+
+    expect(refusal.status).toBe(EXIT.argument);
+    expect(refusal.stderr).toContain('usage: genba');
+  });
+
+  it('lists orders import in help and no bare import', () => {
+    const help = genba('--help');
+
+    expect(help).toContain('orders import');
+    expect(help).not.toMatch(/^\s+import /m);
+  });
+
+  it('refuses orders without a known subcommand', () => {
+    for (const args of [['orders'], ['orders', 'export']]) {
+      const refusal = refusedBy(repo, ...args);
+
+      expect(refusal.status).toBe(EXIT.argument);
+      expect(refusal.stderr).toContain('usage: genba');
+    }
+  });
+
+  it('refuses to import when the orders folder is missing', () => {
+    const refusal = refusedBy(repo, 'orders', 'import');
+
+    expect(refusal.status).toBe(EXIT.refused);
+    expect(refusal.stderr).toContain(join(repo, 'orders'));
+  });
+
+  it('refuses to import when orders is a file, not a folder', () => {
+    writeFileSync(join(repo, 'orders'), '---\ntitle: stray\n---\nAdd.\n');
+
+    const refusal = refusedBy(repo, 'orders', 'import');
+    rmSync(join(repo, 'orders'));
+
+    expect(refusal.status).toBe(EXIT.refused);
+    expect(refusal.stderr).toContain(join(repo, 'orders'));
+  });
+
+  it('refuses to import when orders/ holds no order files', () => {
+    mkdirSync(join(repo, 'orders', 'nested'), { recursive: true });
+    writeFileSync(join(repo, 'orders', 'notes.txt'), 'not an order\n');
+    writeFileSync(
+      join(repo, 'orders', 'nested', 'deep-order.md'),
+      '---\ntitle: deep\n---\nAdd.\n',
+    );
+
+    const refusal = refusedBy(repo, 'orders', 'import');
+
+    expect(refusal.status).toBe(EXIT.refused);
+    expect(refusal.stderr).toContain(join(repo, 'orders'));
+  });
+
+  it('queues the queued orders in orders/ from any folder of the repo', () => {
+    const orders = join(repo, 'orders');
+    writeFileSync(
+      join(orders, 'import-alpha.md'),
+      '---\ntitle: alpha\n---\nAdd.\n',
+    );
+    writeFileSync(
+      join(orders, 'import-beta.md'),
+      '---\ntitle: beta\n---\nAdd.\n',
+    );
+    writeFileSync(
+      join(orders, 'import-done.md'),
+      '---\ntitle: done\nstatus: done\n---\nAdd.\n',
+    );
+    const deeper = join(repo, 'sub', 'deeper');
+    mkdirSync(deeper, { recursive: true });
+
+    expect(genbaIn(deeper, 'orders', 'import').trim()).toBe(
+      'imported 2, already known 0, not queued 1',
+    );
+    const slugs = (
+      JSON.parse(genba('queue', '--json')).orders as { slug: string }[]
+    ).map((order) => order.slug);
+    expect(slugs).toEqual(
+      expect.arrayContaining(['import-alpha', 'import-beta']),
+    );
+    expect(slugs).not.toContain('import-done');
+    expect(slugs).not.toContain('deep-order');
+  });
+
+  it('skips slugs already queued when importing again', () => {
+    expect(genba('orders', 'import').trim()).toBe(
+      'imported 0, already known 2, not queued 1',
+    );
+  });
+
+  it('queues only the given files and folders, relative to the current folder', () => {
+    writeFileSync(
+      join(repo, 'import-extra.md'),
+      '---\ntitle: extra\n---\nAdd.\n',
+    );
+    mkdirSync(join(repo, 'batch'));
+    writeFileSync(
+      join(repo, 'batch', 'import-batch.md'),
+      '---\ntitle: batch\n---\nAdd.\n',
+    );
+    const deeper = join(repo, 'sub', 'deeper');
+
+    expect(
+      genbaIn(
+        deeper,
+        'orders',
+        'import',
+        '../../import-extra.md',
+        '../../batch',
+      ).trim(),
+    ).toBe('imported 2, already known 0, not queued 0');
+  });
 });

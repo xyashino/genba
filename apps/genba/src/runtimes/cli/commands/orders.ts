@@ -20,6 +20,7 @@ import { table } from '../output.ts';
 const POLL_MS = 500;
 const PAGE = 100;
 const SETTLED = ['delivered', 'merged', 'blocked', 'closed', 'cancelled'];
+const ORDERS_DIR = 'orders';
 
 const orderDetailSchema = getOrderContract.out[200].extend({
   order: workOrderSchema,
@@ -39,8 +40,16 @@ const filesOf = async (deps: CliDeps, path: string): Promise<string[]> => {
   }
   if (!statSync(full).isDirectory()) return [full];
   return (await deps.fs.list(full))
-    .filter((name) => extname(name) === '.md')
-    .map((name) => join(full, name));
+    .map((name) => join(full, name))
+    .filter((file) => extname(file) === '.md' && statSync(file).isFile());
+};
+
+const ordersFolderOf = async (deps: CliDeps): Promise<string> => {
+  const folder = join(await repoRootOf(deps), ORDERS_DIR);
+  if (!(await deps.fs.exists(folder)) || !statSync(folder).isDirectory()) {
+    throw new CliError(`orders folder is missing or not a folder: ${folder}`);
+  }
+  return folder;
 };
 
 export const readOrders = async (
@@ -51,7 +60,9 @@ export const readOrders = async (
   const files = (
     await Promise.all(paths.map((path) => filesOf(deps, path)))
   ).flat();
-  if (files.length === 0) throw new CliError('no order files found');
+  if (files.length === 0) {
+    throw new CliError(`no order files found in ${paths.join(', ')}`);
+  }
   return Promise.all(
     files.map(async (file) => {
       try {
@@ -94,7 +105,10 @@ export const runImport = async (
   deps: CliDeps,
   paths: readonly string[],
 ): Promise<number> => {
-  const orders = await readOrders(deps, paths);
+  const orders = await readOrders(
+    deps,
+    paths.length === 0 ? [await ordersFolderOf(deps)] : paths,
+  );
   const { api } = await ensureDaemon(deps);
   const { imported, skipped } = await submit(api, orders);
   const notQueued = orders.filter((order) => order.status !== 'queued').length;
