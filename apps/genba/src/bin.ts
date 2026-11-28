@@ -1,14 +1,14 @@
 // Every branch imports lazily, so `genba operator` never loads the daemon, SQLite, or the CLI.
 const runOperatorVerb = async (args: string[]): Promise<number> => {
-  const [{ runOperator }, { createOperatorClient }, exits, port] =
+  const [{ runOperator }, { createOperatorClient }, exits, contract] =
     await Promise.all([
       import('./operator/main.ts'),
       import('./operator/client.ts'),
       import('./operator/exit-map.ts'),
-      import('@repo/cell/ports/operator.port'),
+      import('@repo/contracts/operator.contract'),
     ]);
-  const url = process.env[port.OPERATOR_URL_ENV];
-  const token = process.env[port.CYCLE_TOKEN_ENV];
+  const url = process.env[contract.OPERATOR_URL_ENV];
+  const token = process.env[contract.CYCLE_TOKEN_ENV];
   if (!url || !token) {
     console.error('genba operator only works inside a station run by a Cell');
     return 3;

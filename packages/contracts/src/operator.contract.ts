@@ -3,6 +3,9 @@ import type { ZodContract } from '@repo/contract-kit/types';
 import { z } from 'zod';
 import { incidentResolutionSchema } from './enums.ts';
 
+export const OPERATOR_URL_ENV = 'GENBA_OPERATOR_URL';
+export const CYCLE_TOKEN_ENV = 'GENBA_CYCLE_TOKEN';
+
 export const operatorVerdictSchema = z.enum(['pass', 'fail']);
 
 export const operatorDoneContract = {

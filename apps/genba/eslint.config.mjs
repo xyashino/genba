@@ -21,13 +21,7 @@ export default [
   {
     files: ['src/operator/**/*.ts'],
     ...forbid(
-      [
-        '@repo/cell/main',
-        '@repo/cell/loop',
-        '@repo/cell/deps',
-        '@repo/cell/runtime/**',
-        '@repo/factory/**',
-      ],
+      ['@repo/cell/**', '@repo/factory/**'],
       'operator must stay a zero-state loopback client',
     ),
   },
