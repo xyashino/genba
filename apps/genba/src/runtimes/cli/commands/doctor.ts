@@ -1,5 +1,6 @@
 import { join } from 'node:path';
-import { resolveGuidance } from '../../../domain/guidance.ts';
+import { BUILTIN_ROLES } from '../../../builtin/registry.ts';
+import { guidanceKeyOf, resolveGuidance } from '../../../domain/guidance.ts';
 import type { GuidanceEntry } from '../../../domain/guidance.ts';
 import { agentsOf, checksOfLine, parseLine } from '@repo/line/line';
 import type { AgentDefinition, LineDefinition } from '@repo/line/line';
@@ -81,10 +82,17 @@ const lineChecks = async (
   const roles = [...new Set(agents.map((agent) => agent.profile))];
   for (const role of roles) {
     try {
-      const parsed = parseRole(await read(rolePathOf(role)));
+      const path = rolePathOf(role);
+      const parsed = (await deps.fs.exists(join(root, path)))
+        ? parseRole(await read(path), BUILTIN_ROLES)
+        : Object.hasOwn(BUILTIN_ROLES, role)
+          ? parseRole(BUILTIN_ROLES[role as keyof typeof BUILTIN_ROLES])
+          : (() => {
+              throw new Error(`missing ${path}`);
+            })();
       const { rules, skills } = guidanceOf(parsed, manifest);
       for (const entry of [...rules, ...skills]) {
-        guidance.set(entry.join(), entry);
+        guidance.set(guidanceKeyOf(entry), entry);
       }
     } catch (error) {
       problems.push(`role ${role}: ${messageOf(error)}`);

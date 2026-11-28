@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { BUILTIN_ROLES } from '../../builtin/registry.ts';
 import { parseLine } from '@repo/line/line';
 import type { LineDefinition } from '@repo/line/line';
 import { parseRepoManifest } from '@repo/line/manifest';
@@ -177,5 +178,13 @@ export const loadLine = async (
 export const roleOf = async (
   { fs, repoRoot }: Pick<CellDeps, 'fs' | 'repoRoot'>,
   name: string,
-): Promise<RoleDefinition> =>
-  parseRole(await readAsset(fs, repoRoot, name, rolePathOf));
+): Promise<RoleDefinition> => {
+  if (!isAssetName(name)) throw new Error(`invalid name "${name}"`);
+  const path = rolePathOf(name);
+  const text = await readIfPresent(fs, join(repoRoot, path));
+  if (text !== undefined) return parseRole(text, BUILTIN_ROLES);
+  if (Object.hasOwn(BUILTIN_ROLES, name)) {
+    return parseRole(BUILTIN_ROLES[name as keyof typeof BUILTIN_ROLES]);
+  }
+  throw new Error(`missing ${path}`);
+};

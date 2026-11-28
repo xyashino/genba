@@ -8,7 +8,6 @@ const LINE_PREFIX = '.genba/lines/';
 const written = (values: { runner: string; hasOrigin: boolean }) =>
   templateAssets({
     project: { setup: ['npm ci'], verify: ['npm test'] },
-    has: () => false,
     ...values,
   })
     .filter((asset) => asset.path.startsWith(LINE_PREFIX))

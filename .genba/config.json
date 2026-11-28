@@ -1,7 +1,7 @@
 {
   "project": "genba",
-  "rules": "./.nitpick/rules",
-  "skills": "./.nitpick/skills",
+  "rules": "./.agents/rules",
+  "skills": "./.agents/skills",
   "herdr": true,
   "git": {
     "provider": "github",

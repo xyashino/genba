@@ -1,14 +1,7 @@
 import { parseDocument, stringify } from 'yaml';
 import type { DetectedProject } from '../domain/detect-project.ts';
-import { guidanceOf, parseRole } from '../domain/role.ts';
-import {
-  DEFAULT_GUIDANCE_DIRS,
-  linePathOf,
-  rolePathOf,
-  rulePathsOf,
-  skillPathOf,
-} from '@repo/line/runtime-paths';
-import { BUILTIN_LINES, BUILTIN_ROLES } from './registry.ts';
+import { linePathOf } from '@repo/line/runtime-paths';
+import { BUILTIN_LINES } from './registry.ts';
 
 const TEMPLATE_RUNNER = 'claude';
 const ROOT_HOOK = { timeout: '2m', exec: ['git fetch origin'] };
@@ -20,8 +13,6 @@ export type LineValues = {
   project: Pick<DetectedProject, 'setup' | 'verify'>;
   runner: string;
   hasOrigin: boolean;
-  /** whether the repo has this file; roles list only what exists */
-  has: (path: string) => boolean;
 };
 
 type Template = {
@@ -66,43 +57,9 @@ const lineTextOf = (
   );
 };
 
-const roleTextOf = (template: string, { has }: LineValues): string =>
-  template.replace(
-    /^(rules|skills): \[(.*)\]$/gm,
-    (_line, key: 'rules' | 'skills', list: string) => {
-      const pathsOf = (name: string): string[] =>
-        key === 'rules'
-          ? rulePathsOf(DEFAULT_GUIDANCE_DIRS.rules, name)
-          : [skillPathOf(DEFAULT_GUIDANCE_DIRS.skills, name)];
-      const names = list
-        .split(',')
-        .map((name) => name.trim())
-        .filter((name) => name !== '' && pathsOf(name).some(has));
-      return `${key}: [${names.join(', ')}]`;
-    },
-  );
-
-/** Every rule and skill file a template role can list. */
-export const templateGuidancePaths = (): string[] => [
-  ...new Set(
-    Object.values(BUILTIN_ROLES).flatMap((text) => {
-      const { rules, skills } = guidanceOf(
-        parseRole(text),
-        DEFAULT_GUIDANCE_DIRS,
-      );
-      return [...rules, ...skills].flat();
-    }),
-  ),
-];
-
-/** The files `genba init` writes. At runtime genba reads only the repo copies. */
-export const templateAssets = (values: LineValues): Asset[] => [
-  ...Object.entries(BUILTIN_LINES).map(([name, template]) => ({
+/** The line files `genba init` writes. Built-in roles are used directly unless overridden in `.genba/roles/`. */
+export const templateAssets = (values: LineValues): Asset[] =>
+  Object.entries(BUILTIN_LINES).map(([name, template]) => ({
     path: linePathOf(name),
     text: lineTextOf(template, values),
-  })),
-  ...Object.entries(BUILTIN_ROLES).map(([name, template]) => ({
-    path: rolePathOf(name),
-    text: roleTextOf(template, values),
-  })),
-];
+  }));
