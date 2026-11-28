@@ -23,6 +23,7 @@ import {
   runRun,
 } from './commands/orders.ts';
 import { runScale, runStart, runStop, runWatch } from './commands/daemon.ts';
+import { runTestPr } from './commands/test.ts';
 import { runWatchFull } from './commands/watch-full.ts';
 import { runOnce } from '../standalone/main.ts';
 import type { CliDeps } from './context.ts';
@@ -31,6 +32,7 @@ import { CliError } from './context.ts';
 const USAGE = `usage: genba <command>
   init [--force]               detect the repo and write .genba/config.json
   doctor [--json]              check config, runners, forge login, daemon
+  test pr [--json]             open a real smoke-test PR (skips git hooks)
   start [cells]                start the daemon with N cells
   scale <cells>                change the number of cells
   stop                         stop cells and the daemon
@@ -100,6 +102,8 @@ const route = (
       return runInit(deps, { force: values.force });
     case 'doctor':
       return runDoctor(deps, { json });
+    case 'test':
+      return first === 'pr' ? runTestPr(deps, { json }) : null;
     case 'start':
       return runStart(deps, first);
     case 'scale':

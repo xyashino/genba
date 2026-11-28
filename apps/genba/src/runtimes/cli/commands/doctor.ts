@@ -156,6 +156,7 @@ const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
     ];
   }
   const origin = await deps.git.remoteUrl(root);
+  const hasIdentity = await deps.git.hasAuthorIdentity(root);
   const authenticated =
     origin !== null &&
     (await deps
@@ -164,6 +165,13 @@ const checksOf = async (deps: CliDeps, root: string): Promise<Check[]> => {
       .catch(() => false));
   return [
     { level: 'ok', name: 'config', detail: manifest.project },
+    {
+      level: hasIdentity ? 'ok' : 'fail',
+      name: 'git identity',
+      detail: hasIdentity
+        ? 'configured'
+        : 'missing user.name or user.email (run git config --global user.name and user.email)',
+    },
     {
       level: origin === null ? 'fail' : 'ok',
       name: 'origin remote',

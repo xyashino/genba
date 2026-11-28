@@ -656,4 +656,30 @@ describe('standalone genba on a fresh non-Bun repo', () => {
     },
     SETTLE_MS,
   );
+
+  it(
+    'opens a smoke-test PR on test/genba-<id> skipping hooks and cleans up locally',
+    () => {
+      const result = JSON.parse(genba('test', 'pr', '--json')) as {
+        url: string;
+        number: number;
+        branch: string;
+        title: string;
+      };
+
+      expect(result.branch).toMatch(/^test\/genba-[0-9a-f]{8}$/);
+      expect(result.title).toBe('test(genba): test PR to delete');
+      expect(result.url).toContain(`/pull/${result.number}`);
+      const pr = forge().prs.find((entry) => entry.branch === result.branch);
+      expect(pr).toMatchObject({
+        title: 'test(genba): test PR to delete',
+        draft: false,
+      });
+      expect(git(repo, 'branch', '--list', result.branch)).toBe('');
+      expect(
+        existsSync(join(repo, '.worktrees', result.branch.replace('/', '-'))),
+      ).toBe(false);
+    },
+    SETTLE_MS,
+  );
 });

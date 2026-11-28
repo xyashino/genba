@@ -239,6 +239,16 @@ export const runAgent = async (
       detail: `runner "${agent.runner}" cannot be restricted to read mode, so it cannot run role "${profile}"`,
     };
   }
+  if (
+    permission === 'write' &&
+    !(await job.git.hasAuthorIdentity(workspace.path))
+  ) {
+    return {
+      kind: 'env_error',
+      detail:
+        'git author identity is not configured (run git config --global user.name and user.email)',
+    };
+  }
   // Checked in the worktree, after `changeover.worktree` had its chance to generate them.
   const listed = guidanceOf(role, job.manifest);
   const rules = await resolveGuidance(job.fs, workspace.path, listed.rules);

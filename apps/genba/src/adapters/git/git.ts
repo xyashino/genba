@@ -143,6 +143,8 @@ export const createGitAdapter = (process: ProcessPort): GitPort => {
       const result = await process.run(GIT, ['remote', 'get-url', REMOTE], cwd);
       return result.exitCode === 0 ? result.stdout.trim() : null;
     },
+    hasAuthorIdentity: async (cwd) =>
+      (await process.run(GIT, ['var', 'GIT_AUTHOR_IDENT'], cwd)).exitCode === 0,
     // `clean` never takes `-x`: ignored `.cell/` files must survive a discard.
     resetHard: async (cwd, sha) => {
       await git(['reset', '--hard', sha], cwd);
