@@ -19,7 +19,7 @@ genba run order.md --once      # same, without daemon or queue
 
 Order file: markdown, optional frontmatter (`title`, `line`, `priority`, `depends_on`). File name is the slug.
 
-Queue mode: `genba import <dir>`, `genba start 3`, `genba watch` (`--full` for detailed Cell history), `genba queue`, `genba incident`, `genba stop`. `genba --help` lists all commands.
+Queue mode: `genba orders import` (queues `orders/*.md`, or `genba orders import <path>...`), `genba start 3`, `genba watch` (`--full` for detailed Cell history), `genba queue`, `genba incident`, `genba stop`. `genba --help` lists all commands.
 
 > Agents run with your user rights and without permission prompts. Use genba only on repos and orders you trust.
 
