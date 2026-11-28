@@ -34,7 +34,7 @@ const USAGE = `usage: genba <command>
   start [cells]                start the daemon with N cells
   scale <cells>                change the number of cells
   stop                         stop cells and the daemon
-  import <file|dir>...         queue order markdown files
+  orders import [<path>...]    queue orders/*.md, or the given files and folders
   run <order.md>               queue one order and follow it to the end
   run <order.md> --once        run it here: no daemon, no queue
   queue [--json]               list orders
@@ -106,8 +106,8 @@ const route = (
       return first === undefined ? null : runScale(deps, first);
     case 'stop':
       return runStop(deps);
-    case 'import':
-      return first === undefined ? null : runImport(deps, positionals.slice(1));
+    case 'orders':
+      return first === 'import' ? runImport(deps, positionals.slice(2)) : null;
     case 'run':
       if (first === undefined) return null;
       return values.once ? runOnce(deps, first) : runRun(deps, first);

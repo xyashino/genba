@@ -18,25 +18,25 @@ Factory is a Hono HTTP/SSE server (`createApp()` -> `app.fetch` / `app.request()
 
 ### `apps/` (3 Deployables)
 
-| App | Artifact | Responsibility |
-| :--- | :--- | :--- |
-| `apps/genba` | Single compiled `genba` binary | Thin shell: `bin.ts` lazy dispatch, human CLI (`init`, `doctor`, `start`, `scale`, `stop`, `run`, `import`, `queue`, `order`, `incident`, `watch`), `genba operator` verb client, built-in init templates, `--once` composition |
-| `apps/hub` | Optional `genba-hub` server | Standalone multi-factory Hono server: Factory registry, read projections, SSE fan-out, command outbox. Never embedded in `genba` |
-| `apps/web` | Optional supervisor Web UI | Single frontend app targeting `apps/hub` or local Factory loopback (no `web` vs `web-demo` split) |
+| App          | Artifact                       | Responsibility                                                                                                                                                                                                                         |
+| :----------- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/genba` | Single compiled `genba` binary | Thin shell: `bin.ts` lazy dispatch, human CLI (`init`, `doctor`, `start`, `scale`, `stop`, `run`, `orders import`, `queue`, `order`, `incident`, `watch`), `genba operator` verb client, built-in init templates, `--once` composition |
+| `apps/hub`   | Optional `genba-hub` server    | Standalone multi-factory Hono server: Factory registry, read projections, SSE fan-out, command outbox. Never embedded in `genba`                                                                                                       |
+| `apps/web`   | Optional supervisor Web UI     | Single frontend app targeting `apps/hub` or local Factory loopback (no `web` vs `web-demo` split)                                                                                                                                      |
 
 ### `packages/` (Layered Modules)
 
-| Layer | Package | Responsibility |
-| :--- | :--- | :--- |
-| **0: Kits & OS** | `packages/contract-kit` | Shared Zod contract and HTTP reply helpers |
-| **0: Kits & OS** | `packages/sqlite-kit` | `bun:sqlite` + Drizzle client and embedded migrations |
-| **0: Kits & OS** | `packages/prompt` | Typed frontmatter + Handlebars renderer (`stage: sync`, `stage: runtime`) |
-| **0: Kits & OS** | `packages/host` | OS primitives & ports: `fs`, `lock`, `pid-file`, `process/spawn`, `process/self`, `clock`, `herdr-workspaces` |
-| **1: Shared Domain** | `packages/contracts` | Unified wire schemas (`orders`, `jobs`, `incidents`, `operator`, `factory`, `hub`, `enums`) |
-| **1: Shared Domain** | `packages/line` | Pure blueprint & shared conventions: `line`, `stations`, `order`, `manifest`, `branch`, `cells`, `runtime-paths`, `timeline` (zero IO) |
-| **2: Runtimes** | `packages/factory` | Local control plane: Hono server (`app.ts`, `start.ts`), `embedded.ts`, Drizzle SQLite store, pure scheduler (`domain/schedule.ts`), procedures, Cell supervisor & cell homes |
-| **2: Runtimes** | `packages/cell` | Worker runtime: Cell loop, Order worktree lifecycle & changeover hooks, stations (`operator`, `inspection`, `mechanic`, `deliver`, `escalate`), `ROLE.md` guards, adapters (`git`, `forge`, `runners`, `operator-endpoint`), read-only `@repo/cell/probes` |
-| **Tooling** | `packages/nitpick`, `packages/eslint-config`, `packages/typescript-config` | Optional AI rules/skills checker (never imported by `apps/genba`, `factory`, or `cell`) and shared configs |
+| Layer                | Package                                                                    | Responsibility                                                                                                                                                                                                                                             |
+| :------------------- | :------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0: Kits & OS**     | `packages/contract-kit`                                                    | Shared Zod contract and HTTP reply helpers                                                                                                                                                                                                                 |
+| **0: Kits & OS**     | `packages/sqlite-kit`                                                      | `bun:sqlite` + Drizzle client and embedded migrations                                                                                                                                                                                                      |
+| **0: Kits & OS**     | `packages/prompt`                                                          | Typed frontmatter + Handlebars renderer (`stage: sync`, `stage: runtime`)                                                                                                                                                                                  |
+| **0: Kits & OS**     | `packages/host`                                                            | OS primitives & ports: `fs`, `lock`, `pid-file`, `process/spawn`, `process/self`, `clock`, `herdr-workspaces`                                                                                                                                              |
+| **1: Shared Domain** | `packages/contracts`                                                       | Unified wire schemas (`orders`, `jobs`, `incidents`, `operator`, `factory`, `hub`, `enums`)                                                                                                                                                                |
+| **1: Shared Domain** | `packages/line`                                                            | Pure blueprint & shared conventions: `line`, `stations`, `order`, `manifest`, `branch`, `cells`, `runtime-paths`, `timeline` (zero IO)                                                                                                                     |
+| **2: Runtimes**      | `packages/factory`                                                         | Local control plane: Hono server (`app.ts`, `start.ts`), `embedded.ts`, Drizzle SQLite store, pure scheduler (`domain/schedule.ts`), procedures, Cell supervisor & cell homes                                                                              |
+| **2: Runtimes**      | `packages/cell`                                                            | Worker runtime: Cell loop, Order worktree lifecycle & changeover hooks, stations (`operator`, `inspection`, `mechanic`, `deliver`, `escalate`), `ROLE.md` guards, adapters (`git`, `forge`, `runners`, `operator-endpoint`), read-only `@repo/cell/probes` |
+| **Tooling**          | `packages/nitpick`, `packages/eslint-config`, `packages/typescript-config` | Optional AI rules/skills checker (never imported by `apps/genba`, `factory`, or `cell`) and shared configs                                                                                                                                                 |
 
 ## Package Dependency Graph
 
@@ -135,7 +135,7 @@ apps/genba/src/
 ├── domain/                 # detect-project.ts, exit-codes.ts
 ├── operator/               # `genba operator <verb>` zero-state client + exit mapping
 ├── standalone/             # `genba run --once` wiring (@repo/factory/embedded + @repo/cell)
-├── cli/                    # Human commands (init, doctor, start, scale, stop, run, import, queue, order, incident, watch)
+├── cli/                    # Human commands (init, doctor, start, scale, stop, run, orders import, queue, order, incident, watch)
 └── bin.ts                  # Dynamic `await import(...)` dispatch keeping `genba operator` fast and light
 ```
 
