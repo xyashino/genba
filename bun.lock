@@ -23,12 +23,10 @@
       },
       "dependencies": {
         "@repo/cell": "workspace:*",
-        "@repo/contract-kit": "workspace:*",
         "@repo/contracts": "workspace:*",
         "@repo/factory": "workspace:*",
         "@repo/host": "workspace:*",
         "@repo/line": "workspace:*",
-        "@repo/prompt": "workspace:*",
         "yaml": "catalog:",
         "zod": "catalog:",
       },

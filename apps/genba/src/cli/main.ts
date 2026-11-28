@@ -8,7 +8,7 @@ import {
 import { createNodeFs } from '@repo/host/fs/node-fs';
 import { selfCommand } from '@repo/host/process/self';
 import { createProcessAdapter } from '@repo/host/process/spawn';
-import { EXIT } from '../../domain/exit-codes.ts';
+import { EXIT } from '../domain/exit-codes.ts';
 import { PORT_ENV, portOf } from '@repo/line/runtime-paths';
 import {
   ApiError,

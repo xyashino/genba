@@ -52,7 +52,6 @@ flowchart LR
   GENBA --> LIN["packages/line"]
   GENBA --> HST["packages/host"]
   GENBA --> CTR
-  GENBA --> PRM["packages/prompt"]
 
   FAC --> LIN
   FAC --> HST
@@ -112,7 +111,7 @@ packages/factory/src/
 
 ### `packages/cell`
 
-Holds `domain/`, `ports/`, `adapters/`, `runtime/`, `builtin/` (built-in `ROLE.md` templates), and `probes.ts`. Exports `@repo/cell/main`, `@repo/cell/loop`, and `@repo/cell/deps` for the `genba __cell` entrypoint and standalone runtime. ESLint (`apps/genba/eslint.config.mjs`) keeps `cli/` and `operator/` off `@repo/factory` and the operator off the cell runtime; `packages/cell/eslint.config.mjs` keeps the package off `@repo/factory`, `@repo/sqlite-kit`, and `@repo/genba`.
+Holds `domain/`, `ports/`, `adapters/`, `runtime/`, `builtin/` (built-in `ROLE.md` templates), and `probes.ts`. Exports `@repo/cell/main`, `@repo/cell/loop`, and `@repo/cell/deps` for the `genba __cell` entrypoint and standalone runtime. ESLint (`apps/genba/eslint.config.mjs`) keeps `cli/` off `@repo/factory` and `operator/` off `@repo/cell` and `@repo/factory` entirely; `packages/cell/eslint.config.mjs` keeps the package off `@repo/factory`, `@repo/sqlite-kit`, and `@repo/genba`.
 
 ```text
 packages/cell/src/

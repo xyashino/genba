@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createNodeFs } from '@repo/host/fs/node-fs';
 import { crashPathOf, timelinePathOf } from '@repo/line/cells';
 import { renderEntry, timelineLineOf } from '@repo/line/timeline';
-import { timelineReader } from '../runtimes/cli/commands/watch-full.ts';
+import { timelineReader } from '../cli/commands/watch-full.ts';
 import { tempDir } from '@repo/cell/__tests__/support/stub-bin';
 
 const entry = (second: number, cell: string, order: string) => ({

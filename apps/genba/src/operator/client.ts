@@ -1,5 +1,4 @@
-import { OperatorUnreachableError } from '@repo/cell/ports/operator.port';
-import type { OperatorClientPort } from '@repo/cell/ports/operator.port';
+import type { OperatorRequest } from '@repo/contracts/operator.contract';
 
 const REQUEST_TIMEOUT_MS = 10_000;
 const UNREADABLE_REPLY = 'the Cell sent a reply this CLI cannot read';
@@ -9,6 +8,17 @@ export type OperatorClientOptions = {
   token: string;
   fetchImpl?: typeof fetch;
 };
+
+export type OperatorReply = {
+  status: number;
+  body: unknown;
+};
+
+export type OperatorClientPort = {
+  send(request: OperatorRequest): Promise<OperatorReply>;
+};
+
+export class OperatorUnreachableError extends Error {}
 
 const readReply = async (response: Response): Promise<unknown> => {
   try {

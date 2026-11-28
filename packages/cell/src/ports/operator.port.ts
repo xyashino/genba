@@ -1,8 +1,5 @@
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
 
-export const OPERATOR_URL_ENV = 'GENBA_OPERATOR_URL';
-export const CYCLE_TOKEN_ENV = 'GENBA_CYCLE_TOKEN';
-
 export type OperatorResponse = { code: number } & Record<string, unknown>;
 
 export type OperatorHandler = (
@@ -21,14 +18,3 @@ export type OperatorEndpointPort = {
   open(handler: OperatorHandler): Promise<OperatorSession>;
   close(): Promise<void>;
 };
-
-export type OperatorReply = {
-  status: number;
-  body: unknown;
-};
-
-export type OperatorClientPort = {
-  send(request: OperatorRequest): Promise<OperatorReply>;
-};
-
-export class OperatorUnreachableError extends Error {}

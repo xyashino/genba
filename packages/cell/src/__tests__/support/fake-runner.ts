@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import {
   CYCLE_TOKEN_ENV,
   OPERATOR_URL_ENV,
-} from '../../ports/operator.port.ts';
+} from '@repo/contracts/operator.contract';
 
 const prompt = process.argv.join(' ');
 const promptFile = /Read (\S+) and follow/.exec(prompt)![1]!;

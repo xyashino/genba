@@ -1,9 +1,9 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
-import { operatorRequestSchema } from '@repo/contracts/operator.contract';
 import {
   CYCLE_TOKEN_ENV,
   OPERATOR_URL_ENV,
-} from '../../ports/operator.port.ts';
+  operatorRequestSchema,
+} from '@repo/contracts/operator.contract';
 import type {
   OperatorEndpointPort,
   OperatorHandler,
