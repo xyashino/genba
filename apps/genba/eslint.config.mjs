@@ -26,6 +26,7 @@ export default [
         '@repo/cell/main',
         '@repo/cell/loop',
         '@repo/cell/deps',
+        '@repo/cell/runtime/**',
         '@repo/factory/**',
       ],
       'operator runtime must stay a zero-state loopback client',

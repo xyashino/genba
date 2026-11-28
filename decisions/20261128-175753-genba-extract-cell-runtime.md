@@ -12,5 +12,5 @@ date: 2026-11-28
 - Runtime imports inside `packages/cell` are relative; the package imports neither `@repo/genba` nor `@repo/factory`
 - Export `@repo/cell/main`, `@repo/cell/loop`, and `@repo/cell/deps` in `packages/cell/package.json`
 - `apps/genba/src/bin.ts` (`__cell`) and `runtimes/standalone/main.ts` import the runtime from `@repo/cell`
-- ESLint: cell domain bans `**/runtime/**`; genba operator rule names the cell entrypoints; `runtimes/cell` rule removed
+- ESLint: cell domain bans `**/runtime/**`; genba operator rule bans the cell entrypoints and `@repo/cell/runtime/**`; `runtimes/cell` rule removed
 - `docs/architecture.md` `packages/cell` section describes the runtime as moved
