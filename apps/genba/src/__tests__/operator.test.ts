@@ -4,10 +4,10 @@ import {
   errorLineFor,
   exitCodeFor,
 } from '../adapters/operator-client/exit-map.ts';
-import { createLoopbackEndpoint } from '../adapters/operator-endpoint/loopback.ts';
+import { createLoopbackEndpoint } from '@repo/cell/adapters/operator-endpoint/loopback';
 import { EXIT } from '../domain/exit-codes.ts';
-import { OperatorUnreachableError } from '../ports/operator.port.ts';
-import type { OperatorHandler } from '../ports/operator.port.ts';
+import { OperatorUnreachableError } from '@repo/cell/ports/operator.port';
+import type { OperatorHandler } from '@repo/cell/ports/operator.port';
 
 const accept: OperatorHandler = async () => ({ code: 200, accepted: true });
 

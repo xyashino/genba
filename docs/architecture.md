@@ -112,7 +112,7 @@ packages/factory/src/
 
 ### `packages/cell`
 
-Not extracted yet: this code is in `apps/genba/src/` (`runtimes/cell`, `adapters`, `ports`). Until then, ESLint (`apps/genba/eslint.config.mjs`) keeps `cell/`, `cli/`, `operator/`, and `domain/` off `@repo/factory`.
+Partly extracted: `domain/`, `ports/`, `adapters/`, and `probes.ts` live here. The runtime (`runtimes/cell`) is still in `apps/genba/src/` until its own extraction. ESLint (`apps/genba/eslint.config.mjs`) keeps `cell/`, `cli/`, `operator/`, and `domain/` off `@repo/factory`.
 
 ```text
 packages/cell/src/

@@ -5,7 +5,7 @@ const runOperatorVerb = async (args: string[]): Promise<number> => {
       import('./runtimes/operator/main.ts'),
       import('./adapters/operator-client/client.ts'),
       import('./adapters/operator-client/exit-map.ts'),
-      import('./ports/operator.port.ts'),
+      import('@repo/cell/ports/operator.port'),
     ]);
   const url = process.env[port.OPERATOR_URL_ENV];
   const token = process.env[port.CYCLE_TOKEN_ENV];

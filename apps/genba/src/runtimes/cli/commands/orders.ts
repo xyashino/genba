@@ -10,7 +10,7 @@ import { getOrderContract, jobSchema } from '@repo/contracts/jobs.contract';
 import { z } from 'zod';
 import { parseOrderMarkdown } from '@repo/line/order';
 import type { ParsedOrder } from '@repo/line/order';
-import type { LoopbackApiPort } from '../../../ports/loopback-api.port.ts';
+import type { LoopbackApiPort } from '@repo/cell/ports/loopback-api.port';
 import type { CliDeps } from '../context.ts';
 import { CliError, manifestOf, repoRootOf } from '../context.ts';
 import { ensureDaemon, requireDaemon } from '../daemon-link.ts';

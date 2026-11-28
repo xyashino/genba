@@ -8,7 +8,7 @@ import { orderBranchOf } from '@repo/line/branch';
 import { onceIdOf, workspaceLabelOf } from '@repo/line/cells';
 import { DATA_DIR, WORKTREES_DIR } from '@repo/line/runtime-paths';
 import { renderEntry, renderHeader } from '@repo/line/timeline';
-import { createLoopbackApi } from '../../adapters/http/loopback-api.ts';
+import { createLoopbackApi } from '@repo/cell/adapters/http/loopback-api';
 import { cellDepsOf } from '../cell/deps.ts';
 import { runCellLoop } from '../cell/loop.ts';
 import { readOrders } from '../cli/commands/orders.ts';

@@ -3,12 +3,12 @@ import type { JobOutcome } from '@repo/contracts/jobs.contract';
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
 import { checksOfLine, operatorOf } from '@repo/line/line';
 import type { AgentDefinition, OperatorStation } from '@repo/line/line';
-import { resolveGuidance, skillIndexOf } from '../../domain/guidance.ts';
+import { resolveGuidance, skillIndexOf } from '@repo/cell/domain/guidance';
 import { RULE_FILES } from '../../domain/detect-project.ts';
-import { guidanceOf, renderRole } from '../../domain/role.ts';
+import { guidanceOf, renderRole } from '@repo/cell/domain/role';
 import { logsCommandOf, workspaceLabelOf } from '@repo/line/cells';
 import { DECISIONS_DIR } from '@repo/line/runtime-paths';
-import type { OperatorResponse } from '../../ports/operator.port.ts';
+import type { OperatorResponse } from '@repo/cell/ports/operator.port';
 import type { JobContext, ProcessEnd, Workspace } from './context.ts';
 import {
   readIfPresent,

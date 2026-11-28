@@ -1,7 +1,7 @@
 import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { createLoopbackApi } from '../../adapters/http/loopback-api.ts';
+import { createLoopbackApi } from '@repo/cell/adapters/http/loopback-api';
 import {
   CLI_TOKEN_FILE,
   DATA_DIR,
@@ -11,8 +11,8 @@ import {
 import {
   ApiError,
   ApiUnreachableError,
-} from '../../ports/loopback-api.port.ts';
-import type { LoopbackApiPort } from '../../ports/loopback-api.port.ts';
+} from '@repo/cell/ports/loopback-api.port';
+import type { LoopbackApiPort } from '@repo/cell/ports/loopback-api.port';
 import type { CliDeps } from './context.ts';
 import { CliError, repoRootOf } from './context.ts';
 

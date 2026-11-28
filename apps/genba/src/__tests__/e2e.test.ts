@@ -10,9 +10,9 @@ import {
 import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { FORGE_STATE_ENV } from './support/forge-state.ts';
-import type { FakeForgeState } from './support/forge-state.ts';
-import { installStub, tempDir } from './support/stub-bin.ts';
+import { FORGE_STATE_ENV } from '@repo/cell/__tests__/support/forge-state';
+import type { FakeForgeState } from '@repo/cell/__tests__/support/forge-state';
+import { installStub, tempDir } from '@repo/cell/__tests__/support/stub-bin';
 
 const ENTRY = fileURLToPath(new URL('../bin.ts', import.meta.url));
 const AGENT_LOG_ENV = 'FAKE_AGENT_LOG';

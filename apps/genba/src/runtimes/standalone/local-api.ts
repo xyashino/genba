@@ -1,5 +1,5 @@
 import { claimJobContract } from '@repo/contracts/jobs.contract';
-import type { LoopbackApiPort } from '../../ports/loopback-api.port.ts';
+import type { LoopbackApiPort } from '@repo/cell/ports/loopback-api.port';
 
 const COMPLETE = /^\/jobs\/[^/]+\/complete$/;
 const SETTLED: readonly string[] = ['delivered', 'blocked', 'cancelled'];

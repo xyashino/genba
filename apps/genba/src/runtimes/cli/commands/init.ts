@@ -1,6 +1,6 @@
 import { basename, join } from 'node:path';
 import { templateAssets } from '../../../builtin/assets.ts';
-import { detectForgeRemote } from '../../../adapters/forge/detect.ts';
+import { detectForgeRemote } from '@repo/cell/probes';
 import {
   DETECTION_FILES,
   detectProject,

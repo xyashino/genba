@@ -2,11 +2,9 @@ import { dirname, join } from 'node:path';
 import { parseRepoManifest } from '@repo/line/manifest';
 import type { RepoManifest } from '@repo/line/manifest';
 import { MANIFEST_PATH } from '@repo/line/runtime-paths';
-import type { ForgePort } from '../../ports/forge.port.ts';
+import type { ForgePort, GitPort, RunnerCatalogPort } from '@repo/cell/probes';
 import type { FsPort } from '@repo/host/ports/fs.port';
-import type { GitPort } from '../../ports/git.port.ts';
 import type { ProcessPort } from '@repo/host/ports/process.port';
-import type { RunnerCatalogPort } from '../../ports/runner.port.ts';
 
 export type CliDeps = {
   cwd: string;

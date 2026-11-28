@@ -1,17 +1,19 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { createForgeRouter } from '../../adapters/forge/router.ts';
+import {
+  createForgeRouter,
+  createGitAdapter,
+  createRunnerCatalog,
+} from '@repo/cell/probes';
 import { createNodeFs } from '@repo/host/fs/node-fs';
-import { createGitAdapter } from '../../adapters/git/git.ts';
 import { selfCommand } from '@repo/host/process/self';
 import { createProcessAdapter } from '@repo/host/process/spawn';
-import { createRunnerCatalog } from '../../adapters/runners/catalog.ts';
 import { EXIT } from '../../domain/exit-codes.ts';
 import { PORT_ENV, portOf } from '@repo/line/runtime-paths';
 import {
   ApiError,
   ApiUnreachableError,
-} from '../../ports/loopback-api.port.ts';
+} from '@repo/cell/ports/loopback-api.port';
 import { runDoctor } from './commands/doctor.ts';
 import { runIncidentList, runIncidentResolve } from './commands/incidents.ts';
 import { runInit } from './commands/init.ts';

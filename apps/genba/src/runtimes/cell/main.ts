@@ -1,4 +1,4 @@
-import { createLoopbackApi } from '../../adapters/http/loopback-api.ts';
+import { createLoopbackApi } from '@repo/cell/adapters/http/loopback-api';
 import {
   CELL_TOKEN_ENV,
   DAEMON_URL_ENV,
