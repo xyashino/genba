@@ -31,7 +31,6 @@ stations:
     kind: operator
     operator: builder
     inputs: []
-
   - id: quality-gate
     kind: inspection
     timeout: 30m

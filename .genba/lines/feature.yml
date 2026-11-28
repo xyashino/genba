@@ -1,9 +1,8 @@
 name: feature
 description: Plan, build behind quality gate, then independent doctor audit
-
 changeover:
   root:
-    timeout: 4m
+    timeout: 2m
     exec:
       - git fetch origin
   worktree:
@@ -18,18 +17,16 @@ operators:
     model: sonnet
     timeout: 20m
     permission: read
-
   builder:
     profile: builder
     runner: claude
     model: haiku
     timeout: 60m
     permission: write
-
   doctor:
     profile: doctor
-    runner: antigravity
-    model: gemini-3.8-flash-high
+    runner: claude
+    model: sonnet
     timeout: 20m
     permission: read
 
@@ -74,4 +71,4 @@ deliver:
   commit: build.commit
   report: build.report
   to: new-pr
-  requireAdr: true
+  requireAdr: false

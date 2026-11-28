@@ -1,6 +1,5 @@
 name: standard
 description: Build behind quality gate, then independent doctor audit
-
 changeover:
   root:
     timeout: 2m
@@ -10,7 +9,6 @@ changeover:
     timeout: 10m
     exec:
       - bun install --frozen-lockfile
-
 operators:
   builder:
     profile: builder
@@ -20,34 +18,29 @@ operators:
     permission: write
   doctor:
     profile: doctor
-    runner: antigravity
-    model: gemini-3.8-flash-high
+    runner: claude
+    model: haiku
     timeout: 20m
     permission: read
-
 mechanic:
   profile: mechanic
   runner: claude
   model: sonnet
   timeout: 20m
   permission: read
-
 stations:
   - id: build
     kind: operator
     operator: builder
     inputs: []
-
   - id: quality-gate
     kind: inspection
     timeout: 30m
     exec:
       - bun run ci:verify
-
     onFail:
       retry: build
       max: 3
-
   - id: audit
     kind: operator
     operator: doctor
@@ -58,9 +51,8 @@ stations:
     onFail:
       retry: build
       max: 2
-
 deliver:
   commit: build.commit
   report: build.report
   to: new-pr
-  requireAdr: true
+  requireAdr: false
