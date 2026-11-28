@@ -5,6 +5,7 @@ export type GitPort = {
   headSha(cwd: string): Promise<string>;
   hasCommit(cwd: string, sha: string): Promise<boolean>;
   remoteUrl(cwd: string): Promise<string | null>;
+  hasRemoteBranch(cwd: string, branch: string): Promise<boolean>;
   hasAuthorIdentity(cwd: string): Promise<boolean>;
   worktreeAdd(
     repoRoot: string,

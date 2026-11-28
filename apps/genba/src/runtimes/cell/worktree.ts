@@ -66,6 +66,16 @@ const discardHistory = async (
   return replaced;
 };
 
+const resolveBaseBranch = async (job: JobContext): Promise<string> => {
+  const parent = job.assignment.parentBranch;
+  if (parent === null) return job.manifest.git.baseBranch;
+  const hasOrigin = (await job.git.remoteUrl(job.repoRoot)) !== null;
+  if (hasOrigin && !(await job.git.hasRemoteBranch(job.repoRoot, parent))) {
+    return job.manifest.git.baseBranch;
+  }
+  return parent;
+};
+
 export const worktreePathOf = (repoRoot: string, slug: string): string =>
   join(repoRoot, WORKTREES_DIR, slug);
 
@@ -95,11 +105,11 @@ export const ensureWorktree = async (
   job: JobContext,
   { changeover = false }: { changeover?: boolean } = {},
 ): Promise<Workspace> => {
-  const { git, fs, repoRoot, assignment, manifest } = job;
+  const { git, fs, repoRoot, assignment } = job;
   const { slug } = assignment.order;
   const path = worktreePathOf(repoRoot, slug);
   const branch = orderBranchOf(slug);
-  const baseBranch = assignment.parentBranch ?? manifest.git.baseBranch;
+  const baseBranch = await resolveBaseBranch(job);
   await git.excludeLocally(repoRoot, `${WORKTREES_DIR}/`);
   await git.excludeLocally(repoRoot, `${DATA_DIR}/`);
   const rootMarker = join(path, CELL_DIR, ROOT_MARKER);
