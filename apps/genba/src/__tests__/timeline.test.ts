@@ -5,7 +5,7 @@ import { createNodeFs } from '@repo/host/fs/node-fs';
 import { crashPathOf, timelinePathOf } from '@repo/line/cells';
 import { renderEntry, timelineLineOf } from '@repo/line/timeline';
 import { timelineReader } from '../runtimes/cli/commands/watch-full.ts';
-import { tempDir } from './support/stub-bin.ts';
+import { tempDir } from '@repo/cell/__tests__/support/stub-bin';
 
 const entry = (second: number, cell: string, order: string) => ({
   at: `2026-01-01T12:00:0${second}.000Z`,

@@ -3,11 +3,11 @@ import { operatorRequestSchema } from '@repo/contracts/operator.contract';
 import type { OperatorRequest } from '@repo/contracts/operator.contract';
 import { EXIT } from '../../domain/exit-codes.ts';
 import type { ExitCode } from '../../domain/exit-codes.ts';
-import { OperatorUnreachableError } from '../../ports/operator.port.ts';
+import { OperatorUnreachableError } from '@repo/cell/ports/operator.port';
 import type {
   OperatorClientPort,
   OperatorReply,
-} from '../../ports/operator.port.ts';
+} from '@repo/cell/ports/operator.port';
 
 const USAGE = `usage: genba operator <verb>
   done [--summary <text>]

@@ -22,6 +22,7 @@
         "genba": "./src/bin.ts",
       },
       "dependencies": {
+        "@repo/cell": "workspace:*",
         "@repo/contract-kit": "workspace:*",
         "@repo/contracts": "workspace:*",
         "@repo/factory": "workspace:*",
@@ -29,6 +30,26 @@
         "@repo/line": "workspace:*",
         "@repo/prompt": "workspace:*",
         "yaml": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/cell": {
+      "name": "@repo/cell",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contracts": "workspace:*",
+        "@repo/host": "workspace:*",
+        "@repo/line": "workspace:*",
+        "@repo/prompt": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -302,6 +323,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.160.0", "", {}, "sha512-gw4k9syEmnckbOgw2A2FU1TBDdX9hfwV9jEn/uio65pguPzwWiXQS3OIJDMEhv9m06tj9XiEe6RoD0YA+LgreA=="],
+
+    "@repo/cell": ["@repo/cell@workspace:packages/cell"],
 
     "@repo/contract-kit": ["@repo/contract-kit@workspace:packages/contract-kit"],
 

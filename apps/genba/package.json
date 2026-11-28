@@ -10,6 +10,7 @@
     "test": "bun --bun vitest run"
   },
   "dependencies": {
+    "@repo/cell": "workspace:*",
     "@repo/contract-kit": "workspace:*",
     "@repo/contracts": "workspace:*",
     "@repo/factory": "workspace:*",

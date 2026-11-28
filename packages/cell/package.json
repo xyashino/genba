@@ -1,0 +1,30 @@
+{
+  "name": "@repo/cell",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --max-warnings 0",
+    "test": "bun --bun vitest run"
+  },
+  "dependencies": {
+    "@repo/contracts": "workspace:*",
+    "@repo/host": "workspace:*",
+    "@repo/line": "workspace:*",
+    "@repo/prompt": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

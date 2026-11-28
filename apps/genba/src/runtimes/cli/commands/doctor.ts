@@ -1,10 +1,10 @@
 import { join } from 'node:path';
 import { BUILTIN_ROLES } from '../../../builtin/registry.ts';
-import { guidanceKeyOf, resolveGuidance } from '../../../domain/guidance.ts';
-import type { GuidanceEntry } from '../../../domain/guidance.ts';
+import { guidanceKeyOf, resolveGuidance } from '@repo/cell/domain/guidance';
+import type { GuidanceEntry } from '@repo/cell/domain/guidance';
 import { agentsOf, checksOfLine, parseLine } from '@repo/line/line';
 import type { AgentDefinition, LineDefinition } from '@repo/line/line';
-import { guidanceOf, parseRole } from '../../../domain/role.ts';
+import { guidanceOf, parseRole } from '@repo/cell/domain/role';
 import { LINES_DIR, rolePathOf } from '@repo/line/runtime-paths';
 import type { RepoManifest } from '@repo/line/manifest';
 import type { CliDeps } from '../context.ts';

@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_ROLES } from '../builtin/registry.ts';
-import { templateAssets } from '../builtin/assets.ts';
 import {
   guidanceOf,
   parseRole,
@@ -8,28 +6,54 @@ import {
   validateRoleGuards,
 } from '../domain/role.ts';
 
-describe('Built-in ROLE.md contracts and live guards', () => {
-  it('parses all built-in runtime roles and renders builder prompt via @repo/prompt', () => {
-    for (const [id, source] of Object.entries(BUILTIN_ROLES)) {
-      const role = parseRole(source);
-      expect(role.prompt.id).toBe(id);
-      expect(role.prompt.stage).toBe('runtime');
-    }
+const BUILDER = `---
+id: builder
+stage: runtime
+rules: ['*']
+skills: ['*']
+input:
+  order: string
+  checks: string
+  feedback: string
+  lessons: string
+  operatorCommand: string
+outputs:
+  report:
+    file: report.md
+  commit:
+    file: commit.txt
+    format: conventional
+guards:
+  requireDiff: true
+---
+You implement the work order alone.
 
-    const builder = parseRole(BUILTIN_ROLES.builder);
-    const rendered = renderRole(builder, {
-      order: 'Add /health endpoint',
-      checks: 'bun run ci:verify',
-      feedback: 'None',
-      lessons: 'No raw px',
-      operatorCommand: 'genba operator',
-    });
-    expect(rendered).toContain('Add /health endpoint');
-    expect(rendered).toContain('genba operator done');
-  });
+## Work Order
+{{order}}
+`;
 
+const DOCTOR = `---
+id: doctor
+stage: runtime
+rules: ['*']
+skills: ['*']
+input:
+  order: string
+  diff: string
+  gateOutput: string
+  operatorCommand: string
+outputs:
+  audit:
+    file: audit.md
+---
+Audit the work order.
+`;
+
+describe('Role contracts and live guards', () => {
   it('resolves wildcards, globs, and exact names while rejecting path traversal', () => {
-    const planner = parseRole(BUILTIN_ROLES.planner);
+    const planner = parseRole(
+      "---\nid: planner\nstage: runtime\nrules: ['*']\nskills: ['*']\n---\nbody\n",
+    );
 
     expect(
       guidanceOf(planner, { rules: 'docs/rules', skills: '.agents/skills' }),
@@ -60,10 +84,10 @@ describe('Built-in ROLE.md contracts and live guards', () => {
     ).toThrow('inside the rules folder');
   });
 
-  it('inherits inputs, outputs, guards, and body when extending a built-in role', () => {
+  it('inherits inputs, outputs, guards, and body when extending a builtin role', () => {
     const extended = parseRole(
       '---\nid: builder\nstage: runtime\nextends: builtin:builder\nrules: [go-style]\n---\n\n## Repo Notes\nRun go test ./...\n',
-      BUILTIN_ROLES,
+      { builder: BUILDER },
     );
 
     expect(extended.config.rules).toEqual(['go-style']);
@@ -82,29 +106,14 @@ describe('Built-in ROLE.md contracts and live guards', () => {
     expect(rendered).toContain('Run go test ./...');
 
     expect(() =>
-      parseRole(
-        '---\nid: x\nstage: runtime\nextends: builtin:ghost\n---\n',
-        BUILTIN_ROLES,
-      ),
+      parseRole('---\nid: x\nstage: runtime\nextends: builtin:ghost\n---\n', {
+        builder: BUILDER,
+      }),
     ).toThrow('unknown "builtin:ghost"');
   });
 
-  it('writes only line files on init so repos inherit built-in roles by default', () => {
-    const written = templateAssets({
-      project: { setup: [], verify: [] },
-      runner: 'claude',
-      hasOrigin: false,
-    });
-
-    expect(written.map((asset) => asset.path).sort()).toEqual([
-      '.genba/lines/fast.yml',
-      '.genba/lines/feature.yml',
-      '.genba/lines/standard.yml',
-    ]);
-  });
-
   it('enforces requireDiff, forbidPaths, and conventional commit format', () => {
-    const builder = parseRole(BUILTIN_ROLES.builder);
+    const builder = parseRole(BUILDER);
 
     const violations = validateRoleGuards(
       builder,
@@ -139,7 +148,7 @@ describe('Built-in ROLE.md contracts and live guards', () => {
   });
 
   it('rejects repository modifications from read-only roles', () => {
-    const doctor = parseRole(BUILTIN_ROLES.doctor);
+    const doctor = parseRole(DOCTOR);
 
     const violations = validateRoleGuards(
       doctor,

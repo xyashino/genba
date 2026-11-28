@@ -13,8 +13,8 @@ import type { ClockPort } from '@repo/host/ports/clock.port';
 import {
   ApiError,
   ApiUnreachableError,
-} from '../../ports/loopback-api.port.ts';
-import type { LoopbackApiPort } from '../../ports/loopback-api.port.ts';
+} from '@repo/cell/ports/loopback-api.port';
+import type { LoopbackApiPort } from '@repo/cell/ports/loopback-api.port';
 import type { CellDeps, JobContext } from './context.ts';
 import { CellStopped, loadLine, loadManifest } from './context.ts';
 import { runDeliverStation, runEscalation } from './station-deliver.ts';

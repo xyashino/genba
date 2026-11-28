@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import { validateRoleGuards } from '../../domain/role.ts';
-import type { RoleDefinition, RoleGuardSnapshot } from '../../domain/role.ts';
+import { validateRoleGuards } from '@repo/cell/domain/role';
+import type { RoleDefinition, RoleGuardSnapshot } from '@repo/cell/domain/role';
 import type { JobContext, Workspace } from './context.ts';
 import { readIfPresent } from './context.ts';
 
