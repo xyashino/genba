@@ -1,14 +1,18 @@
-import { createLoopbackApi } from '@repo/cell/adapters/http/loopback-api';
+import { createLoopbackApi } from '../adapters/http/loopback-api.ts';
 import {
   CELL_TOKEN_ENV,
   DAEMON_URL_ENV,
   REPO_ROOT_ENV,
 } from '@repo/line/runtime-paths';
+import type { BuiltinRoles } from './context.ts';
 import { cellDepsOf } from './deps.ts';
 import { runCellLoop } from './loop.ts';
 
 /** `genba __cell <id>`: a disposable worker with one job and one worktree at a time. */
-export const runCell = async (cellId: string): Promise<number> => {
+export const runCell = async (
+  cellId: string,
+  builtinRoles: BuiltinRoles,
+): Promise<number> => {
   const url = process.env[DAEMON_URL_ENV];
   const token = process.env[CELL_TOKEN_ENV];
   const repoRoot = process.env[REPO_ROOT_ENV];
@@ -25,6 +29,7 @@ export const runCell = async (cellId: string): Promise<number> => {
     cellDepsOf({
       cellId,
       repoRoot,
+      builtinRoles,
       api,
       signal: stop.signal,
       trackRunner: async (runner) => {

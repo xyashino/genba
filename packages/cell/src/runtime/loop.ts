@@ -10,11 +10,8 @@ import { runDirOf, timelinePathOf } from '@repo/line/cells';
 import { CELL_DIR } from '@repo/line/runtime-paths';
 import { timelineLineOf } from '@repo/line/timeline';
 import type { ClockPort } from '@repo/host/ports/clock.port';
-import {
-  ApiError,
-  ApiUnreachableError,
-} from '@repo/cell/ports/loopback-api.port';
-import type { LoopbackApiPort } from '@repo/cell/ports/loopback-api.port';
+import { ApiError, ApiUnreachableError } from '../ports/loopback-api.port.ts';
+import type { LoopbackApiPort } from '../ports/loopback-api.port.ts';
 import type { CellDeps, JobContext } from './context.ts';
 import { CellStopped, loadLine, loadManifest } from './context.ts';
 import { runDeliverStation, runEscalation } from './station-deliver.ts';

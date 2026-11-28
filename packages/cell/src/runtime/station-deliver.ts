@@ -4,7 +4,7 @@ import {
   prTitleOf,
   renderEscalationBody,
   renderPrBody,
-} from '@repo/cell/domain/pr-body';
+} from '../domain/pr-body.ts';
 import { checksOfLine, operatorOf } from '@repo/line/line';
 import { DECISIONS_DIR } from '@repo/line/runtime-paths';
 import { isSideStation } from '@repo/line/stations';

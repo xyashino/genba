@@ -112,7 +112,7 @@ packages/factory/src/
 
 ### `packages/cell`
 
-Partly extracted: `domain/`, `ports/`, `adapters/`, and `probes.ts` live here. The runtime (`runtimes/cell`) is still in `apps/genba/src/` until its own extraction. ESLint (`apps/genba/eslint.config.mjs`) keeps `cell/`, `cli/`, `operator/`, and `domain/` off `@repo/factory`.
+Holds `domain/`, `ports/`, `adapters/`, `runtime/`, and `probes.ts`. `apps/genba` passes the built-in role templates in (`CellDeps.builtinRoles`). ESLint (`apps/genba/eslint.config.mjs`) keeps `cli/`, `operator/`, and `domain/` off `@repo/factory`; `packages/cell/eslint.config.mjs` keeps `cell` off factory, sqlite-kit, and genba.
 
 ```text
 packages/cell/src/

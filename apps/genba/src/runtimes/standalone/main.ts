@@ -9,8 +9,9 @@ import { onceIdOf, workspaceLabelOf } from '@repo/line/cells';
 import { DATA_DIR, WORKTREES_DIR } from '@repo/line/runtime-paths';
 import { renderEntry, renderHeader } from '@repo/line/timeline';
 import { createLoopbackApi } from '@repo/cell/adapters/http/loopback-api';
-import { cellDepsOf } from '../cell/deps.ts';
-import { runCellLoop } from '../cell/loop.ts';
+import { cellDepsOf } from '@repo/cell/deps';
+import { runCellLoop } from '@repo/cell/loop';
+import { BUILTIN_ROLES } from '../../builtin/registry.ts';
 import { readOrders } from '../cli/commands/orders.ts';
 import { timelineReader } from '../cli/commands/watch-full.ts';
 import type { CliDeps } from '../cli/context.ts';
@@ -122,6 +123,7 @@ export const runOnce = async (deps: CliDeps, path: string): Promise<number> => {
         cellDepsOf({
           cellId,
           repoRoot: root,
+          builtinRoles: BUILTIN_ROLES,
           api: untilSettled(
             apiOf(factory.cellToken),
             () => factory.order(order.slug)!.status,

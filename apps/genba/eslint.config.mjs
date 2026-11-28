@@ -26,7 +26,7 @@ export default [
     ),
   },
   {
-    files: ['src/runtimes/cell/**/*.ts', 'src/runtimes/cli/**/*.ts'],
+    files: ['src/runtimes/cli/**/*.ts'],
     ...forbid(
       ['@repo/factory/**'],
       'cell and cli runtimes reach the factory over its HTTP API only',

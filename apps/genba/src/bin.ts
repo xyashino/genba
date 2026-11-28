@@ -39,8 +39,11 @@ const dispatch = async (argv: string[]): Promise<number> => {
       });
     }
     case '__cell': {
-      const { runCell } = await import('./runtimes/cell/main.ts');
-      return runCell(rest[0] ?? '');
+      const [{ runCell }, { BUILTIN_ROLES }] = await Promise.all([
+        import('@repo/cell/main'),
+        import('./builtin/registry.ts'),
+      ]);
+      return runCell(rest[0] ?? '', BUILTIN_ROLES);
     }
     default: {
       const { runCli } = await import('./runtimes/cli/main.ts');

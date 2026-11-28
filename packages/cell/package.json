@@ -4,6 +4,9 @@
   "type": "module",
   "private": true,
   "exports": {
+    "./main": "./src/runtime/main.ts",
+    "./loop": "./src/runtime/loop.ts",
+    "./deps": "./src/runtime/deps.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {
